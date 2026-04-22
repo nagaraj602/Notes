@@ -1,4 +1,4 @@
-# AWS
+# AWS Cloud (Amazon Web Services)
 
 ---
 
