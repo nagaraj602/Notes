@@ -983,3 +983,921 @@ Here you have same resource but effect was set allow in 1st statement & Deny in 
     
     → Save changes.
     
+By default, assume role will have 1 hour.
+
+b) Create user: Follow steps from previous method.
+
+Create Role: IAM → Role → create role → AWS Account → This account → Next → Permission policy → "Amazon S3 Full Access" → Role name: Any name → create role.
+
+Now add AssumeRole to the Role you have created: Go to IAM → Role → Click on the role you created → Trust relationship → Edit trust policy → From the side bar Action → Read or write → AssumeRole → Add a principal → Add → Principal type: IAM users → ARN: paste ARN of the user → Add principal → Update policy.
+
+Now you can access the switch role. Follow instructions from previous method.
+
+Note: If you’re are giving access for the user in different AWS account, you can add principal → another account → add ARN of it.
+
+
+2) CLI way:
+
+Create user: Follow the steps from previous method.
+
+• Set up access key for the user: IAM → users → click on user name → Security credentials → Access key → AWS CLI access → Access key ID & Secret Access key is generated.
+
+• Go to your server SSH terminal → AWS configure → set up AWS CLI.
+
+• To check which CLI user profile is currently using, you can check using:
+→ aws sts get-caller-identity
+
+• Now if the user has no permission. So if we try to access S3, it will show access denied error.
+→ aws s3 ls
+o/p: error occurred, Access denied.
+
+• Adding Assume Role: You have already created Assume role.
+
+• Run this command to generate session based credentials.
+→ aws sts assume-role --role-arn "arn-of-the-role" --role-session-name <session-name>
+
+
+Ex:
+→ aws sts assume-role --role-arn "arn:aws:iam::123456789:role/nag-role" --role-session-name nag-session
+
+Now it show temporary access credentials.
+
+Now you need to add it to bashrc so that CLI can use it. If you don’t do it, if you try to access S3, you get access denied error.
+
+→ aws s3 ls
+o/p: access denied
+
+→ export AWS_ACCESS_KEY_ID=" "
+→ export AWS_SECRET_ACCESS_KEY=" "
+→ export AWS_SESSION_TOKEN=" "
+
+Now run S3 listing:
+→ aws s3 ls
+o/p: Now you can list S3 bucket.
+
+
+Identity providers: IAM → Identity provider.
+
+If you want add user with gmail, outlook or yahoo email users to the AWS account. Then you can use this.
+
+
+Access Analyzer: IAM → Access analyzer.
+
+This will analyze the user permissions given to the user & gives report. If admin has given extra permission to the user & that permission is not really needed for that user. It shows unused permission. So that you can remove unused permission for the user.
+
+It shows that this particular permission is not used in last 30 days. Then we can check it & remove it.
+
+
+Credential report: IAM → credential report → Download credential report. You get .csv file which can be viewed in Excel sheet.
+
+The credential report lists all your IAM users in this account and the status of their various credentials.
+
+It includes, user name, password creation data, MFA enable status, last modified password date, last activity etc.
+
+
+Organization activity: It shows activities of different AWS account added in AWS organization.
+
+
+Permission boundary: To restrict any user, group or role from having maximum permissions for them.
+
+Ex: User has S3 access full. But in actual scenario, his role doesn’t need full access, He should be able to work with just S3 read access. Then we use permission boundary, we add only Read only access. Even though his main policy shows as S3 full access, when we set permission boundary, he can only read S3 bucket, cannot write or do any other operation.
+
+IAM → user → <user-name> → Permissions → Scroll down → Permission boundary → set permission boundary → Select permission policy: "AmazonS3ReadOnlyAccess" → Set boundary.
+
+It is same method for role & user group. If the user is in group, then go inside group → click the user → set permission boundary.
+
+
+Best practices to be followed in IAM, in order to keep aws account safe:
+
+1) Avoid giving or using Root user access: Root has full unrestricted access. Use it only for billing & Account settings. Enable MFA for root & do not create access key for root.
+
+2) Enable MFA everywhere: Enable MFA for all the users.
+
+3) Use groups to manage permissions: Instead of assigning policies directly to users.
+
+4) Use strong password policy: IAM → Account settings → Password policy. Rotate password reset every 90 days.
+
+5) Provide Least privilege: Give only required permissions only.
+
+6) Use Roles instead of long-term access keys: Avoid hard coding access keys in apps. Use IAM Roles + STS (temporary credentials)
+
+This removes risk of key leakage.
+Ex: EC2 → attach role
+CI/CD → assume role.
+
+
+7) Remove unused users, roles and permissions.
+
+8) Enable auditing tools and monitoring tools: use AWS CloudTrail & cloudwatch.
+
+9) Use permission boundaries.
+
+10) Avoid inline policies when possible: Hard to manage & not reusable.
+
+11) Use IAM Access Analyzer:
+• Detects:
+• Public access
+• Cross account access
+
+12) Use resource level permissions: "Resource": "*" → don’t use
+ex: "Resource": "arn:aws:s3:::my-bucket/*"
+
+13) Use condition policy: Allow only certain IP, Allow only the user having MFA.
+
+"Condition": {
+"IpAddress": {
+"aws:SourceIp": "your_IP"
+}
+}
+
+
+IAM limitations:
+• 1000 users
+• 5000 roles
+• 100 policies per role.
+
+• No built-in auditing: IAM doesn’t provide built in auditing capabilities, making it challenging to track and monitor access & change.
+
+• Character limit: IAM policy document have character limits, which can make it difficult to write comprehensive policies. 6144 characters.
+
+
+SSM: AWS Systems manager: is a fully manage AWS service that enables you to centrally manage, configure, and operate your cloud and on-premises infrastructure using automation, secure IAM based access, without requiring direct network connectivity like SSH or RDP.
+
+SSM Parameter Store: It is a feature of SSM that lets you securely store, manage and retrieve configuration data & secret credentials.
+
+
+You can store any Jenkins configuration files or any secret credentials in SSM parameter store.
+
+[Jenkins configuration file is the jenkins dashboard config like: config.xml, jobs configs, plugin configs]
+
+You can also store Jenkinsfile for pipeline but not recommended, use git for it.
+
+Because we save the file in SSM as string & values, (not like typical upload file & store, it is like adding content to notepad).
+
+Parameter store also allows versioning & Project Hierarchy.
+
+• Versioning: You can store multiple version of same configuration file.
+
+• Hierarchy: If you have 3 project, & if you want to store configuration of 3 project, storing them with string value is confusing. So we can use hierarchy, like
+
+"project1/app/com/example/___"
+"project2/app/com/example/___"
+
+
+Parameter store is free service. So you can store till 8kb.
+
+
+Steps:
+Login to AWS → Systems manager → From the side bar → Scroll down → Parameter store → Create parameter store → Name: Any name (can be: /app/db-pass)
+→ Tier: Standard - 4kb max → Standard
+• Advanced - 8kb max
+max store limit (free)
+
+→ type:
+• String (store any string, no commas)
+• StringList (store multiple string with commas)
+• SecureString (store any credentials (masked)) → Data type: text
+
+Value: Paste the content. → Create parameter.
+
+Explanation: when using string, you can give single value. StringList if you want to store any lists like usernames, then specify it with comma. Secure string: Here you can store encrypted credentials & you can either use default KMS or else use new KMS setup.
+
+
+Once adding the value is done, you can edit it & it saves as version 2.
+
+If you store credential, then value is encrypted & any other user who has only read access cannot view password, they can use name & SSM will fetch password to the application securely.
+
+You can see versioning history & restore it by accessing that parameter history.
+
+You can fetch the parameter values from AWS CLI:
+
+You can use AWS CLI or use cloudshell.
+
+• Go to cloudshell → Enter below command:
+
+→ aws ssm get-parameters --names /app/db-passname
+OR
+→ aws ssm get-parameters --names <parameter-name>
+
+o/p: This will show the value of /app/db-passname. This parameter is just name you added in it. So output will show all the details including, name: "/app/db-passname"
+Type: String
+Value:
+Version: 1
+LastModifiedDate:
+ARN:
+DataType: "text"
+
+• If you used credential: (with encryption is shown, no direct value is shown)
+
+→ aws ssm get-parameters --names /app/dbpassword
+
+o/p: Now it shows encrypted password.
+
+"Name": "/app/dbpassword",
+"Type": "SecureString",
+"Value": "AQICHMCM5LN90t......vg=",
+"Version": "1",
+"LastModifiedDate": "2026-07-30T03:31:18.343000+00:00",
+"ARN": "arn:aws:ssm:ap-south-1:....../app/dbpassword",
+"DataType": "text"
+
+
+• If you want get the credential with decrypted value:
+```
+aws ssm get-parameters --names /app/dbpassword --with-decryption
+```
+
+o/p: It shows actual value.
+
+"Name": "/app/dbpassword"
+      .
+      .
+      .
+"Value" : "nagala3"
+
+To check the version history of parameter:
+→ aws ssm get-parameter-history --name /app/dbuser
+
+o/p: It shows all the versions along with values.
+
+---
+
+SSM:
+
+Advantage of SSM:
+1) Securely access servers (without SSH): It can connect to EC2 from browser or CLI. No SSH keys, no need to open port 22, no Bastion host needed. It is fully controlled using IAM. Session can be logged. If you lost SSH key, you can login with SSM without any key.
+
+2) Run commands on Multiple servers: Execute commands across many instances at once. No login required. Ex: Install packages, Restart services.
+
+3) Store & manage configs and secrets: We can use parameter store to store configuration files or secret credentials with versioning & hierarchy.
+
+4) Automate operation tasks: Create workflow for repetitive tasks.
+Ex: Create AMIs, stop/start instances, Patch systems.
+
+5) Patch management: Patch manager → Automatically update OS packages, maintain compliance.
+
+6) Monitor & manage infrastructure:
+• Track instance status
+• Collect inventory (OS, software installed)
+
+---
+
+SSM requirement:
+1) SSM agent installed & running
+2) IAM Role attached to the instance.
+3) Network connectivity to SSM endpoints: Your instance must reach AWS SSM service.
+
+option A: Internet Access:
+• Public subnet + Internet gateway
+• Private subnet + NAT Gateway
+
+option B: VPC Endpoints:
+• Create endpoints for:
+  • SSM
+  • ec2messages
+  • ssmmessages
+✓ No internet required
+✓ More secure
+
+4) Instance must be in "managed" state.
+
+---
+
+Check in: System manager → Managed instances  
+→ If not listed agent/IAM/network issue.
+
+5) Correct OS support:
+• Linux/windows supported
+• Custom AMIs must have SSM agent installed.
+
+---
+
+Setting up SSM:
+Go to IAM → Role → (create role → Add AWS service → service: EC2 → use case: EC2 Role for AWS system manager → Next → Role Name: Any name → create role.
+
+Launch EC2 instance which has ssm installed already.
+
+Login to AWS → EC2 → Launch instance → Amazon Linux → t2.micro  
+→ Key pair name: Proceed without a key pair → Network settings → Create security group → Don’t allow any port → Scroll down → Advanced details → IAM instance profile → Select the role you have created for SSM access → Launch instance.
+
+Wait for some time & then click on the instance you have created → Connect → Under the tab: "SSM Session Manager" → connect.
+
+You’ll be able to access the server without any SSH connection.
+
+If default shell shows as "sh" then switch to "bash" by typing "bash" on the terminal.
+
+If you check the user of this, it shows as ssm-user  
+→ whoami  
+o/p: ssm-user
+
+---
+
+Fleet manager:
+If there is only instance, then we manage it ourself.  
+If there are multiple instance, then it is called fleet.  
+To manage multiple instance, we have fleet manager.
+
+It shows all the info of all the instances connected to the SSM like AMI ID, SSM agent name, status of instance, OS type, creation date.
+
+Inventory:
+It tracks the packages installed on the machine.  
+It track all the packages or softwares or OS version on the machine.
+
+Patch manager:
+If we want to update instance softwares or OS, then we can update all the instances at one go from here.
+
+---
+
+Run command:
+If we want to run any command on multiple instances, then we can run it. We can either use the predefined command document or we can write on our own. We can choose instance manually or use tags, so that command will run on the specified instance. You can also schedule the command & choose safety controls.
+
+Session manager:
+Click on start session → Target instance → Start session.
+
+From here you can start ssm session and login to instance.
+
+State manager:
+Here you can manage the status of instance. If it is shutdown or not running, we can check here.
+
+Automation:
+we can write automation script & run those automation with scheduling.
+
+Installing SSM agent on RHEL:
+Go to AWS documentation & run the commands.  
+Then it start showing up in fleet manager.
+
+If you want run command from Run command section:
+Go to SSM → Run command → Run a command → Select "AWS-RunShell Script" → Document version: 1 → Command parameter:
+
+#!/bin/bash
+sudo yum update -y
+sudo dnf install nginx -y
+
+→ working directory: keep it blank → Execution timeout: 3600
+
+Target selection:
+• specify instance tags → you need to tag instance in launch time  
+• choose instance manually → you can select instance from dropdown  
+• choose resource group → you can select any resource group  
+
+→ Then add Tag key & Tag value here.  
+Tags are good when instances are bulk → manual instance selection is difficult when we bulk instance.
+
+→ You can set cloud watch alarm →
+
+---
+
+Set up SNS notification if need → Run.  
+It shows as "in progress". Once command executed, it show success.
+
+---
+
+Monitoring Tools:
+1) Cloud watch   2) Cloud Trail
+
+Monitoring Tools helps in:
+1) Efficient use of resources (Metrics)
+2) Increasing performance (logs)
+
+Alternative monitoring tools available in market which monitors both on-premise & cloud resources as well as application:
+1) Dynatrace
+2) Datadog
+3) Splunk
+
+Cloudwatch is used for monitoring resources & application inside the resources.
+
+CloudTrail is used for activities management. It tracks all the activities we perform on any service or resources.
+
+Cloudwatch:
+A centralized service that gives you real-time visibility into your infrastructure and applications by collecting metrics, logs, and events and turning them into actionable insights like alerts, dashboards, automation.
+
+Components of Cloudwatch:
+
+1) Metrics:
+Metrics are time-based numerical data points generated by AWS resources or services.
+
+Ex:
+• CPU usage of EC2
+• Memory usage (custom metric)
+• Request count in API
+
+2) Logs:
+Logs are text-based records of events generated by applications or system.
+
+Ex:
+• Error logs from an app
+• Access logs from a web server
+
+3) Alarms:
+Alarms watch metrics and trigger notification or actions when conditions are met.
+
+Alarm has two part:
+• Send notification (SNS)
+• Action (Ex: scale server)
+
+4) Dashboards:
+Dashboards show metrics & logs in graphs & widgets.  
+Gives me a visual overview of everything.
+
+---
+
+5) Events/EventBridge Integration:
+Cloudwatch can react to system changes/events.
+
+Ex:
+When an EC2 instances stops, trigger automation.
+
+6) Log insights (Querying logs):
+Allows you to search and analyze logs using queries.  
+i.e find patterns and debug faster.
+
+---
+
+Types of cloudwatch monitoring:
+1) Basic monitoring
+2) Detailed monitoring
+
+1) Basic monitoring:
+Basic monitoring collects metrics at a lower frequency.  
+Minimum interval of 5 minutes.
+
+Key points:
+• Basic monitoring is enabled automatically by default  
+• Data granularity: 5 minutes  
+• No extra cost  
+• Suitable for general monitoring like non-critical workloads, systems where real-time response is not required.
+
+Ex:
+• CPU usage updated every 5 minutes  
+• Network traffic every 5 minutes
+
+2) Detailed monitoring:
+Detailed monitoring collects metrics at a higher frequency.  
+Minimum interval of 1 minute.
+
+Key points:
+• You need to enable Detailed monitoring manually  
+• Data granularity: 1 minute  
+• Extra cost involved as Detailed monitoring is chargeable  
+• Provides near real-time insights  
+
+Good for:
+• Production environment (critical system)  
+• Auto scaling groups  
+• Performance-sensitive application  
+
+Ex:
+• CPU spikes visible every minute  
+• Faster alert triggering  
+
+**Imp**: Even though datapoint shows for 1 minute, you can see the value for 10 seconds also. You can set it in the top-right.
+
+Data points: If we have set monitoring for 1 minute or 5 minute,
+the point at each 1 minute/5minute, it shows the individual values of a
+metric.
+
+< data point >
+
+10:00 10:01 10:02 10:03  → 10’o clock time
+
+Definition: Data points are the individual values of a metric recorded
+at a specific point in time or one measurement of a metric at a
+specific time.
+A data point = metric value + timestamp.
+
+Each datapoints includes:
+• Timestamp → when it was recorded
+• Value → Metric value (e.g. CPU=70%)
+• Unit → Percent, Bytes, Count, etc.
+• Dimensions → Context (like instance ID).
+
+Data points use:
+• Accuracy: More data points = better understanding of behavior
+• Faster Alerts: Alarms in cloudwatch evaluate based on data points.
+  Ex: If CPU > 80% for 3 data points → trigger alarm
+• Trend Analysis: Helps you see spikes, patterns, performance issues.
+
+Different AWS services and resources that can be integrated with
+Cloudwatch:
+
+1) Compute services:
+• EC2 → CPU, disk, Network → metrics
+• AWS Lambda → Invocations, errors, duration → logs
+• Amazon ECS → Container metrics
+• Amazon EKS → Cluster & pod monitoring
+• AWS Elastic Beanstalk → app health
+
+2) Storage service:
+• Amazon S3 → request metrics, storage size
+• Amazon EBS → IOPS, throughput
+
+• Amazon EFS → throughput, connections
+
+3) Database Services:
+• Amazon RDS → CPU, connections, I/O
+• Amazon Dynamo DB → read/write capacity
+• Amazon Redshift → query performance
+
+4) Networking & Content Delivery:
+• Elastic Load balancing → request count, latency
+• Amazon Cloudfront → cache hits, traffic
+• Amazon VPC → flow logs.
+
+5) Security & Identity:
+• AWS CloudTrail → sends logs to Cloudwatch
+• AWS IAM → activity via CloudTrail
+• AWS WAF → security logs.
+
+6) Application Integration Services:
+• Amazon SNS → used with alarms
+• Amazon SQS → queue depth metrics
+• AWS step functions → Execution logs.
+
+7) Devops & Management Tools:
+• AWS Auto scaling → triggers based on Alarms
+• AWS system manager → logs & automation
+• AWS Cloudformation → stack events.
+
+8) Monitoring & Observability Extension:
+• AWS X-ray → request tracing
+• Amazon managed Grafana → dashboard using Cloudwatch data.
+
+Cloudwatch integrates in 3 main ways:
+1) Metrics: Services push performance numbers
+   Ex: EC2 CPU, RDS connections
+2) Logs: Applications and services send logs
+   Ex: Lambda logs, VPC flow logs
+3) Events: Triggers actions based on changes
+   Ex: Instance stopped → Alert.
+
+Metrics: In EC2 instance, when we select the instance → Monitoring
+
+→ If you see the metrics, you’ll see few important one only. If want to
+show all the metrics,
+To see all the metrics, you can? Go to Cloudwatch →
+
+Metrics → All metrics → You can select the service: EBS → EC2 → S3
+
+→ By Image (AMI)
+• Per Instance Metrics
+• Aggregate instance type
+• Across all instances
+
+dimensions (Instance ID or Instance name) → You can search or select by
+instance name or instance id → When you enter instance name/instance id
+in search bar, it shows all the metrics name associated with
+that instance → You can select metrics name based on requirement →
+If you select multiple metrics, it adds up in the above graph section
+(below metrics title name) → You can click on each metric name to
+view it separately → From the top-right you can select the type of data view
+(widget type)
+
+• Line
+• Datatable
+• Stacked area
+• Number
+• Gauge
+• Bar
+• Pie
+
+→ You can view the data of metrics → If you hover
+on any metrics, it shows details info,
+as well as option to set alarm.
+
+Imp: By default, this shows metrics for 5 minutes.
+To see for 1 minute, you need to enable Detailed monitoring on each instance.
+
+Dashboard: Dashboard shows metrics & logs in graphs & widgets.
+
+Creating Dashboard: After selecting metrics by following previous
+above steps → Actions → Add to Dashboard → Create new → Dashboard
+name: Any name → widget type:
+• Line → Number → Customize widget
+• Data table
+• Stacked area
+• Number
+• Gauge
+• Bar
+• Pie
+
+title → You can change the name of each metric widget → Add to
+Dashboard → Save.
+
+After saving, you can rename Dashboard name,
+• Auto layout Dashboard
+• Settings
+• Share
+(Many other options)
+
+Share dashboard: After creating Dashboard → Actions → Share Dashboard
+
+→ You can share Dashboard in 3 ways:
+
+1) Share your dashboard & require a username & password.
+   Here you add any email address, they get temp link & they need
+   to set their own username & password & then access dashboard.
+
+2) Share your Dashboard Publicly:
+   Click on start sharing → type “share” → confirm and preview policy →
+   then also policy is attached → “Accept policy and generate sharable
+   link” → Copy link.
+
+3) Share all your account’s cloudwatch dashboards using single
+   sign-on (SSO); For this you need to create userpool & add the
+   SSO provider & then you can use it.
+
+Cloudwatch agents: Cloudwatch agents are software programs installed
+on servers (EC2 or on-premises) to collect additional system-level
+metrics and logs that cloudwatch does not capture by default.
+
+In cloudwatch, by default it shows only few metrics for the
+aws services, even if we enable detailed monitoring. That is because,
+cloudwatch needs agents to be installed on EC2 to get the more
+metrics like EBS metrics, CPU metrics etc.
+
+Even though cloudwatch gets some default metrics by default,
+But for getting logs (application log), it mandatorily needs cloudwatch
+agents. Without agents, we don’t get logs.
+
+In logs there are two things:
+→ AWS managed logs → No agent needed. AWS will do it.
+   Ex: VPC flowlogs, IAM logs
+→ User managed logs → Here agent installation is must
+
+Alarms: Single metric will have single alarm. We will set the
+value. Once you setup alarm, alarm will keep on working
+and gathers all the datapoints & if the datapoint crosses
+threshold value, alarm will take the actions you have defined.
+
+There are 3 type of Alarm states:
+
+1) Insufficient_data State: There is not enough data to determine the
+state.
+when this happens:
+• Alarm just created
+• Metric not reporting (you set for 5 minutes so, there is no data till then)
+• Instance stopped or no data points available.
+
+2) OK State: The metric is within the defined threshold (normal condition)
+Ex: CPU < 80%
+• System is healthy
+Meaning: Everything is fine, no action needed.
+
+3) Alarm State: The metric has crossed the threshold.
+
+Actions that can happen:
+• Send notification via Amazon SNS
+• Trigger scaling via AWS auto scaling
+• Stop/terminate/recover an EC2 instance (AMI)
+
+Ex: CPU > 80% for 3 consecutive data points
+Meaning: Something is wrong → Trigger action.
+
+Important concept Behind Alarm States:
+
+1. Evaluation periods: Number of datapoints checked
+   Ex: 3 periods of 1 minute each
+
+2. Threshold: Limit you define
+   Ex: CPU > 80%
+
+3. Datapoints in Alarm: How many breaches trigger alarm
+   Ex: 2 out of 3 datapoints must exceed threshold
+
+Note: You can perform Actions on any state like OK, insufficient
+data or Alarm state. There is no mandatory that
+
+Action only applied for Alarm state.
+
+Creating Alarm: Go to cloudwatch → Alarms → Create Alarm → Select
+metric → Search for metric with your instance ID → Select metric
+(You can select only single metric)
+
+statistic:
+• Average
+• Sum
+• Maximum
+• Minimum
+• Sample count
+• IGM
+• P90 (Percentage)
+• tm 90
+• tc 90
+• ts 90
+...
+
+→ Static → Static → Whenever CPU utilization is:
+• Greater
+• Greater/equal
+• Lower/equal
+• Lower
+
+→ Greater than: 70 → Additional configuration → Datapoints
+to alarm:
+1 out of 1 → Next → Alarm state trigger:
+2 out of 5 (can be anything)
+
+→ In alarm → OK
+• Insufficient data
+
+→ In-alarm → Send a notification to the following
+
+SNS topic:
+• Select an existing SNS topic → create new topic
+• Create new topic
+• Use topic ARN to notify other accounts
+
+→ Topic name: by default AWS generate it or you can give any name of your wish
+
+→ Email endpoints that will receive the notification: Add email addresses
+with comma → Create topic → There are different actions: lambda
+action → You can setup → Auto scaling Action: Add Auto scaling action → EC2 action : Alarm state trigger → Add EC2 action → Alarm state trigger:
+• In alarm • OK • Insufficient data → In alarm → Take following action:
+
+• Stop this instance → Stop this instance → Next → Alarm name:
+• Terminate this instance
+• Reboot this instance
+
+Any name → Next → Review the settings → Create alarm.
+
+By default, newly created, alarm will be in insufficient data state.
+
+You can stress the CPU using:
+→ sudo yum install stress -y
+→ stress -c 1 -t 3600    OR → yes > /dev/null
+
+cpu core → If 2 core, then stress -c 2 -t 3600
+
+Now you start getting notification.
+
+Explanation:
+
+statistics: Statistic define how multiple data points within a time
+period are aggregated into a single value before the alarm evaluates
+them.
+
+Why statistics are needed: Cloudwatch doesn’t evaluate every raw
+data point individually. Instead it:
+• Collects multiple data points in a time window (period)
+• Applies statistic
+• Uses the result to check the alarm condition.
+
+• Data points to alarm: 1 out of 1, 2 out of 5, 5 out of 5, etc.
+
+This setting controls how many data points must breach the threshold
+before the alarm goes into ALARM state.
+
+1 out of 1: If 1 data point breaches → ALARM
+Behavior: Very sensitive.
+
+2 out of 5: At least 2 out of 5 datapoints must breach.
+
+we use when: You want to avoid false alarm.
+Allow small fluctuation.
+
+
+SNS: Simple notification Service: A fully managed publish/subscribe
+messaging service that enables applications, services and users to
+send and receive notification instantly at scale.
+
+Publisher sends a message to a topic (header/subject) SNS
+topic will distribute the message to subscriber and subscriber
+will receive it (email, SMS, Lambda, HTTP, SQS etc)
+
+SNS lets you send one message & deliver it to many subscribers
+(fan out model).
+
+Key features:
+• Scalable: handles millions of message
+• Fully managed → No servers to maintain
+• Fast delivery → near real-time
+• Flexible → multiple subscriber types.
+
+Steps: Go to SNS → Topics → Create Topic →
+
+→ Type:
+• FIFO (First In, First Out) → standard → Topic name
+• Standard
+
+• You can add the topic of the message (subject of message) → Display
+name: You can add any name → create topic → Create subscription →
+
+Protocol:
+• Amazon Kinesis Data Firehouse
+• Amazon SQS
+• AWS Lambda
+• Email
+• Email-json
+• HTTP
+• HTTPS
+• Platform application endpoint
+• SMS
+
+→ Email → Endpoint:
+
+→ Email address with commas → Create subscription → Then subscriber
+will receive email to confirm subscription, only then it is successful.
+
+
+Once it is done, you can integrate it in AWS service or
+application.
+
+You can do SMS notification also. You need to select SMS in protocol
+section while creating subscription.
+
+SQS: Simple Queue service: is a message queue used to
+decouple systems (service/application send notification to SQS & then SQS to another
+service/application). One service sends messages, another processes
+them later.
+
+Types of SQS Queue:
+
+1) Standard queue: Default and most commonly used. No ordering of
+message.
+
+Key features:
+• At-least-once delivery → message may be delivered
+  more than once.
+• Best-effort ordering → order is not guaranteed.
+• High throughput → virtually unlimited messages per
+  second.
+• Subscription protocols → SQS, Lambda, Data Firehouse,
+  HTTP, HTTPS, SMS, email, mobile application endpoint.
+
+2) FIFO: First In First Out: Strictly preserved message ordering.
+
+Key features:
+• Exactly-once processing (no duplicate)
+• Strict ordering → messages processed in the exact
+  order sent
+• Lower throughput compared to standard.
+
+use case: Financial transactions, order processing system,
+any workflow where sequence is critical.
+
+
+EC2: Amazon Elastic compute cloud:
+
+Elastic: The service can automatically scale capacity up or down based
+on demand.
+
+Compute: It provides virtual machines (CPU, RAM, Storage, network)
+to run application.
+
+Cloud: Resources are managed within Amazon’s global data centers.
+
+
+Instance: These are virtual servers that can be configured with
+different operating system, memory and CPU capacity.
+
+How AWS gives server is that they have huge physical server
+like 100 CPU, 128GB RAM, 16TB storage. Then they use hypervisor
+to divide it into smaller virtual machines. We can call it as guest
+machines. Each VM can have their own OS, applications.
+
+There are 2 type of hypervisor.
+
+1) Type 1 hypervisor: These are created on physical server and create
+VM in it. These are called bare metal hypervisor.
+
+2) Type 2 hypervisor: These hypervisor installed on laptop, where we
+install hypervisor on existing OS and use custom VMS.
+Like on windows laptop, we use virtualbox & install
+Linux OS or windows OS.
+We can also consider container as Type 2 hypervisor.
+
+
+EC2 host will have memory, CPU, storage, network. In storage there
+are 2 types of storages that can be attached.
+
+1) Ephemeral (Temporary storage): It’s attached as DAS (direct attached storage)
+
+when we stop & start instance, the instance will not remain & even the storage
+will no longer there. we get different instance with temporary storage.
+
+This is chosen when speed matters more than durability.
+
+Here also we attach EBS itself, but it’s temporary storage.
+
+common real use:
+• Caching layers (e.g Redis, temp cache)
+• Big data processing (Hadoop, Spark intermediate
+  processing)
+• Batch jobs / ETL pipeline
+• Temporary file processing (video encoding, image processing)
+• High performance workloads needing ultra-low
+  latency.
+
+In these case, losing data is acceptable because:
+• It can be recomputed
+• or stored elsewhere permanently after processing.
+
+when it is not used:
+• If data is important
+• Hard to recreate
+• Needs backup
+
+Then use:
+• Amazon EBS (block storage)
+• Amazon S3 (object storage)
+
