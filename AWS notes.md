@@ -773,19 +773,213 @@ Imp: Each line will end with comma, but not for last line.
 Policy to give S3 access to an user.
 ```
 {
+  "Version": "2012-10-17",
+  "ID": "S3 access to a user",
+  "Statement": {
+    "Sid": "1",
+    "Effect": "Allow",
+    "Action": "S3:",
+    "Principal": {
+      "AWS": "arn:aws:iam::123456789012:user/Artisan"
+      },
+    "Action": "S3:GetObject",
+    "Resource": "arn:aws:s3:::my-secure-bucket/",
+    "Condition": {
+        "IpAddress" : {
+            "aws:SourceIp" : "192.168.1.0/24"
+        }
+    }
+  }
+}
+```
+
+#### Explanation:
+• Version: Policy language version. Standard version in AWS is "2012-10-17"
+
+• Statement: Policy can have multiple statements. Multiple statement is needed when we define policy for multiple service or resources.
+If we are using single statement then { } square bracket is not needed. If we are writing multiple statement, then square bracket needed before flower bracket. Each statement one rule.
+For single statement:
+"Statement" : {
+}
+
+For multiple statements:
+"Statement" : [
+  {
+  "sid":"1"
+  }
+  {
+  "sid":"2"
+  }
+]
+
+• Effect: "Effect" : "Allow"
+Allow → grant permission
+Deny → block permission
+
+If we have created 2 statement for same service or resource & in statement, we have set effect as Allow & in another statement we have set it as Deny. Then AWS gives highest precedence to Deny.
+
+
+• Principal: Defines who is allowed.
+It can be:
+• IAM user
+• IAM Role
+• AWS Account
+
+If we use principal, then it used for that particular user or role only, it cannot be used for others.
+
+Used only in resource-based policies (like S3 bucket policy)
+
+
+• Action: Defines what action is allowed.
+S3:GetObject = can read/download objects
+cannot:
+• upload
+• Delete
+• List bucket
+
+• Resource: Defines which resource
+"Resource" : "arn:aws:s3:::my-secure-bucket/*"
+
+my-secure-bucket/* → all the objects inside bucket
+Not the bucket itself
+
+• This allows access to files, not bucket listing
+
+
+• Condition: (security layer): Adds extra restriction
+only allows access if request comes from IP, we can also add condition as only if MFA has done by user, then apply this policy.
+
+"aws:SourceIp" : "192.168.1.0/24"
+
+So it allows IP from 192.168.1.0 to 192.168.1.255
+
+
+• Visual format option to create same policy:
+Go to IAM → Policy → create policy → Select a service → EC2 → Actions
+Allowed: You can select all EC2 Action (ec2:*) or select each action from dropdown → Resources: Here you can select all resources or select particular resource as instance. In instance also, you can select all instance or specify particular ARN of instance so that only that particular instance is given access. If you select different resource like key pair, subnet, VPC, security group, then you can give ARN or select as all. → conditions → Next → Policy name → Done.
+
+The disadvantage of visual option to create Policy is that, you cannot select principals.
+
+Ex: Simple policy to give S3 access to any user.
+
+```
+{
 "Version": "2012-10-17",
 "ID": "S3 access to a user",
 "Statement": {
 "Sid": "1",
 "Effect": "Allow",
-"Action": "S3:",
-"Principal": {
-"AWS": "arn:aws:iam::123456789012:user/Artisan"
-},
-"Action": "S3:GetObject",
-"Resource": "arn:aws:s3:::my-secure-bucket/",
-"Condition": {
-}
+"Action": "s3:*",
+"Resource": "*"
 }
 }
 ```
+
+Above is for single statement.
+
+For multi statement: It is useful for adding multiple resource or different permissions.
+
+```
+{
+"Version": "2012-10-17",
+"ID": "S3 access to a user",
+"Statement": [
+{
+"Sid": "1",
+"Effect": "Allow",
+"Action": "s3:*",
+"Resource": "*"
+}
+{
+"Sid": "2",
+"Effect": "Deny",
+"Action": "s3:*",
+"Resource": "*"
+}
+]
+}
+```
+
+Here you have same resource but effect was set allow in 1st statement & Deny in 2nd statement. So AWS will take Deny as precedence.
+
+
+## Policy structure/components of policy:
+1. Version: The policy version “2012-10-17”, managed by AWS
+2. Statement: A single policy statement which defines a specific permission or rule
+3. Sid (Statement Id): A unique identifier for the statement
+4. Effect: The effect of the statement, either “Allow” or “Deny”
+5. Action: The specific AWS action(s) affected by the statement
+6. Resource: The AWS resource(s) affected by the statement
+7. Condition: Optional conditions that must be met for the statement to take effect
+8. Principal: The AWS user, role or service that the policy is applied to
+
+
+## Types of Policies:
+
+### 1) Identity-based policy: Identity-based policies are permissions policies that are attached to IAM users, groups or roles, to define what actions those identities are allowed or denied to perform on AWS resources. These policies don’t include “Principal”.
+
+    It has 3 types:
+    a) AWS managed policies:
+      • Created and maintained by AWS
+      • Ready to use
+      Ex: AmazonEC2ReadOnlyAccess
+    
+    b) Customer managed policies:
+      • Created by the customer
+      • Reusable across multiple identities
+    
+    c) Inline policy:
+       This policy is directly attached to a single user, group or role. It cannot be reused for other identity. When identity gets deleted, policy gets deleted automatically.
+       Use case: There are few policies attached to a group & we want to attach another policy to one user inside that group, then we can click on that user & create inline policy & attach the policy in it. Once you create inline policy, you will see “Attached via” as “Inline” in user details. Also when you go to IAM Policy section & if you try to search for that policy, you won’t see it in the list as it is not reusable.
+    
+    
+    #### Steps to create inline policy:
+      1) User: Go to IAM user → Click on user name → Permissions tab → Click on drop down of “Add permissions” → Create inline policy → You can do it using visual or using Json → Select service → Select Actions allowed → Select the resources → Request condition (if needed) → Next → Policy name → create policy.
+      
+      2) Groups: Go to IAM → user group → Click on group name → Permissions tab → Click on drop down of “Add permissions” → Create inline policy → Policy editor: visual/Json → Add service → Select actions → Select resource → Select request condition (if needed) → Next → Policy name → create policy.
+      
+      3) Role: Go to IAM → Role → Click on the role you created → Permissions tab → Click drop down “Add permissions” → create inline policy → Policy editor: visual or json → Select the service → Select actions → Select resources → Select request condition → Next → Policy name → create policy.
+
+
+### 2) Resource based policy: These policies attached directly to AWS resources that define which principals (users, roles or accounts) are allowed or denied access to that resource and what actions they can perform.
+
+  Ex: Allow IAM user “dev-user” to read S3 objects, only from a specific IP range.
+  
+  Steps: Login AWS → S3 → click your S3 bucket “my-secure-bucket” → goto permission tab → Bucket policy → Edit → Scroll down → Add new statement → you can either select actions, resources, conditions from side bar visual or write your own policy in Json format → Save changes.
+
+
+### 3) Session based policy: Session policies are temporary permission limits applied when a role or user is assumed using STS, ensuring the session can only perform a restricted subset of allowed actions.
+  
+    Assume Role: Assume role allows a user or service temporarily use the permissions of an IAM role using short term credential (STS).
+    
+    You can assume role in console and also through CLI way. The access given in console will allow access via console only, you won’t get CLI access & vice versa.
+    
+    Console way: There are two methods:
+    
+    a) IAM → User → user name: test → ✓ Provide user access to the AWS management console → ✓ I want to create an IAM user.
+    Console password: Autogenerated → uncheck “users must create a new password at next sign-in” → Next → Attach policy directly → You can either attach policy or leave it blank → scroll down → Next → Create user → Copy the credentials.
+    
+    Here you just created user, so that you can create role with STS and attach it to this user. This will become assume role. So this means access is given for temporary session. In this role you will add service, so that user can have permission to access that resource temporarily.
+    
+    • Role creation: IAM → Role → create role → custom trust policy →
+    In the side bar → Read or write: AssumeRole → Add a principal →
+    Add → Principal type → IAM users → ARN: paste ARN of the user you created → Add principal → Add permissions → select as “AmazonS3FullAccess” → Next → Role name: Any name → Create role.
+    
+    • Switching the role: You need to login to the user account you have created: After logging in, click on the “account” on the top-right side → It will hover → There you can see “Switch role”.
+    
+    • Go to S3 from that page → You can now access S3 bucket.
+    
+    • You can switch back from role by clicking on account → switch back or else, wait till session expires.
+    
+    • To modify the session timing, admin should update the session duration in IAM role.
+    
+    Go to IAM → Role → click on the role → Edit → Maximum session duration:
+    • 1 hour
+    • 2 hour
+    • 4 hour
+    • 8 hour
+    • 12 hour
+    • Custom duration
+    
+    → Save changes.
+    
