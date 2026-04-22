@@ -684,3 +684,108 @@ o/p:
 }
 ```
 
+You can check aws-cli commands in aws documentation page.
+
+---
+
+## STS:
+
+Security token service: is a service that provides temporary, limited-privilege credentials to access AWS resources.
+
+STS lets you get temporary access instead of using permanent access keys.
+
+### How it works:
+1) You (user/service) request temporary credentials  
+2) STS verify identities  
+3) Returns:
+   - Access key
+   - Secret key
+   - Session token  
+4) These credentials expire after some time.
+
+---
+
+## Common STS API:
+
+1) Assume Role: used to access another role (same or different account)
+```
+aws sts assume-role
+--role-arn arn:aws:iam::123456789012:role/Admin
+--role-session-name test
+```
+
+
+2) Get session Token: Temporary credentials for IAM user (with MFA)
+
+3) Get caller identity: Shows who you are  
+→ aws sts get-caller-identity
+
+---
+
+## Example use case:
+
+You have:
+- Account A (your account)
+- Account B (Client account)
+
+You:
+- use STS + AssumeRole
+- Access resources in Account B securely.
+
+---
+
+## Policy:
+
+IAM policy is a Json document that defines permissions. It decides what actions are allowed or denied on which resources.
+
+Simple definition:
+
+IAM Policy = Rules of access
+- Who → user / role / group
+- What → Action (like read, write, delete)
+- Which → Resource (S3 bucket, EC2, etc)
+
+We can create policy using 2 options: Visual, JSON
+
+---
+
+## JSON:
+
+Java script object notation.
+
+Previously we used to have xml format, now we are using Json format.
+
+In Json format, data is entered in Json format in the form of key & value pair with double quotes.
+
+“key” = “value”
+
+Key can only be in string format  
+Value can be in any format like: string, number, arrays, boolean values
+
+In Json format, it starts with flower bracket. { “key” = “value” }
+
+Imp: Each line will end with comma, but not for last line.
+
+---
+
+## Example Policy:
+
+Policy to give S3 access to an user.
+```
+{
+"Version": "2012-10-17",
+"ID": "S3 access to a user",
+"Statement": {
+"Sid": "1",
+"Effect": "Allow",
+"Action": "S3:",
+"Principal": {
+"AWS": "arn:aws:iam::123456789012:user/Artisan"
+},
+"Action": "S3:GetObject",
+"Resource": "arn:aws:s3:::my-secure-bucket/",
+"Condition": {
+}
+}
+}
+```
