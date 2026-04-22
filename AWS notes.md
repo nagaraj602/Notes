@@ -37,6 +37,34 @@
 
 ---
 
+## Disadvantage of cloud computing:
+
+1. Cost uncertainty: Cloud uses pay-as-you-go, which can become expensive if not managed properly.  
+   Ex: Unused EC2 instance or any other services, or high data transfer, which leads to unexpected bills. No fee for data transfer in, but AWS charges for data transfer out.
+
+2. Internet Dependency: Cloud services require a reliable internet connection.  
+   Impact: No internet = No access to application/data.
+
+3. Security & Privacy risks: Data is stored on third-party infrastructure.  
+   Risks: Data breaches  
+   - Misconfigurations (common issue in real projects)
+
+4. Limited control: You don’t have full control over hardware & infrastructure.  
+   Ex: Cannot access physical servers or customize deeply.
+
+5. Vendor lock-in: Switching between providers is difficult.  
+   Ex: Moving from AWS to another cloud requires redesign and migration effort.
+
+6. Downtime and Outage: Even major cloud providers can have outages.  
+   Impact: Applications may become unavailable temporarily.
+
+7. Compliance challenges: Certain industries require strict data location and security rules.  
+   Ex: Data must stay within a specific country.
+
+8. Performance variability: Shared infrastructure can sometime cause inconsistent performance.
+
+---
+
 ## Deployment model / Different types of cloud:
 
 - Public cloud: If the resources are given to the users, we can use it by creating account in it. Ex: AWS, Azure, GCP.
@@ -142,34 +170,6 @@ IAM is a global service and managed by AWS.
 
 5. High Availability and Disaster Recovery: Check how many Availability zones (AZs) are in the region.  
    Ex: More AZs → better fault tolerance.
-
----
-
-## Disadvantage of cloud computing:
-
-1. Cost uncertainty: Cloud uses pay-as-you-go, which can become expensive if not managed properly.  
-   Ex: Unused EC2 instance or any other services, or high data transfer, which leads to unexpected bills. No fee for data transfer in, but AWS charges for data transfer out.
-
-2. Internet Dependency: Cloud services require a reliable internet connection.  
-   Impact: No internet = No access to application/data.
-
-3. Security & Privacy risks: Data is stored on third-party infrastructure.  
-   Risks: Data breaches  
-   - Misconfigurations (common issue in real projects)
-
-4. Limited control: You don’t have full control over hardware & infrastructure.  
-   Ex: Cannot access physical servers or customize deeply.
-
-5. Vendor lock-in: Switching between providers is difficult.  
-   Ex: Moving from AWS to another cloud requires redesign and migration effort.
-
-6. Downtime and Outage: Even major cloud providers can have outages.  
-   Impact: Applications may become unavailable temporarily.
-
-7. Compliance challenges: Certain industries require strict data location and security rules.  
-   Ex: Data must stay within a specific country.
-
-8. Performance variability: Shared infrastructure can sometime cause inconsistent performance.
 
 ---
 
