@@ -100,6 +100,7 @@
 - Availability zone (AZs): Availability zones are isolated locations within a region, each with its own independent physical infrastructure, designed to be isolated from failures in other availability zones.
 
 Region (Mumbai):
+
         |_ AZ-1
         |_ AZ-2
         |_ AZ-3
