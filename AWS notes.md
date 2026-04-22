@@ -451,3 +451,154 @@ Go to IAM user → user name → Security credentials → Manage console access 
 
 Go to IAM → user groups → Create group →  
 user group name: <Any name> → Add users to the group: If you have created user already, then you can select users, if not leave it as it is → Attach permissions policies: Here you can attach policies upto 10. You can select predefined policies or you can attach the policy created by you → Create user group.
+
+If you go to permission section of group or each user, then you will see “type”, where it shows the type of policy attached.  
+ex: AWS managed  
+    Customer managed  
+
+In the user section, if you click on any user, you see permission policies, there it show Attached via:
+- Directly
+- Group <group name>
+
+---
+
+## IAM Role (creation):
+
+Gives permission for AWS service to access AWS resources.
+
+Ex: Create Amazon linux ec2 & try connecting to S3.  
+→ aws s3 ls  
+
+o/p: Unable to locate credentials. You can configure credentials by running “aws configure”.
+
+So create role to give access.
+
+### Steps:
+Go to IAM → Role → create role → select trusted policy:
+- AWS service (Allow AWS services like EC2, Lambda, or others to perform actions in account)
+- AWS account (Allow entities in other AWS accounts belonging to you or a 3rd party to perform actions in this account)
+- Web identity (If you want to give access to mail accounts like gmail, microsoft then use this)
+- SAML 2.0 federation (Integrating AD (Active directory), if you want to add AD & add some conditions, then you can do it here)
+- Custom policy (If we want to create temp permission with time based then we can do here)
+
+→ currently I will select as “AWS service”  
+→ service on we case: EC2  
+→ permission policies: S3fullaccess  
+→ Next  
+→ Role name: <Any name>
+
+→ Create Role.
+
+Now attach role to EC2 machine:  
+Go to EC2 instance → select instance → Actions → security → Modify IAM Role → select the role from drop down → Update IAM role.
+
+Now you can go ssh & try running the S3 listing command again.  
+→ aws s3 ls  
+
+Now it lists all the S3 bucket.
+
+---
+
+## Different ways of connecting to AWS:
+
+There 3 different ways:
+1) AWS console  
+2) CLI access (AWS CLI)  
+3) SDK  
+
+1) You can login to AWS console with user credentials and MFA (if configured)
+
+2) For CLI access, we need to install AWS CLI and configure the credential and then we can access AWS services and resources.  
+What are all the permission you have in console, you also get it in AWS CLI.
+
+3) SDK is used by developers to access AWS, SDK is programmatic way of accessing AWS. It can be written in python, java, .net  
+This also needs access key to be generated from AWS user/Role section.
+
+---
+
+## AWS CLI:
+
+(AWS command line interface access to AWS)
+
+We can access AWS Services & AWS resources via CLI and manage them. This is useful during automation task.
+
+### Installing AWS CLI:
+
+You can go to AWS documentation for installation steps and there are 3 options:
+- Linux
+- mac OS
+- windows
+
+Linux: You can choose linux if you are using linux instance or else if you’re using git bash on your windows, then also this works. But you need to install unzip first.
+
+macOS: Install aws cli in mac OS
+
+windows: If you want to install aws CLI using windows command prompt.
+
+After installing AWS CLI:  
+```aws --version```
+
+To interact with AWS resources, we need access key & this should be configured in AWS CLI device where it was installed, here username & password doesn’t work.
+
+---
+
+## Steps:
+
+Go to AWS account → IAM → user → <user-name> → Security credentials → create access key → Command line interface (CLI)  
+→ scroll down → Acknowledge → Next → Description tag name: Any name → create access key  
+
+→ Now it show Access key ID & Secret access key → copy those → Done.
+
+Now goto AWS CLI:  
+```aws configure```
+
+o/p: 
+```
+AWS Access key ID (None): paste Access key ID  
+AWS secret access key (None): paste secret access key  
+Default region name (None): us-east-1  
+Default output format (None): json  
+```
+
+→ you can also choose “text” but json is best
+
+```aws s3 ls```
+Now you will be able to list S3 bucket
+
+Ex: For this user I gave S3 & EC2 full access but no IAM access or any other access.
+
+So if you try to list IAM user you get “You are not authorized”  
+```aws iam list-users```
+
+o/p: An error occurred (AccessDenied)
+
+```aws ec2 describe-instances```
+o/p: It shows the info of ec2 instance in json format
+
+---
+
+## AWS CLI config & credential path:
+
+You can see the configuration settings & credentials which are stored in your machine AWS CLI in “.aws” directory.
+
+It is located in home path of your machine.
+
+```
+cd .aws  
+ls  
+```
+o/p: 
+```config   credentials ```   → These are files, not folders
+
+```cat config  ```
+
+o/p:
+```
+[default]
+region = ap-south-1
+output = json
+
+[profile user2]
+region = ap-south-2
+output = json
+```
