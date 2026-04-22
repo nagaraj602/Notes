@@ -536,7 +536,9 @@ macOS: Install aws cli in mac OS
 windows: If you want to install aws CLI using windows command prompt.
 
 After installing AWS CLI:  
-```aws --version```
+```
+aws --version
+```
 
 To interact with AWS resources, we need access key & this should be configured in AWS CLI device where it was installed, here username & password doesn’t work.
 
@@ -550,7 +552,9 @@ Go to AWS account → IAM → user → <user-name> → Security credentials → 
 → Now it show Access key ID & Secret access key → copy those → Done.
 
 Now goto AWS CLI:  
-```aws configure```
+```
+aws configure
+```
 
 o/p: 
 ```
@@ -562,17 +566,23 @@ Default output format (None): json
 
 → you can also choose “text” but json is best
 
-```aws s3 ls```
+```
+aws s3 ls
+```
 Now you will be able to list S3 bucket
 
 Ex: For this user I gave S3 & EC2 full access but no IAM access or any other access.
 
 So if you try to list IAM user you get “You are not authorized”  
-```aws iam list-users```
+```
+aws iam list-users
+```
 
 o/p: An error occurred (AccessDenied)
 
-```aws ec2 describe-instances```
+```
+aws ec2 describe-instances
+```
 o/p: It shows the info of ec2 instance in json format
 
 ---
@@ -588,9 +598,15 @@ cd .aws
 ls  
 ```
 o/p: 
-```config   credentials ```   → These are files, not folders
 
-```cat config  ```
+```
+config   credentials
+```
+→ These are files, not folders
+
+```
+cat config
+```
 
 o/p:
 ```
