@@ -102,10 +102,10 @@
 | Model | You manage | Example |
 |------|-----------|--------|
 | Iaas | OS + Apps | EC2 |
-| Paas | Code only | Google App Engine |
+| Paas | Code only | AWS Elastic Beanstalk, Google App Engine |
 | Saas | Nothing | S3, IAM, Cloudwatch, SNS, Route53, Gmail |
 | Faas | Functions | Lambda |
-| Caas | Containers | Kubernetes, EKS |
+| Caas | Containers | Kubernetes, AWS EKS |
 
 ---
 
