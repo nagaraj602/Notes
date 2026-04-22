@@ -103,7 +103,7 @@
 |------|-----------|--------|
 | Iaas | OS + Apps | EC2 |
 | Paas | Code only | Google App Engine |
-| Saas | Nothing | Gmail |
+| Saas | Nothing | S3, IAM, Cloudwatch, SNS, Route53, Gmail |
 | Faas | Functions | Lambda |
 | Caas | Containers | Kubernetes, EKS |
 
