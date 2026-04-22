@@ -433,11 +433,7 @@ This is applied to all users.
 
 ---
 
-## Changing the password for any user:
-
----
-
-## Revoking AWS console access for any user:
+## Resetting password for any user (password reset) OR Revoking AWS console access for any user:
 
 If we want to revoke AWS console access for any user or if we want that user to change the password on next login,
 
