@@ -232,3 +232,226 @@ It also has option to add Alternate contacts, which can get notification about b
 
 You can add three contacts:
 1. Billing contact
+2) operation contact  
+3) Security contact  
+
+For each of the above contact, you need to fill: Fullname, Title, Email address, Phone number.
+
+The Account page also has option to enable & disable some additional region, that disabled by default. You cannot disable the default regions which are enabled by AWS at the creation of AWS account, such as united states (N. Virginia) etc.
+
+Whenever you see any service as global service, those are hosted in N. Virginia.
+
+You can also enable IAM user and role access to billing information.
+
+---
+
+## Billing and cost management:
+
+### Home:
+- It has cost summary, cost monitor, cost breakdown chart with last 6 months.
+- Also it shows top trends in usage of any service in our account.
+- It also has recommended actions section which shows some of the recommendation tips suggested by AWS.
+
+### Bills:
+- It shows all the billing details for current month.
+- We can also check the bills of previous months.
+- It shows breakdown of each service along with the region and with unit cost.
+- You can also see the invoice & Tax invoice of previous month in the same page.
+- It also shows the charges by Account.
+- If you’re using organization account, then it shows the billing of each account in the Bills section.
+- It do not only shows total billing per account, it has drop down for each account number, so that we can see breakdown of each service per each region.
+- You can also down these bills using one click button.
+- This is different from invoice. Invoice is generated only after payment is done, while you can download bills to get approval from your company.
+
+### Payments:
+- Here you will be adding billing address and payment information like credit card, Paypal or UPI and process the payment.
+
+AWS won’t charge your account automatically. You need to manually process the payment. If payment is not done, then AWS will suspend the account.
+
+You down all the invoice from Transaction section in the Payment page.
+
+---
+
+## Budgets:
+
+If you want to set budget and if the cost exceeds the set threshold value, then we get alert via email and we can then act accordingly.
+
+Go to Billing and cost management → Budgets → create budget → select suitable options like:
+- zero spend budgets
+- Monthly cost budgets
+- Daily Savings Plans coverage budget
+- Daily reservation Utilization budget
+
+any name → Enter your budgeted amount → Email recipients: Add email addresses by separating with commas → Create budget.
+
+Once budget is created, you can select that budget → Action → Edit  
+→ you can set period:
+- Daily
+- Monthly
+- Yearly
+- Quarterly
+- Custom
+
+→ Budget renewal type:
+- Recurring budget
+- Expiring budget
+
+→ Start month & year → Enter budget amount ($): 1 → Budget scope:
+- All AWS service
+- Filter specific AWS cost dimensions
+
+→ Next → You can set threshold = 0.01
+
+→ different alert type:
+- email
+- SNS (SMS to your phone)
+
+→ Next → Review → save.
+
+Here we can set budget as 1$ for free account and we can set threshold as 0.01, so that when free tier cross 0.01, it triggers alerts.
+
+Budget: The total amount we have as amount. Ex: 100$  
+Threshold: A minimum value to which alert should trigger, so that we can manage our service & optimize the service to keep cost below budget. We can set threshold $50.
+
+---
+
+## Pricing calculator:
+
+We can select the services and get the estimate for your project based on each service with multiple regions.
+
+You can choose each and every details.
+
+Ex: In S3 bucket, you can choose regions, S3 class type, put, get threshold, amount of storage in GB, data transfer values etc.
+
+---
+
+## Security credentials:
+
+Go to AWS account top-right corner → security credentials. This option is for AWS root account.
+
+Here you can set password for your account or set MFA device for your account or you can set access key (which you can use for accessing AWS CLI).
+
+### MFA: (Multi Factor authentication)
+Already AWS have security layer like, user credential is passed during logging in. To add one more layer of security to the account, we use MFA. We get OTP to enter & then we can login to account.
+
+We can set multiple MFA device:
+- Passkey or security key
+- Authenticator app
+- Hardware TOTP tokens (generated from hardware TOTP which is generated from satellite)
+
+### Setup:
+Go to AWS account top right corner → Security credentials → MFA device → Device Name: <Any name> → MFA device:
+- Passkey or security key
+- Authenticator app
+- Hardware TOTP Token
+
+→ Next → Show QR code → Enter 2 codes → Add MFA device.
+
+If MFA code is not working you can Resync the server in this page.
+
+---
+
+## Cloudshell:
+
+You can see the option in AWS console at the top-right & bottom left with the symbol: >_
+
+It is region specific service.
+
+AWS cloudshell is browser-based terminal available directly inside the AWS management console.
+
+### Key points:
+- Runs in your browser (no setup needed)
+- Comes pre-installed with AWS CLI, Git, python, etc.
+- Automatically uses your login AWS credentials
+- Temporary environments
+
+It comes with 4GB RAM, 2 CPU, 16GB storage. Amazon linux OS.
+
+---
+
+## AWS support center:
+
+If you want to get help related account related issue, billing related issue, service related issue, then we can go to support center & create a case and then get help.
+
+You need to purchase support plan to get technical assistance.
+
+There are 4 plans:
+1) Basic support: Account related & billing related case. Free plan. Connected in 24 hour via email/web.  
+2) Business support: Paid plan. You get assistance including technical assistance & connect with support in <30 minutes.  
+3) Enterprise support: Paid plan. Same as Business support but connect with agent in <15 minutes.  
+4) Unified operations: Paid plan: This is for mission critical workload. Connect with agent in 5 minutes.
+
+---
+
+## AWS console Home:
+
+You can add widgets, so that you can see the shortcut for any of the option/tab you want to see.
+
+imp: Add AWS Health, AWS blog post, Latest announcement.
+
+---
+
+## IAM:
+
+IAM: Identity and access management: IAM has two parts: Authentication and authorization. IAM is used to control who can access what resources and what actions they can perform.
+
+IAM is global service, hosted in N. Virginia & managed by AWS.
+
+- IAM user: IAM user is an individual identity created in AWS for a specific person.
+- IAM user group: IAM user group is a collection of IAM users where we can attach policies to the group which will be inherited by users.
+- IAM Role: IAM Role is an identity with temporary permissions that can be assumed. No permanent credentials. Used by AWS service like EC2, Lambda, etc.
+
+---
+
+## IAM user creation:
+
+Go to IAM → users → Create user → Enter username  
+→ (here you can give console access, if not we can create user & then attach policy to it)  
+→ provide user access to the AWS management console → I want to create an IAM user → Next  
+→ Console password: set autogenerated password or select custom password  
+→ (check or uncheck): users must create a new password at next sign-in  
+→ next → Permissions options:
+
+- Add user to group (If there is any existing group, then add user to it)
+- Copy permissions (If there is any user with the exact permission, then select this)
+- Attach policy directly (attaching policy listed in policy section)
+
+→ I will select Attach policy directly → Here you have option to select policy from predefined policies or else you get option to create custom policy → I select predefined policy, S3 full access → Next → Create user →
+
+It shows console URL, username & password. We can download these in CSV file.
+
+---
+
+## IAM password policy:
+
+We can create our own password policy or follow the predefined password policy mentioned by AWS.
+
+Go to IAM → Account settings → Password policy → Edit → custom  
+→ select the ones which you want → save changes.
+
+This is applied to all users.
+
+---
+
+## Changing the password for any user:
+
+---
+
+## Revoking AWS console access for any user:
+
+If we want to revoke AWS console access for any user or if we want that user to change the password on next login,
+
+Go to IAM: user → user name → Security credentials  
+→ Manage console access → Disable console access → Revoke active console sessions → Disable access.
+
+We can also reset password from the same above options.
+
+Go to IAM user → user name → Security credentials → Manage console access → Reset password → Auto generated/custom  
+→ user must create new password on next-sign-in → Reset password.
+
+---
+
+## Creating user groups:
+
+Go to IAM → user groups → Create group →  
+user group name: <Any name> → Add users to the group: If you have created user already, then you can select users, if not leave it as it is → Attach permissions policies: Here you can attach policies upto 10. You can select predefined policies or you can attach the policy created by you → Create user group.
