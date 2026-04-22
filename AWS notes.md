@@ -143,6 +143,22 @@ Region (Mumbai):
 
 ---
 
+### Key features of an edge location:
+
+1. Proximity: Edge locations are closer to users, reducing latency and improving performance.
+2. Caching: Edge locations cache content, reducing the need for repeated requests to origin servers.
+3. Content delivery: Edge locations deliver content directly to users, bypassing origin servers.
+4. Security: Edge locations provide security features like SSL encryption and DDoS protection.
+5. Low latency: Edge locations reduce latency, improving user experience and real-time applications.
+6. High availability: Edge locations ensure high availability and redundancy, minimizing downtime.
+7. Scalability: Edge locations can handle large volumes of traffic and scale with demand.
+8. Real-time analytics: Edge locations provide real-time analytics and insights into user behavior.
+9. Content optimization: Edge locations optimize content for different devices and networks.
+10. Integration: Edge locations integrate with other cloud services and CDNs for a comprehensive solution.
+
+
+---
+
 ## IAM: Identity and access management
 
 IAM has two parts: Authentication and authorization.
