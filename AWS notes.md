@@ -618,3 +618,69 @@ output = json
 region = ap-south-2
 output = json
 ```
+
+```
+cat credentials
+```
+
+o/p:
+```
+[default]
+aws_access_key_id = AKIAT121GHSERTDOB07
+aws_secret_key = K8O+glue1pul9BNxdMKGwCCPJVFCG1c5w5xnNf1bwxe
+
+[user2]
+aws_access_key_id = AKIAT121GHSERTO5SPN5V6
+aws_secret_key = -----
+```
+
+
+If you’re handing over your PC to another person or if you are returning your PC to IT team & getting new one, then you should delete these credentials, as this is stored plain text.
+
+---
+
+## Scenario:
+
+In your organization, there will be multiple environment like dev, testing, production. So in each environment you will have different access key, so if we just use “aws configure” in our aws cli machine, it overlaps with the existing one & previous one will no longer available. To avoid that, we use profile in aws cli.
+
+→ aws configure  
+
+o/p:
+```
+AWS Access key ID [***********OB07]: paste access key ID  
+AWS secret access key [************towx]: paste secret access key  
+Default region name [ap-south-1]: us-east-1  
+Default output format [json]: json  
+```
+So here, it is overwriting old credential with new one.
+
+To avoid overwriting follow below step:
+
+```
+aws configure --profile ArtisanTek
+```
+
+o/p:
+AWS Access key ID [None]: paste access key ID  
+AWS secret access key [None]: paste secret access key  
+Default region name [None]: ap-south-1  
+Default output format [None]: json  
+
+→ aws iam list-users --profile ArtisanTek  
+o/p: It shows accessdenied as we didn’t give permission for this user.
+
+Now, if you want to check the default user or the current user which is active for accessing any resource, use STS.
+
+```
+aws sts get-caller-identity
+```
+
+o/p:
+```
+{
+"UserId": "AIDAT121GHSDFJXM7EFJ",
+"Account": "225100968420",
+"Arn": "arn:aws:iam::225100968420:user/ArtisanTek"
+}
+```
+
