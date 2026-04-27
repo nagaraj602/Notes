@@ -400,6 +400,7 @@ IAM is global service, hosted in N. Virginia & managed by AWS.
 - IAM user: IAM user is an individual identity created in AWS for a specific person.
 - IAM user group: IAM user group is a collection of IAM users where we can attach policies to the group which will be inherited by users.
 - IAM Role: IAM Role is an identity with temporary permissions that can be assumed. No permanent credentials. Used by AWS service like EC2, Lambda, etc.
+
   IMP: Cannot attach multiple roles to instance. Only single role to instance.
 
 ---
