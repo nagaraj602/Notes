@@ -2003,3 +2003,810 @@ Then use:
 • Amazon EBS (block storage)
 • Amazon S3 (object storage)
 
+# Persistent storage
+-> This is attached via NAS (Network Attached Storage)  
+We attach EBS volume & it stays even if we shutdown & start server. Even if the instance server changes, the storage remain. When another EC2 instance get started, the NAS EBS will be attached again.
+
+---
+
+# EC2 instance types
+Go to AWS -> EC2 -> Instance type -> Search for requirement template.
+
+## 1) General purpose
+General purpose instances provide a balance of compute, memory and networking resources and can be used for many workloads. These instances are good for applications such as webservers, code repositories, and small-to-medium databases.
+
+It has T series & M series.
+
+### M series (M7g, M6i, M5)
+Balanced resources, good for small to medium database, enterprise applications, webservers and development/testing environments.  
+M7g -> M - family  
+7 -> 7th generation  
+g -> graviton processor
+
+### T series (T4g, T3, T2)
+Burstable performance instances. They provide a baseline CPU performance with the ability to “burst” above the baseline when needed (using CPU credits).  
+Ideal for applications with variable or low-to-moderate CPU usage, such as small web servers, microservices, development environment and CI/CD pipelines.
+
+As per studies, T series is used for development & testing works in organization.  
+M series is used for production works in organization.
+
+---
+
+## 2) Compute optimized
+Compute optimized instances are ideal for compute bound applications that benefit from high-performance processors. Some examples of workloads for compute instances are batch processing, media transcoding, and dedicated game servers.
+
+It has C series.  
+use case: Batch processing, gaming servers, machine learning inference.
+
+---
+
+## 3) Memory optimized
+Memory optimized instances are designed to deliver fast performance for workloads that process large data sets in memory. For example, these instances are good for in-memory databases, data analytics and enterprise applications.
+
+It has R series (R8g, R7g, R6g, R5)  
+X series (X2gd, X1e)  
+Z series (Z1d series)
+
+use case example: Data warehouse application (we need fast processing), high-performance databases, big data analytics, real-time processing.
+
+-> instance storage  
+This is extra instance storage provided. Ephemeral storage  
+-> It is different from EBS  
+Speed is very high. It is NVMe SSD (weather forecast application)
+
+---
+
+## 4) Storage optimized
+Storage optimized instances deliver millions of low-latency, random I/O operations per second to applications.
+
+They are designed for workloads that require high, sequential read and write access to very large data sets on local storage. For example, they’re good for high-throughput databases, data processing and data streaming.
+
+It has I, D, H series.
+
+- I series (I4i, I3en, I3)  
+- D series (D3en, D2)  
+- H1 series  
+
+This can be used for Big data application (Instagram), log processing.
+
+---
+
+## 5) Accelerated Computing Instances (GPU)
+Accelerated computing instances use hardware accelerators (co-processors) to perform functions more efficiently. For example, they can perform floating point number calculations, graphics processing, or data pattern matching.
+
+Specialized hardware like GPUs or FPGAs for faster processing.
+
+It has P series (P3)  
+G series (G4)  
+F series (F1)
+
+use case: Machine learning, graphics rendering, scientific simulations.
+
+---
+
+## 6) HPC optimized
+High performance computing (HPC) instances offer the best price performance for running HPC workloads at scale. HPC instances are ideal for applications that benefit from high-performance processors such as complex simulations, deep learning and visual effects rendering.
+
+It has:
+- HPC8a series  
+- HPC7a series  
+- HPC7g series  
+- HPC6id series  
+- HPC6a series  
+
+i - intel  
+a - amd  
+g - graviton  
+d - instance storage (ephemeral storage) -> It has very high speed & cost is very high. It has NVMe SSD.
+
+We can also attach EBS. EBS & instance storage are different.
+
+---
+
+# AMI: Amazon Machine Image
+AMI is an image that provides the software that is required to set up and boot an EC2 instance.
+
+Definition: AMI is a template containing OS, software configuration used to launch EC2 instance. Each AMI also contains a block device mapping that specifies the block devices to attach to the instance that you launch.
+
+You can use an AMI provided by AWS, a public AMI, an AMI that someone else shared with you, or an AMI that you purchased from the AWS marketplace.
+
+An AMI is specific to the following:
+- Region  
+- Operating System  
+- Processor architecture  
+- Root volume Type  
+- Virtualization Type  
+
+You can launch multiple instances from a single AMI when you require multiple instances with same configuration.
+
+You can copy an AMI to another AWS region, and then use it to launch instances in that region. You can also share an AMI that you created with other accounts so that they can launch instances with the same configuration. You can sell your AMI using the AWS Marketplace.
+
+Go to EC2 -> Launch Instance -> Quick start: Select AMI or click on Browse AMI.
+
+When you Browse AMI, you can select AMI from Quick start AMI or My AMI (AMI created by you), OR AWS Marketplace AMI or Community AMI.
+
+## AWS Marketplace AMI
+Here you see AMI given by different organization with paid AMI. They have custom softwares installed in it.
+
+## Community AMI
+These are created by community & anyone can use it for free & we cannot guarantee the security of it.
+
+## Gold AMI
+Gold AMI is a pre-built, standardized, and fully configured AMI used as a base image for launching EC2 instances in production.
+
+- Tested  
+- Secure  
+- Standardized  
+- Approved for production  
+
+used in:
+- Auto scaling group  
+- CI/CD pipelines  
+- Disaster recovery  
+
+---
+
+# Creating AMI
+Go to EC2 -> Instance -> Select instance -> Actions -> Image and templates -> Create Image -> Image Name: Any name
+
+No Reboot [✓ Enable]  
+(If you enable No reboot, then EC2 instance won’t reboot during AMI creation, as disabling it will reboot instance & everything in production will stop. But if you want to stop writing any file by any process during AMI creation, then disable No reboot.)
+
+-> Size: You can set the default or increase the size  
+✓ Delete on termination (If you don’t want to delete EBS volume attached to instance during instance termination, then disable this option)
+
+-> Add Volume (If you want to include additional EBS volume attached to instance, then you can select here)
+
+-> Tag image & snapshot together
+
+-> Create image
+
+It takes time depending on the instance size.
+
+Once AMI Generated, you can click on “Launch instance from AMI” & select the configuration like instance type, security group, etc & you can enter number of instances you want to launch & launch instance.
+
+By default AMI created by us are kept as private.
+
+You can edit permission by going to AMI -> Select AMI ID -> Permissions -> Edit permission -> Set as public or private.
+
+In the same page you can also get option to share AMI with different AWS account or with organization.
+
+---
+
+# Disable AMI
+If you want to disable AMI from using it in future you can do here.  
+AMI -> select AMI -> Actions -> Disable AMI.
+
+---
+
+# Deregister AMI
+If you want to delete AMI, then you can use this.  
+AMI -> Select AMI -> Actions -> Deregister AMI -> You can also select to delete snapshot -> Deregister.
+
+---
+
+# Snapshot
+A backup of your disk (volume) at a specific point in time. It is incremental backup. If 1 snapshot had 2GB & next day take snapshot again it has 3GB. Now it won’t take total of 5GB, it takes only 3GB.
+
+---
+
+# AMI vs Snapshot
+
+## AMI
+1) Creates image of entire instance. Includes all attached volumes & instance configuration  
+2) Used for launching new EC2 instances or scaling environments  
+3) You can launch a server directly from an AMI  
+4) Contains snapshots + metadata (OS, permissions, block device mapping)  
+5) Billed for the underlying snapshots and storage used  
+
+## Snapshot
+1) Takes backup of single volume. Only backs up the data on one specific EBS volume  
+2) Used for backing up specific data (like database) for later restoration  
+3) You must first create an AMI from the snapshot or attach it to a running instance  
+4) Raw block level data of the volume  
+5) Billed incrementally based on changed data blocks  
+
+---
+
+# Status Checks in AWS instance
+It indicates that both automated health tests performed by AWS on your instances have passed.
+
+## 1) System status check
+Monitors the physical host and underlying AWS infrastructure (e.g., hardware, power, network connectivity). A failure here usually requires AWS intervention or a stop and start of the instance to migrate it to a new physical host.
+
+## 2) Instance status check
+Monitors the software and network configuration of the individual instance (e.g., OS boot, file system integrity, network reachability). A failure here typically require user action, such as reboot or configuration fix.
+
+---
+
+# Types of Storages
+1) DAS -> Direct attached storage  
+2) NAS -> Network attached storage  
+3) SAN -> Storage area network  
+
+---
+
+# Storage levels
+In computing, storage level mean how data is structured (block, file, object). It is decided based on file organization & metadata storing.
+
+## 1) File level storage
+The files stored in file level storage is stored in the form of hierarchy, which is top-bottom hierarchy.
+
+It is stored as directories -> subdirectories -> file.
+
+Here metadata is stored partially. These storages are not bootable devices.
+
+Ex: linux file storage  
+
+root  
+|-- bin  
+|-- home  
+|-- tmp  
+|-- usr  
+
+bash  
+
+Here it doesn’t store complete metadata.
+
+Metadata: Name, author, date, permission etc.
+
+In AWS we have two types of File level storage available in AWS:
+1) EFS -> for linux  
+2) FSx -> for windows  
+
+---
+
+## 2) Block level storage (EBS)
+It is a data storage architecture that divides data into fixed-size independent chunks, called blocks, each with a unique identifier. It doesn’t store metadata, instead it remembers the index value of each chunk block.
+
+like it divides it into 4kb or 16kb or 32kb  
+1024 / 16 = These many number of blocks are created.
+
+---
+
+## 3) Object level storage (S3)
+It stores data as objects (files + metadata) within containers called buckets, enabling cost-effective data lakes, backups and cloud native application storage.
+
+This is not used as bootable devices. While EFS doesn’t store full metadata but S3 stores full metadata.
+
+In object level storage there is no hierarchical structure, it will be in the flat structure. All data will be stored in same level.
+Same as a block level storage, the total data is divided into small chunks and stored in data blocks. But each block will have its own container. Even if we add subfolders like a/b/c1/file.txt everything will be stored flat structure, instead of hierarchy. We are unable to attach any object level storage to any EC2 instance. It has to be accessed directly from S3. You can access the data by just using URL.
+
+---
+
+# Difference between File level storage (EFS), Block level storage (EBS), Object level storage (S3)
+
+## EFS
+1) Provides file-level storage where data is organized in files and directories like a traditional file system.  
+2) It can be mounted simultaneously on multiple EC2 instances, enabling shared access.  
+3) Mounted on EC2 instance using the NFS (Network file system) protocol, allowing standard file system operations.  
+4) Automatically scales up & down based on the amount of data stored.  
+5) Performance: Provides low latency with shared throughput, suitable for distributed workloads.  
+6) Designed for shared access across multiple instances in real time.  
+7) Fully persistent & automatically replicated across multiple AZs (Availability Zone).  
+8) Used for shared file systems, content management systems and analytics workloads.  
+9) Data is automatically replicated; AWS Backup can also be used.  
+10) Uses NFS (Network file system) protocol  
+11) Designed to work across multiple AZs within a region.
+
+---
+
+## EBS
+1) Provides block-level storage, where data is stored in fixed-size blocks similar to a physical hard disk.  
+2) Typically attached to one EC2 instance at a time (except multi-attach in specific cases).  
+3) Attached to an EC2 instance and accessed as a mounted disk (e.g., /dev/xvda) using the OS file system.  
+4) Storage size must be manually provisioned and resized when needed.  
+5) Offers very low latency and high IOPS, suitable for performance critical applications.  
+6) Not designed for sharing, primarily used by a single instance.  
+7) Data persists independently of the instance lifecycle & remains until explicitly deleted.  
+8) Used for databases, boot volumes, and transactional applications requiring low latency.  
+9) Uses Snapshots for backup & recovery.  
+10) Uses block device interface managed by the Operating System.  
+11) Limited to a single Availability Zone (AZ).
+
+---
+
+## S3
+1) Provides object-level storage, where data is stored as objects with metadata and unique keys.  
+2) Not attached to instance, it is a centralized storage service accessible from anywhere.  
+3) Accessed via HTTP/HTTPS APIs, AWS CLI, or SDKs, not mounted as a traditional file system by default.  
+4) Provides virtually unlimited scalability without any intervention.  
+5) Has higher latency compared to EBS/EFS, optimized for durability and large scale access rather than real-time performance.  
+6) Data can be accessed by multiple systems globally but not mounted shared file system.  
+7) Highly durable and persistent with 99.999999999% (11 9’s) durability.  
+8) Used for backups, logs, media storage, data lakes, and static website hosting.  
+9) Built-in features like versioning, lifecycle policies, and replication for backup & recovery.  
+10) Uses RESTful APIs over HTTP/HTTPS.  
+11) Globally accessible service across regions (with replication option).
+
+---
+
+# EBS volume Types
+EBS volume has 2 types SSD & HDD & then they are again categorised into many types.
+
+Throughput = Block size × IOPS  
+16kb × 100 IOPS = 1600 = 1.6 mb/s → read & write speed.
+
+---
+
+## EBS
+### SSD
+
+#### General purpose
+GP2  
+min IOPS = 100 IOPS  
+max IOPS = 16000 IOPS  
+3 IOPS/GB  
+But till 33GB, it will be 100 IOPS
+
+GP3  
+min = 3000 IOPS  
+max = 16000 IOPS  
+500 IOPS/GB
+
+---
+
+### Provisioned IOPS
+io1  
+io2 Block express
+
+---
+
+## HDD
+Throughput optimized → st1  
+Cold HDD → sc1
+
+---
+
+# General purpose SSD (gp2)
+Balanced performance and cost for general-purpose workloads.
+
+- Volume size - 1 GiB to 16 TiB  
+- IOPS (Input outputs) - Minimum 100 IOPS  
+  Maximum 16000 IOPS (16KB IOPS)  
+- Baseline - 3 IOPS per GiB (from 33.33GiB & above while minimum of 100 IOPS for 33.33GiB & below)  
+So if you're allocating 25GB then you'll get 100IOPS by default  
+Only if it is 34GB then it is calculated based on 3IOPS/GB. (Here we are calculating throughput)
+
+- Throughput - Max throughput 250 MiB/s.  
+(Min is calculated based on the size of the SSD & IOPS)
+
+- Amazon EBS multi-attach is not supported.  
+- NVMe reservation not supported.
+
+---
+
+# General purpose SSD (gp3)
+Higher performance & cost-effective for general-purpose workloads.
+
+- Volume size : 1 GiB to 64 TiB  
+- IOPS - Minimum 3000 IOPS  
+  Maximum 80000 IOPS  
+- Baseline - 500 IOPS per GiB  
+
+- Throughput - Minimum - 125 MiB/s  
+  Max - 2000 MiB/s  
+
+- Amazon EBS multi-attach is not supported.  
+- NVMe reservation not supported.
+
+---
+
+# Provisioned IOPS SSD (io1)
+High performance storage for mission-critical workloads.
+
+- Volume size : 4 GiB - 16 TiB  
+
+- IOPS - Minimum 100 IOPS  
+  Maximum 64000 IOPS (16 KB IOPS)  
+
+- Baseline - 50 IOPS per GiB  
+
+- Throughput - Max - 1000 MiB/s  
+
+- Amazon EBS multi-attach is supported as it uses nitro-based instance.  
+
+- NVMe reservation not supported.
+
+---
+
+# Provisioned IOPS SSD (io2 Block express)
+Higher performance and durability for mission-critical workloads.
+
+- Volume size : 4 GiB - 64 TiB  
+
+- IOPS - Minimum 100 IOPS  
+  Max 256,000 IOPS (16 KB I/O)  
+
+- Baseline - 1000 IOPS per GiB  
+
+- Throughput - Max 4000 MiB/s  
+
+- Amazon EBS multi-attach is supported as it is nitro-based instance.  
+
+- NVMe reservation is supported
+
+---
+
+# Throughput optimized HDD volume (st1)
+Low-cost storage for frequently accessed data.
+
+- Volume size - 125 GiB - 16 TiB  
+- Max IOPS per volume (1 MiB I/O) - 500 IOPS  
+- Max throughput per volume - 500 MiB/s  
+- Amazon EBS multi-attach not supported.  
+- Boot volume not supported.
+
+---
+
+# Cold HDD volume (sc1)
+Low cost storage for infrequently accessed data.
+
+- Volume size - 125 GiB - 16 TiB  
+- Max IOPS per volume (1 MiB I/O) - 250 IOPS  
+
+- Max throughput per volume - 250 MiB/s  
+
+- Amazon EBS multi-attach not supported.  
+- Boot volume not supported.
+
+---
+
+# Standard / Magnetic storage
+Workloads where data is infrequently accessed
+
+- Volume size - 1 GiB - 1 TiB  
+- Max IOPS per volume - 40-200 IOPS  
+- Max throughput per volume - 40 - 90 MiB/s  
+- Boot volume supported.
+
+---
+
+# Cheapest EBS volume & Expensive EBS volume
+Cheapest EBS volume is SC1 (Cold HDD)  
+Expensive EBS volume is provisioned IOPS SSD (io1 & io2)
+
+SC1 < st1 < gp3 < gp2 < io2/io1
+
+---
+
+# Use case of gp2 & gp3
+- Transactional workload  
+- Virtual desktops  
+- Medium-sized, single instance database  
+- Low latency interactive applications  
+- Boot volume  
+- Development and test environments  
+
+---
+
+# Attaching a new EBS volume (without stopping & restarting server)
+
+Go to AWS -> EC2 -> Volume -> Create volume -> Select the EBS type: gp3 -> select the required IOPS & throughput -> Availability Zone's since EBS is AZ specific, you need to select the AZ depending on the instance AZ -> Encryption: You can enable encryption for EBS -> Create Volume.
+
+Login to the EC2 instance & try listing the volume & you don't see it, as it is not attached to the instance from AWS Dashboard.  
+-> df -Th  
+
+---
+
+# Attach volume
+lsblk -> list block devices.
+
+Go to AWS -> EC2 -> instance -> select instance -> Actions -> Storage -> Attach volume.
+
+OR
+
+Go to EC2 -> Volume -> select volume -> Actions -> Attach volume -> select the instance ID -> Device name : /dev/sdb -> /dev/sdb -> /dev/xvda
+
+attach volume.
+
+Now go to your instance SSH terminal, try fetching the volume.  
+-> df -Th -> But doesn't show the device  
+
+-> lsblk  
+Now it shows the device, but in unmounted state.
+
+---
+
+You can choose different file system for the device before mounting.  
+It is needed for the OS to work with this device. There are 3 types of file system for Linux: xfs, ext3, ext4  
+
+windows: FAT32, NTFS, exFAT  
+
+Mac: APFS (new), HFS+ (older Mac)
+
+---
+
+To check the file system of any device,  
+-> sudo file -s /dev/xvdb  
+
+It shows the filesystem the device is using.
+
+---
+
+create file system for the newly attached EBS volume  
+-> sudo mkfs -t xfs /dev/xvdc  
+
+OR  
+-> sudo mkfs -t ext4 /dev/xvdc  
+
+---
+
+Now we need to mount any directory to the new device so that we can use it. So first create a directory.
+
+-> sudo mkdir /demo  
+
+-> mount /dev/xvdc /demo
+
+Now if you see it, in df -Th, it shows as mounted  
+-> df -Th  
+
+-> cd demo  
+-> touch test.txt  
+-> echo "Hello" >> test.txt  
+
+Now it gets saved in the newly attached disk.
+
+Once attaching is done, we need to make it persistent, so that whenever the system reboots, it stays mounted.  
+We need to add entry in /etc/fstab  
+
+You can add it in 2 form,  
+1) by getting UUID  
+2) by specifying device name  
+
+You can get UUID from this command,  
+-> sudo blkid /dev/xvdc  
+
+-> sudo vi /etc/fstab  
+
+->>  
+UUID=a1234566789 10f847894 /demo xfs defaults,nofail  
+:wq  
+
+OR  
+
+-> sudo vi /etc/fstab  
+
+->>  
+/dev/xvdc /demo xfs defaults,nofail  
+:wq  
+
+---
+
+# Snapshots
+A backup of the EBS volume at a specific point in time.  
+Snapshots takes incremental copy. When you created a snapshot of volume containing 2GB, & then 3GB more content is added in your volume. If you take the snapshot, it won’t store as 5GB, instead it stores only 3GB as seperate. That is, it won’t consider 2GB backup while taking backup of 3GB.
+
+---
+
+# Creating volumes in different AZs using snapshot
+Once snapshot is created, select the snapshot -> Actions -> Create volume -> Volume Type: gp3 -> Size: 8 GB -> IOPS: 3000 -> Availability zone: You need to select the correct AZ where your another instance is present -> Create volume.
+
+Once volume is created, select the volume id -> Actions -> Attach -> select the instance you want to attach it to -> Attach volume.
+
+Now login to EC2 instance -> SSH -> Now you don’t need to create file system for this volume, as it was done already -> create directory and mount the volume to that directory that’s it.
+
+-> lsblk  
+-> df -Th  
+
+-> sudo mkdir /test  
+-> sudo mount /dev/xvdd /test  
+
+-> cd /test  
+-> ls  
+
+Now you will see the file you saved previously in demo folder in previous volume that you created.
+
+---
+
+# EC2 purchasing options
+
+## 1) On-demand instance
+It lets you pay for compute capacity by the hour or second (minimum of 60 sec) with no-long-term commitments. This frees you from the costs and complexities of planning, purchasing and maintaining hardware and transforms what are commonly large fixed costs into much smaller variable costs.
+
+How it works:
+- Pay per second (Linux) or per hour (Windows)  
+- No long-term commitments  
+
+Pros:
+- maximum flexibility  
+- No upfront cost  
+- Ideal for testing, dev or sudden traffic spikes  
+
+Cons:
+- Most expensive option over time  
+
+---
+
+## 2) Spot request instance
+With spot instances, you pay the spot price that’s in effect for the time period your instances are running. Spot instance prices are set by Amazon EC2 and adjust gradually based on long-term trends in supply and demand for spare instance capacity.
+
+With spot instances, you can use spare/unused Amazon EC2 capacity in AWS Cloud. This capacity is available at a discount of upto 90% compared to on-demand prices.
+
+Basically, we bid for the price & whoever bids more, the instance is given to them. Here we cannot guarantee that the instance will be always available to us as if in case someone bids more, then AWS will give 2 minute window period & the instance will be gone.
+
+How it works:
+- Use unused AWS capacity at huge discount (up to 90%)  
+- AWS can terminate instance anytime (2 minute warning)  
+
+Pros:
+- Cheapest option  
+- Massive cost savings  
+
+Cons:
+- No reliable (can be interrupted anytime)  
+
+Example:
+- Batch processing  
+- Big data jobs  
+- CI/CD pipeline  
+- Video rendering  
+
+---
+
+## 3) Savings plan
+Savings plans can help you reduce your bill up to 72% compared to on-demand prices in exchange for a usage commitment. Best for flexible long term savings.
+
+How it works:
+- Commit to a fixed $/hour usage for 1 or 3 years.  
+- Automatically apply to usage.  
+
+Types:
+- Compute savings plans -> most flexible (any instance type, region, OS)  
+- EC2 instance savings plans -> Highest savings, less flexible  
+
+Pros:
+- Easier than Reserved Instance, as we just define the hours of usage in 1 or 3 year commitment  
+
+---
+
+In Reserved instance, we don’t define the number of hours we use, but just 1 or 3 year commitment & AWS will charge for entire 1 or 3 year term. While in Savings plans, if we define, we use only for 100 hour in 1 or 3 year commitment, then we are charged only for those hours.
+
+Payment option:
+If you pay upfront, then discount is high, you can also pay partial upfront and no upfront. For no upfront, the discount is less.
+
+- Up to 72% savings  
+- No need to manage specific instances  
+- You can change instance type when needed  
+
+Cons:
+- Still a commitment  
+
+Example:
+- Growing startups  
+- Teams that change instance type frequently  
+
+---
+
+## 4) Reserved instance
+Reserve the instance are best for steady, predictable workloads. Up to 75% savings.
+
+How it works:
+- Commit to 1-year or 3 year usage for specific instance type. You can’t change instance type.  
+
+- Significant discount compared to on-demand, but you can pay upfront, or no upfront or partial upfront. If pay full upfront, then discount is more compared to no-upfront.  
+
+Type:
+- Standard Reserved Instance : Highest discount, less flexible  
+- Convertible Reserved Instance : Lower discount, but can change instance type  
+
+Cons:
+- Commitment required  
+- Harder to change  
+
+Example:
+- Production servers  
+- Databases running 24/7  
+
+---
+
+## 5) Dedicated hosts
+Physical server dedicated to you & you have full control over the hardware. Everything should be managed by you like licenses. Best for compliance, licensing requirements. You get visibility and control over the physical server itself. Full visibility into number of sockets, cores, instance placement.
+
+Pros:
+- Full control over hardware  
+- Required for some software licenses (Mac OS, windows server, oracle)  
+
+Cons:
+- Very expensive  
+- Limited flexibility  
+
+---
+
+## 6) Dedicated instances
+Instances run on hardware dedicated to a single customer but they don’t have control over the hardware. AWS will be managing it for them. (This is not same as VPS)
+
+While dedicated host will give full hardware visibility & placement, the dedicated instance is not visible to us but the instance run on the dedicated hardware which is managed by AWS.
+
+Best for isolation without full host control.
+
+Pro:
+- Less expensive than dedicated host  
+
+Cons:
+- More expensive than standard EC2  
+- Less control than Dedicated host  
+
+---
+
+## 7) Capacity Reservation
+Reserve capacity in a specific AZ, pay even if you don’t use it. It guarantees availability during any urgent need.
+
+Pros:
+- Ensures capacity during high demand  
+
+- We have an application, on some specific day, there is a high spike, during that time, a instance should be available ready at that AZ, so that we can deploy application & bring it up in no time. Sometimes, AWS AZs will have some issues on latency & if we try to launch instance, they might not come up very early. With this plan, our instance is available to us with no time to bring it up.
+
+Cons:
+- No cost discount  
+- You pay whether used or not  
+
+---
+
+# VPS: Virtual private server
+VPS is a virtual machine running on shared physical hardware. Customer will have root access. Multiple customers share the same server, isolation is done via a hypervisor.
+
+It is like, you have laptop & you installed Virtual box & added ubuntu in it. So this is VPS, where if you create another virtual machine with ubuntu, both will not have access to each other.
+
+---
+
+Ex: Digital ocean, Linode, Bluehost, network solutions, Godaddy
+
+# Shared Hosting
+One physical server / hundreds or thousands of websites. All share : CPU, RAM, Disk, OS
+
+What you get:
+- A control panel (like cpanel)  
+- No root access  
+
+Pros:
+- Very cheap  
+- Easy to use  
+
+Cons:
+- Poor performance if others consume resources  
+- Limited control  
+- Security risks (no strong isolation)  
+
+---
+
+# VPC
+Virtual Private cloud : VPC is a secure, isolated environment within the AWS cloud, where we can control our network settings, such as IP address range, subnets, route tables, and firewalls.
+
+By default, it will have /16 IP range (CIDR)
+
+## Subnets
+A subnet is a smaller network within the large network. It is a logical division of an IP network into multiple smaller networks, each with its own unique IP address range.
+
+By default it will have /24 IP range.
+
+2^32-24 = 256 Total IPs 256, But 5 IP will be reserved by AWS.
+
+Ex: 10.0.0.0  
+1 -> Network address - 1 IP (not usable)  
+2 -> VPC router - 1 IP (not usable)  
+3 -> DNS server - 1 IP (not usable)  
+4 -> future purpose - 1 IP (not usable)  
+255 -> network broadcasting - 1 IP (not usable)  
+
+So usable IPs = 256 - 5 = 251.
+
+This is in AWS cloud. But in on-premise, we reserve only 2 IP. 1st & last IP. Networking IP and broadcasting IP.
+
+---
+
+# CIDR (Classless Inter-Domain Routing)
+is method used in networking to allocate IP addresses and define network ranges efficiently.
+
+2^32-n -> n ranges  
+This is for IPv4 as it is 32 bit architecture
+
+/16 -> 2^32-16 = 2^16 = 65,536 -> usable -> 65531  
+
+/24 -> 2^32-24 = 2^8 = 256 -> usable -> 251  
+
+/28 -> 2^32-28 = 2^4 = 16 -> usable -> 11  
+
+Ex:
+VPC -> 10.0.0.0/16  
+subnet -> 10.0.1.0/24
