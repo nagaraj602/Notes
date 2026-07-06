@@ -1,13 +1,11 @@
-# Terraform working directory
+# Terraform working directory (Providers and modules)
 .terraform/
 
-# Terraform state files
+# Terraform state files (Local state)
 *.tfstate
 *.tfstate.*
 
-# Terraform lock file (optional)
-# Keep this if you're working in a team to lock provider versions.
-# Remove the next line if you want to commit it.
+# Terraform lock file (Auto-generated dependency tracker)
 .terraform.lock.hcl
 
 # Variable files containing secrets
