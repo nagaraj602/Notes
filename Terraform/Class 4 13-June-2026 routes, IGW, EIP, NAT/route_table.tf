@@ -19,10 +19,15 @@ resource "aws_route_table_association" "public_rta" {
 
 
 
+
 # Create Private Route Table
 resource "aws_route_table" "private_route_table" {
   vpc_id = aws_vpc.three_tier_vpc.id
- 
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gw.id  #For NAT Gateway, we use nat_gateway_id
+  }
+
   tags = {
     Name = "private-route-table"
   }

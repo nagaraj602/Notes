@@ -2,7 +2,7 @@ resource "aws_instance" "my_Terraform_instance" {
   ami             = "ami-0b6d9d3d33ba97d99"
   instance_type   = "t3.micro"
   key_name        = "nagaraj"
-  security_groups = ["All traffic open"] 
+  security_groups = ["All traffic open"] # Security Groups expects list. For writing multiple Security Group, we can add like this: security_groups = ["All traffic open","endpoint_sg"]
 
   # The volume configurations must go inside a block device
   root_block_device {
