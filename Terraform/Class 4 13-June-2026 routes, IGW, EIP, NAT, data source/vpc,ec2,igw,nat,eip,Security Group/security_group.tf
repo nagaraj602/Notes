@@ -19,4 +19,7 @@ resource "aws_security_group" "allow_port_80" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+  tags = {
+    Name = "allow_port_80"
+  }
 }
