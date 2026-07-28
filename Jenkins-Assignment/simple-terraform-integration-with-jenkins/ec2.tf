@@ -6,4 +6,9 @@ resource "aws_instance" "web_instance" {
  
   # Security groups are passed as a list of IDs
   vpc_security_group_ids = [aws_security_group.allow_port_80_and_22.id]
+
+  tags = {
+    Name = "terraform_EC2"
+  }
+
 }
