@@ -12,7 +12,7 @@ terraform {
 
 
 backend "s3" {
-  bucket = "remote-backend-s3-jan2026-Nagaraj"
+  bucket = "remote-backend-s3-jan2026-Nagaraj-29-07-2026"
   key    = "simple-terraform-Jenkins-pipeline/terraform.tfstate"
   region = "us-east-1"
   use_lockfile = true
