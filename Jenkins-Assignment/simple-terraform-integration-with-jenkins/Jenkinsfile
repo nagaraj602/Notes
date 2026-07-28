@@ -47,6 +47,13 @@ pipeline {
                 }
             }
         }
+        stage('Terraform Destroy') {
+            steps {
+                dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {
+                    sh 'terraform destroy --auto-approve'
+                }
+            }
+        }
     }
     
     post {
