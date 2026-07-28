@@ -18,13 +18,18 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                // dir is jenkins specific function. If you use cd, then it is shell specific, so you have to use: sh 'cd Jenkins-Assignment/simple-terraform-integration-with-jenkins'
+                dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {
+                    sh 'terraform init'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan'
+                dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {
+                    sh 'terraform plan'
+                }
             }
         }
 
@@ -37,7 +42,9 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                sh 'terraform apply --auto-approve'
+                dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {
+                    sh 'terraform apply --auto-approve'
+                }
             }
         }
     }
