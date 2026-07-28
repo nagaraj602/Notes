@@ -20,7 +20,8 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {
-                    sh 'terraform plan'
+                    // Output the plan to a file so the exact same plan is applied later
+                    sh 'terraform plan -out=tfplan'
                 }
             }
         }
@@ -35,7 +36,8 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {
-                    sh 'terraform apply --auto-approve'
+                    // Apply the exact plan generated in the previous stage
+                    sh 'terraform apply --auto-approve tfplan'
                 }
             }
         }
