@@ -1,7 +1,6 @@
 pipeline {
     agent any
 
-    // Inject your cloud credentials securely as environment variables
     environment {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
@@ -9,16 +8,9 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                // Jenkins will automatically pull from the repo this Jenkinsfile is stored in
-                checkout scm
-            }
-        }
 
         stage('Terraform Init') {
             steps {
-                // dir is jenkins specific function. If you use cd, then it is shell specific, so you have to use: sh 'cd Jenkins-Assignment/simple-terraform-integration-with-jenkins'
                 dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {
                     sh 'terraform init'
                 }
@@ -35,7 +27,7 @@ pipeline {
 
         stage('Manual Approval') {
             steps {
-                input message: 'Review the Terraform Plan output above. Do you want to provision this infrastructure?', 
+                input message: 'Review the Terraform Plan output above. Do you want to provision this infrastructure?',
                       ok: 'Yes, Apply'
             }
         }
@@ -47,15 +39,8 @@ pipeline {
                 }
             }
         }
-        stage('Terraform Destroy') {
-            steps {
-                dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {
-                    sh 'terraform destroy --auto-approve'
-                }
-            }
-        }
     }
-    
+
     post {
         always {
             cleanWs()
