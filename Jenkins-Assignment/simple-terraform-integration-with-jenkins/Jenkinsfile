@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+
+    // Inject your cloud credentials securely as environment variables
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                // Jenkins will automatically pull from the repo this Jenkinsfile is stored in
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                sh 'terraform plan'
+            }
+        }
+
+        stage('Manual Approval') {
+            steps {
+                input message: 'Review the Terraform Plan output above. Do you want to provision this infrastructure?', 
+                      ok: 'Yes, Apply'
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                sh 'terraform apply --auto-approve'
+            }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
