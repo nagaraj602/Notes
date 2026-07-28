@@ -10,5 +10,4 @@ resource "aws_instance" "web_instance" {
   tags = {
     Name = "terraform_EC2"
   }
-
 }
