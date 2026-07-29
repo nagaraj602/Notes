@@ -291,7 +291,7 @@ resource "aws_instance" "web_instance" {
 --> :wq  
     
 ### s3-bucket.tf       
-(# Don't include this in github, as this needs to be created first separately, then you can run the rest of the configuration as terraform needs s3 bucket to store state when terraform plan command is run)
+(# Don't include this in github, as this s3 bucket needs to be created first separately, then you can run the rest of the configuration from jenkins, as terraform needs s3 bucket to store state when terraform plan command is run)
 
 
 ```
