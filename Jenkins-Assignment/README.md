@@ -314,14 +314,14 @@ terraform init;terraform plan;terraform apply –auto-approve
   * Go to Jenkins dashboard >> Add new Item >> Pipeline >> Name: simple-terraform-Jenkins-pipeline >> Ok >> Scroll down >> Select: Pipeline script from SCM >> SCM: Git >> Repository URL: [https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git) >> Branch Specifier (blank for 'any'): */main >> Script Path: Jenkins-Assignment/simple-terraform-integration-with-jenkins/Jenkinsfile  >> Save.  
   * Build Now >> Go to Console output >> Review the changes and approve.  
     
-<img width="2041" height="1217" alt="a2" src="https://github.com/user-attachments/assets/769eeb8e-1f13-43cb-af5d-e5cf4291c51d" />
-<img width="2041" height="1214" alt="a1" src="https://github.com/user-attachments/assets/7a9aa90d-10c0-479d-bc75-4474d90e2aeb" />
-<img width="2048" height="1221" alt="9" src="https://github.com/user-attachments/assets/758d09d3-6cac-4826-a5d8-8b7b137eff73" />
-<img width="2048" height="1221" alt="8" src="https://github.com/user-attachments/assets/54eb20c1-07b2-4c1b-9d3e-aec11a4241a1" />
-<img width="2041" height="1217" alt="7" src="https://github.com/user-attachments/assets/d17b012f-f9c2-4f99-ac4c-2dd89db995b3" />
-<img width="2041" height="1217" alt="6" src="https://github.com/user-attachments/assets/7e1c4fd6-a0b0-497d-8c5b-caab651e7378" />
-<img width="2041" height="1217" alt="5" src="https://github.com/user-attachments/assets/09357727-6526-4bad-ad44-237509c1d630" />
-<img width="2041" height="1217" alt="4" src="https://github.com/user-attachments/assets/4ba1b81a-a98f-405a-b722-d7624b0b5dc4" />
-<img width="2041" height="1214" alt="3" src="https://github.com/user-attachments/assets/cff847f1-f158-4520-982a-5adc1bef278c" />
-<img width="2048" height="1221" alt="2" src="https://github.com/user-attachments/assets/037af922-01d3-4d73-b237-3cb75a1959ca" />
 <img width="2048" height="1224" alt="1" src="https://github.com/user-attachments/assets/972f3225-d53b-45eb-9fe3-9056fd80d8ec" />
+<img width="2048" height="1221" alt="2" src="https://github.com/user-attachments/assets/037af922-01d3-4d73-b237-3cb75a1959ca" />
+<img width="2041" height="1214" alt="3" src="https://github.com/user-attachments/assets/cff847f1-f158-452a-b722-d7624b0b5dc4" />
+<img width="2041" height="1217" alt="4" src="https://github.com/user-attachments/assets/4ba1b81a-a98f-405a-b722-d7624b0b5dc4" />
+<img width="2041" height="1217" alt="5" src="https://github.com/user-attachments/assets/09357727-6526-4bad-ad44-237509c1d630" />
+<img width="2041" height="1217" alt="6" src="https://github.com/user-attachments/assets/7e1c4fd6-a0b0-497d-8c5b-caab651e7378" />
+<img width="2041" height="1217" alt="7" src="https://github.com/user-attachments/assets/d17b012f-f9c2-4f99-ac4c-2dd89db995b3" />
+<img width="2048" height="1221" alt="8" src="https://github.com/user-attachments/assets/54eb20c1-07b2-4c1b-9d3e-aec11a4241a1" />
+<img width="2048" height="1221" alt="9" src="https://github.com/user-attachments/assets/758d09d3-6cac-4826-a5d8-8b7b137eff73" />
+<img width="2041" height="1214" alt="a1" src="https://github.com/user-attachments/assets/7a9aa90d-10c0-479d-bc75-4474d90e2aeb" />
+<img width="2041" height="1217" alt="a2" src="https://github.com/user-attachments/assets/769eeb8e-1f13-43cb-af5d-e5cf4291c51d" />
