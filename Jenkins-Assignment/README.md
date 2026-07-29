@@ -7,7 +7,7 @@ Ans:
 
   Here is the each and every file content:
 
-*  vi Jenkinsfile
+-->  vi Jenkinsfile
 ```
 pipeline {  
     agent any
@@ -61,8 +61,8 @@ pipeline {
     }  
 }
 ```
-* :wq  
-* vi provider.tf
+--> :wq  
+--> vi provider.tf
 
 
 ```  
@@ -87,10 +87,10 @@ provider "aws" {
   region \= "us-east-1"  
 }
 ```
-* :wq
+--> :wq
 
 
-* vi vpc.tf
+--> vi vpc.tf
 ```
 resource "aws\_vpc" "three\_tier\_vpc" {  
   cidr\_block \= "10.0.0.0/16"  
@@ -102,10 +102,10 @@ resource "aws\_vpc" "three\_tier\_vpc" {
   }  
 }
 ```
-* :wq
+--> :wq
 
 
-* vi subnet.tf
+--> vi subnet.tf
 ```
 \# Public Subnet  
 resource "aws\_subnet" "public\_subnet\_1" {  
@@ -130,10 +130,10 @@ resource "aws\_subnet" "private\_subnet\_1" {
   }  
 }
 ```
-* :wq
+--> :wq
 
 
-* vi route\_table.tf
+--> vi route\_table.tf
 ```
 \# Create Public Route Table  
 resource "aws\_route\_table" "public\_route\_table" {  
@@ -172,10 +172,10 @@ resource "aws\_route\_table\_association" "private\_rta" {
   route\_table\_id \= aws\_route\_table.private\_route\_table.id  
 }
 ```
-* :wq
+--> :wq
 
 
-* vi igw.tf
+--> vi igw.tf
 ```
 \# Creating Internet Gateway  
 resource "aws\_internet\_gateway" "igw" {  
@@ -185,18 +185,18 @@ resource "aws\_internet\_gateway" "igw" {
   }  
 }
 ```
-* :wq
+--> :wq
 
-* vi nat\_eip.tf
+--> vi nat\_eip.tf
 ```
 \# Creating Elastic IP for NAT Gateway  
 resource "aws\_eip" "nat\_eip" {  
   domain \= "vpc"  
 }
 ```
-* :wq
+--> :wq
 
-* vi nat\_gw.tf
+--> vi nat\_gw.tf
 ```
 \# Creating NAT Gateway  
 resource "aws\_nat\_gateway" "nat\_gw" {  
@@ -207,9 +207,9 @@ resource "aws\_nat\_gateway" "nat\_gw" {
   depends\_on \= \[aws\_internet\_gateway.igw\]  
 }
 ```
-* :wq
+--> :wq
 
-* vi security\_group.tf
+--> vi security\_group.tf
 ```
 resource "aws\_security\_group" "allow\_port\_80\_and\_22" {  
   name        \= "allow\_port\_80\_and\_22"  
@@ -249,9 +249,9 @@ resource "aws\_vpc\_security\_group\_egress\_rule" "allow\_all\_traffic\_ipv6" {
   ip\_protocol \= "-1"    \# semantically equals to all ports and all protocols  
 }
 ```
-* :wq
+--> :wq
 
-* vi ec2.tf
+--> vi ec2.tf
 ```
 resource "aws\_instance" "web\_instance" {  
   ami                    \= "ami-0b6d9d3d33ba97d99" \# Specify appropriate AMI  
@@ -267,9 +267,9 @@ resource "aws\_instance" "web\_instance" {
   }  
 }
 ```
-* :wq  
+--> :wq  
     
-* vi s3-bucket.tf        (\# Don't include this in github, as this needs to be created first separately, then you can run the rest of the configuration as terraform needs s3 bucket to store state when terraform plan command is run)
+--> vi s3-bucket.tf        (\# Don't include this in github, as this needs to be created first separately, then you can run the rest of the configuration as terraform needs s3 bucket to store state when terraform plan command is run)
 
 
 ```
@@ -299,7 +299,7 @@ resource "aws\_s3\_bucket\_versioning" "versioning\_bucket" {
   }  
 }
 ```
-* :wq  
+--> :wq  
     
 * All the above files are saved at github except s3-bucket.tf.  
 * Now, I will provision the s3 bucket for the remote backend by just using: s3-bucket.tf file.  
