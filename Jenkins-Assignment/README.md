@@ -1,5 +1,27 @@
-##### Terraform: Create a Jenkins pipeline that integrates with Terraform. With the click of a build button in Jenkins, the pipeline should trigger Terraform to provision infrastructure resources on a cloud provider. Practice this and capture screenshots of the successful build.
+# Terraform: Create a Jenkins pipeline that integrates with Terraform. With the click of a build button in Jenkins, the pipeline should trigger Terraform to provision infrastructure resources on a cloud provider. Practice this and capture screenshots of the successful build.
 
+## Table of Contents
+
+1. [Install Jenkins and Terraform](#1-install-jenkins-and-terraform)
+2. [Create Jenkinsfile and Terraform Configuration](#2-create-jenkinsfile-and-terraform-configuration)
+   - [Jenkinsfile](#jenkinsfile)
+   - [provider.tf](#providertf)
+   - [vpc.tf](#vpctf)
+   - [subnet.tf](#subnettf)
+   - [route_table.tf](#route_tabletf)
+   - [igw.tf](#igwtf)
+   - [nat_eip.tf](#nat_eiptf)
+   - [nat_gw.tf](#nat_gwtf)
+   - [security_group.tf](#security_grouptf)
+   - [ec2.tf](#ec2tf)
+   - [s3-bucket.tf](#s3-buckettf)
+3. [Provision the S3 Remote Backend](#3-provision-the-s3-remote-backend)
+4. [Configure Jenkins](#4-configure-jenkins)
+5. [Run the Jenkins Pipeline](#5-run-the-jenkins-pipeline)
+6. [Destroy the Infrastructure](#6-destroy-the-infrastructure)
+7. [Screenshots](#7-screenshots)
+
+   
 Ans:
 
 * Install Jenkins and terraform on your ubuntu server.  
