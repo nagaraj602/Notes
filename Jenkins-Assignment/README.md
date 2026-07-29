@@ -312,7 +312,16 @@ terraform init;terraform plan;terraform apply –auto-approve
     
   * Configure AWS CLI credentials in Jenkins Credentials section: Manage Jenkins >> Credentials >> Add Credentials >> Secret text >> Secret: * >> ID: AWS_ACCESS_KEY_ID >> Create >> Add Credentials >> Secret text >> Secret: * >> ID: AWS_SECRET_ACCESS_KEY   
   * Go to Jenkins dashboard >> Add new Item >> Pipeline >> Name: simple-terraform-Jenkins-pipeline >> Ok >> Scroll down >> Select: Pipeline script from SCM >> SCM: Git >> Repository URL: [https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git) >> Branch Specifier (blank for 'any'): */main >> Script Path: Jenkins-Assignment/simple-terraform-integration-with-jenkins/Jenkinsfile  >> Save.  
-  * Build Now >> Go to Console output >> Review the changes and approve.  
+  * Build Now >> Go to Console output >> Review the changes and approve.
+
+  * If you want to destroy the above infra, then clone the repo and run the
+    ```
+    git clone https://github.com/nagaraj602/Notes.git
+    cd Notes/Jenkins-Assignment/simple-terraform-integration-with-jenkins/
+    terraform init
+    terraform plan
+    terraform destroy --auto-approve
+    ```
     
 <img width="2048" height="1224" alt="1" src="https://github.com/user-attachments/assets/972f3225-d53b-45eb-9fe3-9056fd80d8ec" />
 <img width="2048" height="1221" alt="2" src="https://github.com/user-attachments/assets/037af922-01d3-4d73-b237-3cb75a1959ca" />
