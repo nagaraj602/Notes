@@ -1,6 +1,6 @@
-# Terraform: Create a Jenkins pipeline that integrates with Terraform. With the click of a build button in Jenkins, the pipeline should trigger Terraform to provision infrastructure resources on a cloud provider. Practice this and capture screenshots of the successful build.
+## Terraform: Create a Jenkins pipeline that integrates with Terraform. With the click of a build button in Jenkins, the pipeline should trigger Terraform to provision infrastructure resources on a cloud provider. Practice this and capture screenshots of the successful build.
 
-## Table of Contents
+### Table of Contents
 
 1. [Install Jenkins and Terraform](#1-install-jenkins-and-terraform)
 2. [Create Jenkinsfile and Terraform Configuration](#2-create-jenkinsfile-and-terraform-configuration)
