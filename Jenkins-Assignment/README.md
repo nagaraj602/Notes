@@ -13,9 +13,9 @@ pipeline {
     agent any
 
     environment {  
-        AWS\_ACCESS\_KEY\_ID     \= credentials('AWS\_ACCESS\_KEY\_ID')  
-        AWS\_SECRET\_ACCESS\_KEY \= credentials('AWS\_SECRET\_ACCESS\_KEY')  
-        AWS\_DEFAULT\_REGION    \= 'us-east-1'  
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')  
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')  
+        AWS_DEFAULT_REGION    = 'us-east-1'  
     }
 
     stages {
@@ -32,7 +32,7 @@ pipeline {
             steps {  
                 dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {  
                     // Output the plan to a file so the exact same plan is applied later  
-                    sh 'terraform plan \-out=tfplan'  
+                    sh 'terraform plan -out=tfplan'  
                 }  
             }  
         }
@@ -48,7 +48,7 @@ pipeline {
             steps {  
                 dir('Jenkins-Assignment/simple-terraform-integration-with-jenkins') {  
                     // Apply the exact plan generated in the previous stage  
-                    sh 'terraform apply \--auto-approve tfplan'  
+                    sh 'terraform apply --auto-approve tfplan'  
                 }  
             }  
         }  
@@ -67,24 +67,24 @@ pipeline {
 
 ```  
 terraform {  
-  required\_version \= "\>= 1.15.0"
+  required_version = ">= 1.15.0"
 
-  required\_providers {  
-    aws \= {  
-      source  \= "hashicorp/aws"  
-      version \= "\>= 6.51.0"  
+  required_providers {  
+    aws = {  
+      source  = "hashicorp/aws"  
+      version = ">= 6.51.0"  
     }  
   }  
   backend "s3" {  
-    bucket \= "remote-backend-s3-jan2026-Nagaraj"  
-    key    \= "simple-terraform-Jenkins-pipeline/terraform.tfstate"  
-    region \= "us-east-1"  
-    use\_lockfile \= true  
+    bucket = "remote-backend-s3-jan2026-Nagaraj"  
+    key    = "simple-terraform-Jenkins-pipeline/terraform.tfstate"  
+    region = "us-east-1"  
+    use_lockfile = true  
   }  
 }
 
 provider "aws" {  
-  region \= "us-east-1"  
+  region = "us-east-1"  
 }
 ```
 --> :wq
@@ -92,13 +92,13 @@ provider "aws" {
 
 --> vi vpc.tf
 ```
-resource "aws\_vpc" "three\_tier\_vpc" {  
-  cidr\_block \= "10.0.0.0/16"  
-  enable\_dns\_support \= true  
-  enable\_dns\_hostnames \= true
+resource "aws_vpc" "three_tier_vpc" {  
+  cidr_block = "10.0.0.0/16"  
+  enable_dns_support = true  
+  enable_dns_hostnames = true
 
-  tags \= {  
-    Name \= "three-tier-vpc"  
+  tags = {  
+    Name = "three-tier-vpc"  
   }  
 }
 ```
@@ -107,69 +107,69 @@ resource "aws\_vpc" "three\_tier\_vpc" {
 
 --> vi subnet.tf
 ```
-\# Public Subnet  
-resource "aws\_subnet" "public\_subnet\_1" {  
-  vpc\_id     \= aws\_vpc.three\_tier\_vpc.id  
-  cidr\_block \= "10.0.1.0/24"  
-  availability\_zone      \= "us-east-1a"  
-  map\_public\_ip\_on\_launch \= true
+# Public Subnet  
+resource "aws_subnet" "public_subnet_1" {  
+  vpc_id     = aws_vpc.three_tier_vpc.id  
+  cidr_block = "10.0.1.0/24"  
+  availability_zone      = "us-east-1a"  
+  map_public_ip_on_launch = true
 
-  tags \= {  
-    Name \= "public-subnet-1"  
+  tags = {  
+    Name = "public-subnet-1"  
   }  
 }
 
-\# Private Subnet  
-resource "aws\_subnet" "private\_subnet\_1" {  
-  vpc\_id     \= aws\_vpc.three\_tier\_vpc.id  
-  cidr\_block \= "10.0.2.0/24"  
-  availability\_zone      \= "us-east-1a"
+# Private Subnet  
+resource "aws_subnet" "private_subnet_1" {  
+  vpc_id     = aws_vpc.three_tier_vpc.id  
+  cidr_block = "10.0.2.0/24"  
+  availability_zone      = "us-east-1a"
 
-  tags \= {  
-    Name \= "private-subnet-1"  
+  tags = {  
+    Name = "private-subnet-1"  
   }  
 }
 ```
 --> :wq
 
 
---> vi route\_table.tf
+--> vi route_table.tf
 ```
-\# Create Public Route Table  
-resource "aws\_route\_table" "public\_route\_table" {  
-  vpc\_id \= aws\_vpc.three\_tier\_vpc.id  
+# Create Public Route Table  
+resource "aws_route_table" "public_route_table" {  
+  vpc_id = aws_vpc.three_tier_vpc.id  
   route {  
-    cidr\_block \= "0.0.0.0/0"  
-    gateway\_id \= aws\_internet\_gateway.igw.id     \#For igw, we use gateway\_id  
+    cidr_block = "0.0.0.0/0"  
+    gateway_id = aws_internet_gateway.igw.id     #For igw, we use gateway_id  
   }  
-  tags \= {  
-    Name \= "public-route-table"  
+  tags = {  
+    Name = "public-route-table"  
   }  
 }
 
-\# Associate Route Table with Public Subnet  
-resource "aws\_route\_table\_association" "public\_rta" {  
-  subnet\_id      \= aws\_subnet.public\_subnet\_1.id  
-  route\_table\_id \= aws\_route\_table.public\_route\_table.id  
+# Associate Route Table with Public Subnet  
+resource "aws_route_table_association" "public_rta" {  
+  subnet_id      = aws_subnet.public_subnet_1.id  
+  route_table_id = aws_route_table.public_route_table.id  
 }
 
-\# Creating Private Route Table  
-resource "aws\_route\_table" "private\_route\_table" {  
-  vpc\_id \= aws\_vpc.three\_tier\_vpc.id
+# Creating Private Route Table  
+resource "aws_route_table" "private_route_table" {  
+  vpc_id = aws_vpc.three_tier_vpc.id
 
   route {  
-    cidr\_block     \= "0.0.0.0/0"  
-    nat\_gateway\_id \= aws\_nat\_gateway.nat\_gw.id  
+    cidr_block     = "0.0.0.0/0"  
+    nat_gateway_id = aws_nat_gateway.nat_gw.id  
   }  
-  tags \= {  
-    Name \= "private-route-table"  
+  tags = {  
+    Name = "private-route-table"  
   }  
 }
 
-\# Route Table Association for Private Subnet  
-resource "aws\_route\_table\_association" "private\_rta" {  
-  subnet\_id      \= aws\_subnet.private\_subnet\_1.id  
-  route\_table\_id \= aws\_route\_table.private\_route\_table.id  
+# Route Table Association for Private Subnet  
+resource "aws_route_table_association" "private_rta" {  
+  subnet_id      = aws_subnet.private_subnet_1.id  
+  route_table_id = aws_route_table.private_route_table.id  
 }
 ```
 --> :wq
@@ -177,125 +177,125 @@ resource "aws\_route\_table\_association" "private\_rta" {
 
 --> vi igw.tf
 ```
-\# Creating Internet Gateway  
-resource "aws\_internet\_gateway" "igw" {  
-  vpc\_id \= aws\_vpc.three\_tier\_vpc.id  
-  tags \= {  
-    Name \= "three\_tier\_igw"  
+# Creating Internet Gateway  
+resource "aws_internet_gateway" "igw" {  
+  vpc_id = aws_vpc.three_tier_vpc.id  
+  tags = {  
+    Name = "three_tier_igw"  
   }  
 }
 ```
 --> :wq
 
---> vi nat\_eip.tf
+--> vi nat_eip.tf
 ```
-\# Creating Elastic IP for NAT Gateway  
-resource "aws\_eip" "nat\_eip" {  
-  domain \= "vpc"  
+# Creating Elastic IP for NAT Gateway  
+resource "aws_eip" "nat_eip" {  
+  domain = "vpc"  
 }
 ```
 --> :wq
 
---> vi nat\_gw.tf
+--> vi nat_gw.tf
 ```
-\# Creating NAT Gateway  
-resource "aws\_nat\_gateway" "nat\_gw" {  
-  allocation\_id \= aws\_eip.nat\_eip.id  
-  subnet\_id     \= aws\_subnet.public\_subnet\_1.id
+# Creating NAT Gateway  
+resource "aws_nat_gateway" "nat_gw" {  
+  allocation_id = aws_eip.nat_eip.id  
+  subnet_id     = aws_subnet.public_subnet_1.id
 
-  \# Explicit dependency on the Internet Gateway  
-  depends\_on \= \[aws\_internet\_gateway.igw\]  
+  # Explicit dependency on the Internet Gateway  
+  depends_on = [aws_internet_gateway.igw]  
 }
 ```
 --> :wq
 
---> vi security\_group.tf
+--> vi security_group.tf
 ```
-resource "aws\_security\_group" "allow\_port\_80\_and\_22" {  
-  name        \= "allow\_port\_80\_and\_22"  
-  description \= "Allow TLS inbound traffic"  
-  vpc\_id      \= aws\_vpc.three\_tier\_vpc.id
+resource "aws_security_group" "allow_port_80_and_22" {  
+  name        = "allow_port_80_and_22"  
+  description = "Allow TLS inbound traffic"  
+  vpc_id      = aws_vpc.three_tier_vpc.id
 
-  tags \= {  
-    Name \= "allow\_port\_80\_and\_22"  
+  tags = {  
+    Name = "allow_port_80_and_22"  
   }  
 }
 
-resource "aws\_vpc\_security\_group\_ingress\_rule" "allow\_tls\_ipv4" {  
-  security\_group\_id \= aws\_security\_group.allow\_port\_80\_and\_22.id  
-  cidr\_ipv4   \= "0.0.0.0/0"  
-  from\_port   \= 80  
-  ip\_protocol \= "tcp"  
-  to\_port     \= 80  
+resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {  
+  security_group_id = aws_security_group.allow_port_80_and_22.id  
+  cidr_ipv4   = "0.0.0.0/0"  
+  from_port   = 80  
+  ip_protocol = "tcp"  
+  to_port     = 80  
 }
 
-resource "aws\_vpc\_security\_group\_ingress\_rule" "allow\_ssh\_ipv4" {  
-  security\_group\_id \= aws\_security\_group.allow\_port\_80\_and\_22.id  
-  cidr\_ipv4   \= "0.0.0.0/0"  
-  from\_port   \= 22  
-  ip\_protocol \= "tcp"  
-  to\_port     \= 22  
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ipv4" {  
+  security_group_id = aws_security_group.allow_port_80_and_22.id  
+  cidr_ipv4   = "0.0.0.0/0"  
+  from_port   = 22  
+  ip_protocol = "tcp"  
+  to_port     = 22  
 }
 
-resource "aws\_vpc\_security\_group\_egress\_rule" "allow\_all\_traffic\_ipv4" {  
-  security\_group\_id \= aws\_security\_group.allow\_port\_80\_and\_22.id  
-  cidr\_ipv4   \= "0.0.0.0/0"  
-  ip\_protocol \= "-1"    \# semantically equals to all ports and all protocols  
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {  
+  security_group_id = aws_security_group.allow_port_80_and_22.id  
+  cidr_ipv4   = "0.0.0.0/0"  
+  ip_protocol = "-1"    # semantically equals to all ports and all protocols  
 }
 
-resource "aws\_vpc\_security\_group\_egress\_rule" "allow\_all\_traffic\_ipv6" {  
-  security\_group\_id \= aws\_security\_group.allow\_port\_80\_and\_22.id  
-  cidr\_ipv6   \= "::/0"  
-  ip\_protocol \= "-1"    \# semantically equals to all ports and all protocols  
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv6" {  
+  security_group_id = aws_security_group.allow_port_80_and_22.id  
+  cidr_ipv6   = "::/0"  
+  ip_protocol = "-1"    # semantically equals to all ports and all protocols  
 }
 ```
 --> :wq
 
 --> vi ec2.tf
 ```
-resource "aws\_instance" "web\_instance" {  
-  ami                    \= "ami-0b6d9d3d33ba97d99" \# Specify appropriate AMI  
-  instance\_type          \= "t3.medium"  
-  availability\_zone      \= "us-east-1a"  
-  subnet\_id              \= aws\_subnet.public\_subnet\_1.id  
+resource "aws_instance" "web_instance" {  
+  ami                    = "ami-0b6d9d3d33ba97d99" # Specify appropriate AMI  
+  instance_type          = "t3.medium"  
+  availability_zone      = "us-east-1a"  
+  subnet_id              = aws_subnet.public_subnet_1.id  
    
-  \# Security groups are passed as a list of IDs  
-  vpc\_security\_group\_ids \= \[aws\_security\_group.allow\_port\_80\_and\_22.id\]
+  # Security groups are passed as a list of IDs  
+  vpc_security_group_ids = [aws_security_group.allow_port_80_and_22.id]
 
-  tags \= {  
-    Name \= "terraform\_EC2"  
+  tags = {  
+    Name = "terraform_EC2"  
   }  
 }
 ```
 --> :wq  
     
---> vi s3-bucket.tf        (\# Don't include this in github, as this needs to be created first separately, then you can run the rest of the configuration as terraform needs s3 bucket to store state when terraform plan command is run)
+--> vi s3-bucket.tf        (# Don't include this in github, as this needs to be created first separately, then you can run the rest of the configuration as terraform needs s3 bucket to store state when terraform plan command is run)
 
 
 ```
 terraform {  
-  required\_version \= "\>= 1.15.0"  
-  required\_providers {  
-    aws \= {  
-      source  \= "hashicorp/aws"  
-      version \= "\>= 6.51.0"  
+  required_version = ">= 1.15.0"  
+  required_providers {  
+    aws = {  
+      source  = "hashicorp/aws"  
+      version = ">= 6.51.0"  
     }  
   }  
 }
 
 provider "aws" {  
-  region \= "us-east-1"  
+  region = "us-east-1"  
 }
 
-resource "aws\_s3\_bucket" "remote\_backend\_s3" {  
-  bucket        \= "remote-backend-s3-jan2026-Nagaraj-29-07-2026"  
-  force\_destroy \= true    \# only if you're planning to delete bucket in future  
+resource "aws_s3_bucket" "remote_backend_s3" {  
+  bucket        = "remote-backend-s3-jan2026-Nagaraj-29-07-2026"  
+  force_destroy = true    # only if you're planning to delete bucket in future  
 }
 
-resource "aws\_s3\_bucket\_versioning" "versioning\_bucket" {  
-  bucket \= aws\_s3\_bucket.remote\_backend\_s3.id  
-  versioning\_configuration {  
-    status \= "Enabled"  
+resource "aws_s3_bucket_versioning" "versioning_bucket" {  
+  bucket = aws_s3_bucket.remote_backend_s3.id  
+  versioning_configuration {  
+    status = "Enabled"  
   }  
 }
 ```
@@ -310,9 +310,9 @@ terraform init;terraform plan;terraform apply –auto-approve
     
   Once done, you can configure the rest of the things in Jenkins dashboard.  
     
-  * Configure AWS CLI credentials in Jenkins Credentials section: Manage Jenkins \>\> Credentials \>\> Add Credentials \>\> Secret text \>\> Secret: * \>\> ID: AWS\_ACCESS\_KEY\_ID \>\> Create \>\> Add Credentials \>\> Secret text \>\> Secret: * \>\> ID: AWS\_SECRET\_ACCESS\_KEY   
-  * Go to Jenkins dashboard \>\> Add new Item \>\> Pipeline \>\> Name: simple-terraform-Jenkins-pipeline \>\> Ok \>\> Scroll down \>\> Select: Pipeline script from SCM \>\> SCM: Git \>\> Repository URL: [https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git) \>\> Branch Specifier (blank for 'any'): \*/main \>\> Script Path: Jenkins-Assignment/simple-terraform-integration-with-jenkins/Jenkinsfile  \>\> Save.  
-  * Build Now \>\> Go to Console output \>\> Review the changes and approve.  
+  * Configure AWS CLI credentials in Jenkins Credentials section: Manage Jenkins >> Credentials >> Add Credentials >> Secret text >> Secret: * >> ID: AWS_ACCESS_KEY_ID >> Create >> Add Credentials >> Secret text >> Secret: * >> ID: AWS_SECRET_ACCESS_KEY   
+  * Go to Jenkins dashboard >> Add new Item >> Pipeline >> Name: simple-terraform-Jenkins-pipeline >> Ok >> Scroll down >> Select: Pipeline script from SCM >> SCM: Git >> Repository URL: [https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git) >> Branch Specifier (blank for 'any'): */main >> Script Path: Jenkins-Assignment/simple-terraform-integration-with-jenkins/Jenkinsfile  >> Save.  
+  * Build Now >> Go to Console output >> Review the changes and approve.  
     
 
 ![][image1]  
