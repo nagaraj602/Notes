@@ -17,8 +17,8 @@
    - [s3-bucket.tf](#s3-buckettf)
 3. [Provision the S3 Remote Backend](#3-provision-the-s3-remote-backend)
 4. [Configure Jenkins](#4-configure-jenkins)
-5. [Destroy the Infrastructure](#6-destroy-the-infrastructure)
-6. [Screenshots](#7-screenshots)
+5. [Destroy the Infrastructure](#5-destroy-the-infrastructure)
+6. [Screenshots](#6-screenshots)
 
    
 Ans:
