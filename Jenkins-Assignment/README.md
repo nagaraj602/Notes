@@ -17,19 +17,18 @@
    - [s3-bucket.tf](#s3-buckettf)
 3. [Provision the S3 Remote Backend](#3-provision-the-s3-remote-backend)
 4. [Configure Jenkins](#4-configure-jenkins)
-5. [Run the Jenkins Pipeline](#5-run-the-jenkins-pipeline)
-6. [Destroy the Infrastructure](#6-destroy-the-infrastructure)
-7. [Screenshots](#7-screenshots)
+5. [Destroy the Infrastructure](#6-destroy-the-infrastructure)
+6. [Screenshots](#7-screenshots)
 
    
 Ans:
-
+## 1. Install Jenkins and Terraform
 * Install Jenkins and terraform on your ubuntu server.  
   * Create Jenkinsfile and terraform configuration files on github. The files are configured here: [https://github.com/nagaraj602/Notes/tree/main/Jenkins-Assignment/simple-terraform-integration-with-jenkins](https://github.com/nagaraj602/Notes/tree/main/Jenkins-Assignment/simple-terraform-integration-with-jenkins) 
 
-  Here is the each and every file content:
+## 2. Create Jenkinsfile and Terraform Configuration
 
--->  vi Jenkinsfile
+### Jenkinsfile
 ```
 pipeline {  
     agent any
@@ -84,8 +83,8 @@ pipeline {
 }
 ```
 --> :wq  
---> vi provider.tf
 
+### provider.tf
 
 ```  
 terraform {  
@@ -112,7 +111,7 @@ provider "aws" {
 --> :wq
 
 
---> vi vpc.tf
+### vpc.tf
 ```
 resource "aws_vpc" "three_tier_vpc" {  
   cidr_block = "10.0.0.0/16"  
@@ -127,7 +126,7 @@ resource "aws_vpc" "three_tier_vpc" {
 --> :wq
 
 
---> vi subnet.tf
+### subnet.tf
 ```
 # Public Subnet  
 resource "aws_subnet" "public_subnet_1" {  
@@ -155,7 +154,7 @@ resource "aws_subnet" "private_subnet_1" {
 --> :wq
 
 
---> vi route_table.tf
+### route_table.tf
 ```
 # Create Public Route Table  
 resource "aws_route_table" "public_route_table" {  
@@ -197,7 +196,7 @@ resource "aws_route_table_association" "private_rta" {
 --> :wq
 
 
---> vi igw.tf
+### igw.tf
 ```
 # Creating Internet Gateway  
 resource "aws_internet_gateway" "igw" {  
@@ -209,7 +208,7 @@ resource "aws_internet_gateway" "igw" {
 ```
 --> :wq
 
---> vi nat_eip.tf
+### nat_eip.tf
 ```
 # Creating Elastic IP for NAT Gateway  
 resource "aws_eip" "nat_eip" {  
@@ -218,7 +217,7 @@ resource "aws_eip" "nat_eip" {
 ```
 --> :wq
 
---> vi nat_gw.tf
+### nat_gw.tf
 ```
 # Creating NAT Gateway  
 resource "aws_nat_gateway" "nat_gw" {  
@@ -231,7 +230,7 @@ resource "aws_nat_gateway" "nat_gw" {
 ```
 --> :wq
 
---> vi security_group.tf
+### security_group.tf
 ```
 resource "aws_security_group" "allow_port_80_and_22" {  
   name        = "allow_port_80_and_22"  
@@ -273,7 +272,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv6" {
 ```
 --> :wq
 
---> vi ec2.tf
+### ec2.tf
 ```
 resource "aws_instance" "web_instance" {  
   ami                    = "ami-0b6d9d3d33ba97d99" # Specify appropriate AMI  
@@ -291,7 +290,8 @@ resource "aws_instance" "web_instance" {
 ```
 --> :wq  
     
---> vi s3-bucket.tf        (# Don't include this in github, as this needs to be created first separately, then you can run the rest of the configuration as terraform needs s3 bucket to store state when terraform plan command is run)
+### s3-bucket.tf       
+(# Don't include this in github, as this needs to be created first separately, then you can run the rest of the configuration as terraform needs s3 bucket to store state when terraform plan command is run)
 
 
 ```
@@ -323,19 +323,22 @@ resource "aws_s3_bucket_versioning" "versioning_bucket" {
 ```
 --> :wq  
     
-* All the above files are saved at github except s3-bucket.tf.  
+* All the above files are saved at github except s3-bucket.tf.
+
+## 3. Provision the S3 Remote Backend
 * Now, I will provision the s3 bucket for the remote backend by just using: s3-bucket.tf file.  
     
 ```
 terraform init;terraform plan;terraform apply –auto-approve
 ```
-    
-  Once done, you can configure the rest of the things in Jenkins dashboard.  
+ ## 4. Configure Jenkins   
+  Once S3 bucket creation done, you can configure the rest of the things in Jenkins dashboard.  
     
   * Configure AWS CLI credentials in Jenkins Credentials section: Manage Jenkins >> Credentials >> Add Credentials >> Secret text >> Secret: * >> ID: AWS_ACCESS_KEY_ID >> Create >> Add Credentials >> Secret text >> Secret: * >> ID: AWS_SECRET_ACCESS_KEY   
   * Go to Jenkins dashboard >> Add new Item >> Pipeline >> Name: simple-terraform-Jenkins-pipeline >> Ok >> Scroll down >> Select: Pipeline script from SCM >> SCM: Git >> Repository URL: [https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git) >> Branch Specifier (blank for 'any'): */main >> Script Path: Jenkins-Assignment/simple-terraform-integration-with-jenkins/Jenkinsfile  >> Save.  
   * Build Now >> Go to Console output >> Review the changes and approve.
 
+## 5. Destroy the Infrastructure
   * If you want to destroy the above infra, then clone the repo and run the
     ```
     git clone https://github.com/nagaraj602/Notes.git
@@ -344,7 +347,7 @@ terraform init;terraform plan;terraform apply –auto-approve
     terraform plan
     terraform destroy --auto-approve
     ```
-    
+ ## 6. Screenshots   
 <img width="2048" height="1224" alt="1" src="https://github.com/user-attachments/assets/972f3225-d53b-45eb-9fe3-9056fd80d8ec" />
 <img width="2048" height="1221" alt="2" src="https://github.com/user-attachments/assets/037af922-01d3-4d73-b237-3cb75a1959ca" />
 <img width="2041" height="1214" alt="3" src="https://github.com/user-attachments/assets/cff847f1-f158-452a-b722-d7624b0b5dc4" />
