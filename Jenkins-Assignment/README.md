@@ -350,7 +350,7 @@ terraform init;terraform plan;terraform apply –auto-approve
  ## 6. Screenshots   
 <img width="2048" height="1224" alt="1" src="https://github.com/user-attachments/assets/972f3225-d53b-45eb-9fe3-9056fd80d8ec" />
 <img width="2048" height="1221" alt="2" src="https://github.com/user-attachments/assets/037af922-01d3-4d73-b237-3cb75a1959ca" />
-<img width="2041" height="1214" alt="3" src="https://github.com/user-attachments/assets/cff847f1-f158-452a-b722-d7624b0b5dc4" />
+<img width="2041" height="1214" alt="3" src="https://github.com/user-attachments/assets/655523c9-497c-47c0-9081-7f8ebfab7172" />
 <img width="2041" height="1217" alt="4" src="https://github.com/user-attachments/assets/4ba1b81a-a98f-405a-b722-d7624b0b5dc4" />
 <img width="2041" height="1217" alt="5" src="https://github.com/user-attachments/assets/09357727-6526-4bad-ad44-237509c1d630" />
 <img width="2041" height="1217" alt="6" src="https://github.com/user-attachments/assets/7e1c4fd6-a0b0-497d-8c5b-caab651e7378" />
