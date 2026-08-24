@@ -1,0 +1,183 @@
+# DevOps Interview Questions
+
+This document contains a compilation of DevOps interview questions categorized by company and interview rounds. The questions have been proofread for readability while preserving their original length and meaning.
+
+## Persistant – L1
+
+- Introduction.
+- Day-to-day activities.
+- Difference between NACL & SG.
+- Task to patch an EC2 instance which is in a private subnet.
+- What are the two types of ECS?
+- S3 Endpoints.
+- Are S3 Endpoints cached locally?
+- VPC Endpoints.
+- Fargate & EC2 launch.
+- What are the layers in Docker?
+- Why use ENTRYPOINT & not CMD?
+- Explain multistage Dockerfile.
+- What is Docker Compose?
+- What is Ingress?
+- ClusterIP vs NodePort.
+- For services which are not exposed to the outside world, can we use ClusterIP to connect them to each other?
+- I have an ECR repo and we have Docker images on-premises. How will you pull those images? What are the steps we do in the manifest file?
+- For authentication, what type of objects do we create in Kubernetes (K8s)?
+- What are Secrets in K8s?
+- What to do if kubelet is not working?
+- I am having an EKS cluster, can I have a Load Balancer (LB)?
+- How to check logs in EKS.
+- Handle memory issues in the manifest file.
+- EKS overview.
+- Some other guy has created a resource manifest, how to incorporate the same in a Terraform file?
+- Terraform fmt or Terraform format.
+- I want to mail my Terraform plan to my lead, how will you do it?
+- Grep, sed, awk, how to check if a process is running.
+
+## Altemrik - Technical Discussion - 1
+
+- Introduce Yourself.
+- What kind of application are you deploying? Whether it is Python or Java? What is it?
+- Can you explain how it is executed?
+- Is your application going to build with the POM file?
+- Have you integrated what kind of tool which you use on Jenkins too? - SonarQube scanner.
+- What vulnerabilities have you defined in your SonarQube?
+- Do you configure any kind of code spells?
+- Who manages EKS?
+- Which cloud provider are you using?
+- I have an EC2 instance in the North Virginia region, and I have an EC2 instance in the Ohio region. These two EC2 instances are having certain applications that need interconnectivity. So what service can you use in AWS? -> **VPC Peering**.
+- Can you briefly tell me about the tools you have used?
+- In Terraform, I have like five instances which I have created using `main.tf`. Namely web server one, web server two, web server three, up to five. Do you know how you can configure it?
+- I have done the testing, and I want to delete web servers two, three, four, and five, and I need to keep only one. So what can we use? What we can do is we can have an option in Terraform to destroy the specific target.
+- I have an EC2 instance and an S3 bucket, focusing on the Terraform side. I want to create an S3 bucket first where I have certain scripts that need to be consumed by the EC2 instance.
+- What kind of pipelines do you use? Like, we go for declarative pipelines.
+- What if I have 100+ microservices, and I have static code where I don't want to use it repeatedly, I need to put it somewhere. What functionality in Jenkins can you use for that?
+- Do you have a specific AMI for Jenkins, or is it hosted in the cloud?
+- I have a front-end and a back-end that need to be deployed in a Kubernetes cluster. What are the objects and what are the things which you use?
+- Let me tell you one scenario: I have Pod A, Pod B, and Pod C respectively in my environment running an Nginx, an SQL database, and a connectivity agent in between the two. I want to get communication between both Pod A and B, but I don't think C is needed because it's only talking with B. What kind of things can we do in this scenario? -> **Ans:** In Kubernetes, I would not make pods communicate directly using Pod IPs. Use Kubernetes Services + NetworkPolicies.
+- You are my lead, and I recently joined your team. I had accidentally made an S3 bucket public when I did the change. How are you going to remediate it, and what are the fixes you're going to do?
+- Can you briefly explain to me about the services in Kubernetes?
+- Terraform modules.
+- Terraform workspaces.
+
+## Lancesoft – L1
+
+- Questions to check Python code.
+- Question to check shell script.
+- Questions to check code related to AWS Databricks.
+- One Terraform code to check.
+
+## Synechron - L1
+
+- Troubleshooting for CrashLoopBackOff error.
+- CI/CD Tool you are using.
+- How do you do versioning in Jenkins?
+- Shell script to find logs and delete them.
+- Monitoring tools that you have used?
+- How are Prometheus & Grafana set up?
+- Scenario: I have a Lambda function which is used to copy the log files to S3, but it is stuck in between. How do you troubleshoot it?
+- What are the AWS services that you have used?
+- Is your K8s self-managed?
+- What are StatefulSets in K8s?
+
+## ACL digital - L1
+
+- Introduce yourself.
+- Parameters to be considered while configuring your Jenkins server.
+- Python-based questions – Scenario.
+- What is equilibrium index in Python?
+- Difference between list and tuple.
+- How would you rate your Python skills?
+- Types of load balancers.
+- Explain to me about Ansible playbooks.
+- Can you explain your K8s setup?
+
+## LTI Mindtree - L1
+
+- Command to create an Ansible role.
+- Difference between copy module and templates.
+- Write an Ansible role to install and configure Jenkins.
+- What is the `uri` module in Ansible?
+- Scenario-based questions on Ansible.
+- How to send email notifications in Jenkins?
+- If we want to execute the jobs in parallel in Jenkins, how can we do that?
+- Have you worked with RBAC in Jenkins?
+- What are item and global roles in RBAC?
+- In post-build actions, we have actions like 'always', 'success', and 'failure'. If the pipeline is having 'always' and 'success' conditions, if the build is successful, which of these conditions is executed?
+- I have multiple AWS accounts. I want to automate the process of stopping instances at night and starting them in the morning. How will you do it?
+- What are layers in Lambda functions?
+- Difference between VPC Peering and Transit Gateway.
+- Have you worked with CloudFormation?
+- How will you configure the remote backend for state files?
+- If you want to import resources to the state file.
+- If we have a different workspace, will you use the same state file?
+- What is Terraform taint?
+- If I want to destroy a particular resource, how will you do it?
+
+## slk software - L1
+
+- What are roles in Ansible?
+- What are templates?
+- What is Ansible Tower?
+- What are source control credentials?
+- Why are you providing source control credentials?
+- Which is the source code management tool you are using?
+- What are the source code credentials used in GitHub?
+- Write a playbook to copy a file to various servers.
+- Are you working on console-based Terraform or UI-based Terraform?
+- What is your project about? Explain.
+- What is the size of your team?
+- Are you working on an onshore/offshore model or only offshore?
+- Setting up Terraform to GitHub, what type of variables can you add?
+- Where do you create IAM roles?
+- What are Terraform workspaces?
+- Where do you define Terraform workspaces in your variables? Where do you define it?
+- Any recent project you worked on. What are the difficulties you faced?
+- Any automation with respect to Ansible that you have done recently.
+
+## Metascope - Screening
+
+- Introduction.
+- Some Linux commands.
+- Why change of company?
+
+## Saviynt  - L1
+
+- Troubleshoot Slow Query Performance in RDS.
+- Have you used Lambda Functions?
+- Have you worked on Prometheus & Grafana?
+- How to troubleshoot ImagePullBackOff error?
+- How to troubleshoot CrashLoopBackOff error?
+- How to troubleshoot 503 error in K8s?
+- What is blacklisting of an IP?
+- Where do you provide the IP for blacklisting IPsec?
+- Have you used Azure?
+- How to check logs in a Linux server?
+- Troubleshooting VPN Tunnel.
+- What are the services you have used in AWS?
+- What is a Transit Gateway?
+- What are the reasons why Pods may be evicted from nodes in a Kubernetes cluster?
+- How can you troubleshoot and prevent excessive Pod evictions?
+
+## Mphasis – L1
+
+- Troubleshooting CrashLoopBackOff error.
+- You want to design an EKS with multi-AZ, how will you do that?
+- Explain to me K8s architecture.
+- Explain how you manage secrets in EKS.
+- Difference between CloudWatch and Prometheus.
+- Describe the CI/CD pipeline for a Microservice app on EKS.
+- A Pod is stuck in the pending state in EKS. How do you troubleshoot?
+- Difference between Declarative and Scripted pipelines.
+- There is a production rollback and it is taking too long. What is the way to improve this?
+- How are you going to align your branches with CI/CD?
+- You need to ensure zero downtime deployment in a CI/CD pipeline. How will you achieve this?
+- Top 5 best practices of DevOps.
+- How to ensure that only one job runs in a branch?
+- Are you comfortable in Azure DevOps?
+- Command to run NGINX in Docker on port 8080.
+- How do you rollback deployments?
+- How do you expose your application to the internet in EKS?
+- A Pod in EKS is showing CrashLoopBackOff. How do you fix it?
+- How do you manage secrets in EKS?
+- Scenario: There is an EKS cluster which is running multiple Microservices. You have done a deployment which is causing a CPU spike on certain pods. How do you resolve it without affecting other services?
+- Suppose you have a cluster and one of the nodes is failing repeatedly. What might be the possible reasons?
