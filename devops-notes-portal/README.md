@@ -38,7 +38,7 @@
     │   └── all-in-one.yaml       # Complete Kubernetes manifests
     └── deploy.ps1                # 1-Click build & deploy script
 ---
-  ## 2. Source Code Files                          
+## 2. Source Code Files                          
 ### requirements.txt
 ```bash                             
 fastapi>=0.110.0
@@ -55,7 +55,7 @@ gitpython>=3.1.42
 aiofiles>=23.2.1
 ```
 ---
-  ### Dockerfile (Multi-Stage Build)
+### Dockerfile (Multi-Stage Build)
 ```bash
 # ==========================================
 # Stage 1: Build & Dependencies
@@ -114,47 +114,49 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```                    
 ---
-  ### .dockerignore
+### .dockerignore
+```bash
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.env
+data/
+k8s/
+*.md
+deploy.ps1
+```
+---
+### app/config.py                
+```bash
+import os
 
-    __pycache__
-    *.pyc
-    *.pyo
-    *.pyd
-    .git
-    .gitignore
-    .env
-    data/
-    k8s/
-    *.md
-    deploy.ps1
+REPO_URL = os.getenv("REPO_URL", "[https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git)")
+REPO_BRANCH = os.getenv("REPO_BRANCH", "main")
+AUTO_SYNC_INTERVAL_MINUTES = int(os.getenv("AUTO_SYNC_INTERVAL_MINUTES", "5"))
+NOTES_DIR = os.getenv("NOTES_DIR", "/app/data/notes") 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+# Default prompt templates as requested
+PROMPT_CLASS_NOTES = (
+    "I have this transcript. Make it proper as it is looking like class teaching. "
+    "It should be in correct thing. Not look like teaching or coversation. "
+    "Don't assume anything. Don't add your own concpt. You should give what is there in transcript. "
+    "Don't miss anything, don't shorten any explanation from transcript, "
+    "Including each and every steps, file names, code etc."
+) 
+
+PROMPT_QA = (
+    "I have the Qa transcript. Extract all question asked by instructor and if there are any "
+    "suggestion/answer given by the instructor, include that. "
+    "Don't miss any questions, even the sub questions to it. "
+    "I repeat, don't miss any questions."
+)
+```
 ---
-  ### app/config.py                                                                                                                      
-   ```bash                                                                                                                                      
-    import os
-    
-    REPO_URL = os.getenv("REPO_URL", "https://github.com/nagaraj602/Notes.git")
-    REPO_BRANCH = os.getenv("REPO_BRANCH", "main")
-    AUTO_SYNC_INTERVAL_MINUTES = int(os.getenv("AUTO_SYNC_INTERVAL_MINUTES", "5"))
-    NOTES_DIR = os.getenv("NOTES_DIR", "/app/data/notes") 
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-    
-    # Default prompt templates as requested
-    PROMPT_CLASS_NOTES = (
-        "I have this transcript. Make it proper as it is looking like class teaching. "
-        "It should be in correct thing. Not look like teaching or coversation. "
-        "Don't assume anything. Don't add your own concpt. You should give what is there in transcript. "
-        "Don't miss anything, don't shorten any explanation from transcript, "
-        "Including each and every steps, file names, code etc."
-    ) 
-    PROMPT_QA = (
-        "I have the Qa transcript. Extract all question asked by instructor and if there are any "
-        "suggestion/answer given by the instructor, include that. "
-        "Don't miss any questions, even the sub questions to it. "
-        "I repeat, don't miss any questions."
-    )
-    ```
----
-  ### app/git_sync.py
+### app/git_sync.py
 ```python
 import os
 import shutil
@@ -281,9 +283,9 @@ class GitSyncManager:
 git_manager = GitSyncManager()
 ```                             
 ---
-  ### app/markdown_engine.py
-  ```python
-  import markdown
+### app/markdown_engine.py
+```python
+import markdown
 from pymdownx import superfences
 
 def render_markdown(raw_content: str) -> str:
@@ -314,94 +316,11 @@ def render_markdown(raw_content: str) -> str:
         }
     }
     return markdown.markdown(raw_content, extensions=extensions, extension_configs=extension_configs)
-  ```
+```
 ---
-  ### app/youtube_service.py
-  ```python
-  import re
-import logging
-from urllib.parse import urlparse, parse_qs
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api.formatters import TextFormatter
-import google.generativeai as genai
-from app.config import GEMINI_API_KEY, PROMPT_CLASS_NOTES, PROMPT_QA
-
-logger = logging.getLogger("YouTubeService")
-
-class YouTubeService:
-    @staticmethod
-    def extract_video_id(url_or_id: str) -> str:
-        """Extracts YouTube 11-character video ID from any YouTube URL format."""
-        url_or_id = url_or_id.strip()
-        if len(url_or_id) == 11 and not ("/" in url_or_id or "." in url_or_id):
-            return url_or_id
-            
-        parsed = urlparse(url_or_id)
-        if parsed.hostname in ("youtu.be", "www.youtu.be"):
-            return parsed.path.lstrip("/")
-        if parsed.hostname in ("youtube.com", "[www.youtube.com](https://www.youtube.com)", "m.youtube.com"):
-            if parsed.path == "/watch":
-                return parse_qs(parsed.query).get("v", [""])[0]
-            elif parsed.path.startswith(("/embed/", "/v/", "/shorts/")):
-                return parsed.path.split("/")[2]
-                
-        match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url_or_id)
-        if match:
-            return match.group(1)
-        raise ValueError("Invalid YouTube URL or Video ID provided.")
-
-    @staticmethod
-    def get_transcript(video_id: str) -> str:
-        """Fetches raw subtitles/transcript for a YouTube video in English, Hindi, or auto-generated."""
-        try:
-            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-            # Try manual english, generated english, or any available transcript
-            try:
-                transcript = transcript_list.find_transcript(['en', 'en-US', 'en-GB'])
-            except Exception:
-                try:
-                    transcript = transcript_list.find_generated_transcript(['en', 'en-US', 'en-GB'])
-                except Exception:
-                    transcript = next(iter(transcript_list))
-                    
-            data = transcript.fetch()
-            formatter = TextFormatter()
-            return formatter.format_transcript(data)
-        except Exception as e:
-            logger.error(f"Failed to fetch YouTube transcript: {e}")
-            raise RuntimeError(f"Could not retrieve transcript from YouTube: {str(e)}")
-
-    @staticmethod
-    def generate_ai_notes(transcript: str, mode: str = "class_notes", custom_prompt: str = "", api_key: str = None) -> str:
-        """Processes the transcript with Google Gemini using the specified prompt."""
-        key = api_key or GEMINI_API_KEY
-        if not key:
-            raise ValueError("Gemini API Key is missing. Please set GEMINI_API_KEY in environment or Settings tab.")
-            
-        genai.configure(api_key=key)
-        
-        if mode == "qa":
-            system_prompt = PROMPT_QA
-        elif mode == "custom" and custom_prompt:
-            system_prompt = custom_prompt
-        else:
-            system_prompt = PROMPT_CLASS_NOTES
-            
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        
-        full_prompt = (
-            f"SYSTEM INSTRUCTION:\n{system_prompt}\n\n"
-            f"---\nTRANSCRIPT CONTENT:\n{transcript}\n---\n\n"
-            f"Please output clean, well-formatted Markdown."
-        )
-        
-        response = model.generate_content(full_prompt)
-        return response.text
-  ```                
----
-  ### app/main.py
-  ```python
-  import os
+### app/main.py
+```python
+import os
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Form, HTTPException
@@ -567,12 +486,12 @@ async def save_note(
         f.write(content)
         
     return JSONResponse({"status": "success", "path": os.path.relpath(file_path, NOTES_DIR)})
-    ```
+```
 
 ---
-  ### app/templates/base.html
-  ```html
-  <!DOCTYPE html>
+### app/templates/base.html
+```html
+<!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-900 text-slate-100">
 <head>
   <meta charset="UTF-8">
@@ -662,8 +581,8 @@ async def save_note(
 </html>
 ```
 ---
-  ### app/templates/index.html
-  ```html
+### app/templates/index.html
+```html
   {% extends "base.html" %}
 {% block title %}Notes Explorer - DevOps Hub{% endblock %}
 
@@ -815,10 +734,11 @@ async def save_note(
   });
 </script>
 {% endblock %}
-  ```
+```
 ---
-  ### app/templates/youtube.html
+### app/templates/youtube.html
 ```html
+
 {% extends "base.html" %}
 {% block title %}YouTube AI Notes & QA Generator - DevOps Hub{% endblock %}
 
@@ -1010,9 +930,9 @@ async def save_note(
 {% endblock %}
 ```
 ---
-  ### app/templates/settings.html
-  ```html
-  {% extends "base.html" %}
+### app/templates/settings.html
+```html
+{% extends "base.html" %}
 {% block title %}Sync & Configuration - DevOps Hub{% endblock %}
 
 {% block content %}
@@ -1063,9 +983,9 @@ async def save_note(
   </div>
 </div>
 {% endblock %}
-  ```
+```
 ---
-  ### k8s/all-in-one.yaml (Complete Kubernetes Manifests)
+### k8s/all-in-one.yaml (Complete Kubernetes Manifests)
 ```yaml
 apiVersion: v1
 kind: Namespace
@@ -1174,10 +1094,10 @@ spec:
       port: 8000
       targetPort: 8000
       nodePort: 30080
-  ```
+```
 ---
-  ## 3. Automated 1-Click Setup & Deploy Script
-  ```powershell
+## 3. Automated 1-Click Setup & Deploy Script
+```powershell
 # =====================================================================
 # 1-Click Setup & Deploy Script for Docker Desktop Kubernetes
 # =====================================================================
@@ -1211,9 +1131,9 @@ Write-Host "`n========================================================" -Foregro
 Write-Host " Deployment Successful! " -ForegroundColor Green
 Write-Host " Access your website at: http://localhost:30080" -ForegroundColor Green
 Write-Host "========================================================" -ForegroundColor Green
-  ```
+```
 ---    
-  ## 4. How Everything Works
+## 4. How Everything Works
   
 | Feature | Implementation Details |
 | :---- | :---- |
