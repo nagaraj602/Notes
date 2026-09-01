@@ -53,124 +53,123 @@ gitpython>=3.1.42
 aiofiles>=23.2.1
 ```
   ──────                                                                                                                                 
-  ### Dockerfile (Multi-Stage Build)                                                                                                     
-                                                                                                                                         
-    # ==========================================                                                                                         
-    # Stage 1: Build & Dependencies                                                                                                      
-    # ==========================================                                                                                         
-    FROM python:3.11-slim AS builder                                                                                                     
-                                                                                                                                         
-    WORKDIR /build                                                                                                                       
-                                                                                                                                         
-    # Install system build dependencies                                                                                                  
-    RUN apt-get update && apt-get install -y --no-install-recommends \                                                                   
-        gcc \                                                                                                                            
-        git \                                                                                                                            
-        && rm -rf /var/lib/apt/lists/*                                                                                                   
-                                                                                                                                         
-    COPY requirements.txt .                                                                                                              
-    RUN pip install --no-cache-dir --user -r requirements.txt                                                                            
-                                                                                                                                         
-    # ==========================================                                                                                         
-    # Stage 2: Final Minimal Runtime Image                                                                                               
-    # ==========================================                                                                                         
-    FROM python:3.11-slim AS runtime                                                                                                     
-                                                                                                                                         
-    WORKDIR /app                                                                                                                         
-                                                                                                                                         
-    # Install git and ca-certificates for repo cloning and HTTPS                                                                         
-    RUN apt-get update && apt-get install -y --no-install-recommends \                                                                   
-        git \                                                                                                                            
-        ca-certificates \                                                                                                                
-        curl \                                                                                                                           
-        && rm -rf /var/lib/apt/lists/*                                                                                                   
-                                                                                                                                         
-    # Copy installed python packages from builder                                                                                        
-    COPY --from=builder /root/.local /root/.local                                                                                        
-    ENV PATH=/root/.local/bin:$PATH                                                                                                      
-    ENV PYTHONUNBUFFERED=1                                                                                                               
-                                                                                                                                         
-    # Copy application source code                                                                                                       
-    COPY app/ /app/app/                                                                                                                  
-                                                                                                                                         
-    # Create data directory for notes storage                                                                                            
-    RUN mkdir -p /app/data/notes                                                                                                         
-                                                                                                                                         
-    # Environment variable defaults                                                                                                      
-    ENV REPO_URL="https://github.com/nagaraj602/Notes.git"                                                                               
-    ENV REPO_BRANCH="main"                                                                                                               
-    ENV AUTO_SYNC_INTERVAL_MINUTES=5                                                                                                     
-    ENV NOTES_DIR="/app/data/notes"                                                                                                      
-    ENV PORT=8000                                                                                                                        
-                                                                                                                                         
-    EXPOSE 8000                                                                                                                          
-                                                                                                                                         
-    HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \                                                             
-      CMD curl -f http://localhost:8000/api/health || exit 1                                                                             
-                                                                                                                                         
-    CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]                                                               
+  ### Dockerfile (Multi-Stage Build)
+```bash
+# ==========================================
+# Stage 1: Build & Dependencies
+# ==========================================
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Install system build dependencies
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+	git \
+    && rm -rf /var/lib/apt/lists/*
+	
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# ==========================================
+# Stage 2: Final Minimal Runtime Image
+# ==========================================
+FROM python:3.11-slim AS runtime
+WORKDIR /app
+# Install git and ca-certificates for repo cloning and HTTPS
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*                                   
+# Copy installed python packages from builder
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH 
+ENV PYTHONUNBUFFERED=1
+
+# Copy application source code
+COPY app/ /app/app/
+
+# Create data directory for notes storage
+RUN mkdir -p /app/data/notes  
+
+# Environment variable defaults
+ENV REPO_URL="https://github.com/nagaraj602/Notes.git"
+ENV REPO_BRANCH="main"
+ENV AUTO_SYNC_INTERVAL_MINUTES=5
+ENV NOTES_DIR="/app/data/notes"
+ENV PORT=8000
+
+EXPOSE 8000
+
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8000/api/health || exit 1
+  
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```                    
   ──────                                                                                                                                 
-  ### .dockerignore                                                                                                                      
-                                                                                                                                         
-    __pycache__                                                                                                                          
-    *.pyc                                                                                                                                
-    *.pyo                                                                                                                                
-    *.pyd                                                                                                                                
-    .git                                                                                                                                 
-    .gitignore                                                                                                                           
-    .env                                                                                                                                 
-    data/                                                                                                                                
-    k8s/                                                                                                                                 
-    *.md                                                                                                                                 
-    deploy.ps1                                                                                                                           
+  ### .dockerignore
+
+    __pycache__
+    *.pyc
+    *.pyo
+    *.pyd
+    .git
+    .gitignore
+    .env
+    data/
+    k8s/
+    *.md
+    deploy.ps1
   ──────                                                                                                                                 
   ### app/config.py                                                                                                                      
-                                                                                                                                         
-    import os                                                                                                                            
-                                                                                                                                         
-    REPO_URL = os.getenv("REPO_URL", "https://github.com/nagaraj602/Notes.git")                                                          
-    REPO_BRANCH = os.getenv("REPO_BRANCH", "main")                                                                                       
-    AUTO_SYNC_INTERVAL_MINUTES = int(os.getenv("AUTO_SYNC_INTERVAL_MINUTES", "5"))                                                       
-    NOTES_DIR = os.getenv("NOTES_DIR", "/app/data/notes")                                                                                
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")                                                                                     
-                                                                                                                                         
-    # Default prompt templates as requested                                                                                              
-    PROMPT_CLASS_NOTES = (                                                                                                               
-        "I have this transcript. Make it proper as it is looking like class teaching. "                                                  
-        "It should be in correct thing. Not look like teaching or coversation. "                                                         
-        "Don't assume anything. Don't add your own concpt. You should give what is there in transcript. "                                
-        "Don't miss anything, don't shorten any explanation from transcript, "                                                           
-        "Including each and every steps, file names, code etc."                                                                          
-    )                                                                                                                                    
-                                                                                                                                         
-    PROMPT_QA = (                                                                                                                        
-        "I have the Qa transcript. Extract all question asked by instructor and if there are any "                                       
-        "suggestion/answer given by the instructor, include that. "                                                                      
-        "Don't miss any questions, even the sub questions to it. "                                                                       
-        "I repeat, don't miss any questions."                                                                                            
-    )                                                                                                                                    
+   ```bash                                                                                                                                      
+    import os
+    
+    REPO_URL = os.getenv("REPO_URL", "https://github.com/nagaraj602/Notes.git")
+    REPO_BRANCH = os.getenv("REPO_BRANCH", "main")
+    AUTO_SYNC_INTERVAL_MINUTES = int(os.getenv("AUTO_SYNC_INTERVAL_MINUTES", "5"))
+    NOTES_DIR = os.getenv("NOTES_DIR", "/app/data/notes") 
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    
+    # Default prompt templates as requested
+    PROMPT_CLASS_NOTES = (
+        "I have this transcript. Make it proper as it is looking like class teaching. "
+        "It should be in correct thing. Not look like teaching or coversation. "
+        "Don't assume anything. Don't add your own concpt. You should give what is there in transcript. "
+        "Don't miss anything, don't shorten any explanation from transcript, "
+        "Including each and every steps, file names, code etc."
+    ) 
+    PROMPT_QA = (
+        "I have the Qa transcript. Extract all question asked by instructor and if there are any "
+        "suggestion/answer given by the instructor, include that. "
+        "Don't miss any questions, even the sub questions to it. "
+        "I repeat, don't miss any questions."
+    )
+    ```
   ──────                                                                                                                                 
-  ### app/git_sync.py                                                                                                                    
-                                                                                                                                         
-    import os                                                                                                                            
-    import shutil                                                                                                                        
-    import git                                                                                                                           
-    import time                                                                                                                          
-    import logging                                                                                                                       
-    from app.config import REPO_URL, REPO_BRANCH, NOTES_DIR                                                                              
-                                                                                                                                         
-    logging.basicConfig(level=logging.INFO)                                                                                              
-    logger = logging.getLogger("GitSync")                                                                                                
-                                                                                                                                         
-    class GitSyncManager:                                                                                                                
-        def __init__(self, repo_url=REPO_URL, branch=REPO_BRANCH, target_dir=NOTES_DIR):                                                 
-            self.repo_url = repo_url                                                                                                     
-            self.branch = branch                                                                                                         
-            self.target_dir = target_dir                                                                                                 
-            self.last_sync_time = None                                                                                                   
-            self.sync_status = "Initialized"                                                                                             
-                                                                                                                                         
-        def sync(self):                                                                                                                  
+  ### app/git_sync.py
+  
+    import os
+    import shutil
+    import git
+    import time
+    import logging
+    from app.config import REPO_URL, REPO_BRANCH, NOTES_DIR
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("GitSync")
+    class GitSyncManager:
+        def __init__(self, repo_url=REPO_URL, branch=REPO_BRANCH, target_dir=NOTES_DIR):
+            self.repo_url = repo_url
+            self.branch = branch
+            self.target_dir = target_dir
+            self.last_sync_time = None
+            self.sync_status = "Initialized"
+        def sync(self):
             try:                                                                                                                         
                 os.makedirs(self.target_dir, exist_ok=True)                                                                              
                 git_folder = os.path.join(self.target_dir, ".git")                                                                       
