@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DevOps Knowledge Portal{% endblock %}</title>
+  <!-- Tailwind CSS -->
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css)">
+  <!-- Prism Code Highlighting -->
+  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css)">
+  <script src="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js)"></script>
+  <script src="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js)"></script>
+  <style>
+    /* Custom Markdown Rendering Styles */
+    .prose-custom { max-width: 100%; color: #e2e8f0; }
+    .prose-custom h1 { font-size: 2rem; font-weight: 700; color: #38bdf8; margin-top: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+    .prose-custom h2 { font-size: 1.5rem; font-weight: 600; color: #818cf8; margin-top: 1.25rem; margin-bottom: 0.75rem; }
+    .prose-custom h3 { font-size: 1.25rem; font-weight: 600; color: #a78bfa; margin-top: 1rem; margin-bottom: 0.5rem; }
+    .prose-custom p { line-height: 1.75; margin-bottom: 1rem; }
+    .prose-custom ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+    .prose-custom ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
+    .prose-custom li { margin-bottom: 0.25rem; }
+    .prose-custom code { background-color: #1e293b; color: #f43f5e; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; font-family: monospace; }
+    .prose-custom pre { background-color: #0f172a !important; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin-bottom: 1.25rem; position: relative; }
+    .prose-custom pre code { background-color: transparent !important; color: #e2e8f0; padding: 0; }
+    .prose-custom table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+    .prose-custom th, .prose-custom td { border: 1px solid #334155; padding: 0.75rem; text-align: left; }
+    .prose-custom th { background-color: #1e293b; color: #38bdf8; font-weight: 600; }
+    .prose-custom tr:nth-child(even) { background-color: #0f172a; }
+    .prose-custom blockquote { border-left: 4px solid #38bdf8; padding-left: 1rem; margin-left: 0; color: #94a3b8; font-style: italic; }
+  </style>
+</head>
+<body class="h-full flex flex-col">
+  <!-- Navbar -->
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center space-x-4">
+      <a href="/" class="flex items-center space-x-3 text-cyan-400 font-bold text-xl hover:text-cyan-300">
+        <i class="fa-solid fa-cubes-stacked text-2xl"></i>
+        <span>DevOps Hub</span>
+      </a>
+      <span class="text-xs bg-cyan-950 text-cyan-400 px-2.5 py-1 rounded-full border border-cyan-800">
+        <i class="fa-solid fa-code-branch mr-1"></i> Auto-Sync: Active
+      </span>
+    </div>
+    
+    <!-- Navigation Links -->
+    <nav class="flex items-center space-x-2">
+      <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 text-slate-200">
+        <i class="fa-solid fa-book-bookmark mr-1.5 text-cyan-400"></i> Notes Explorer
+      </a>
+      <a href="/youtube" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 text-slate-200">
+        <i class="fa-brands fa-youtube mr-1.5 text-red-400"></i> YouTube AI Notes & QA
+      </a>
+      <a href="/settings" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 text-slate-200">
+        <i class="fa-solid fa-sliders mr-1.5 text-indigo-400"></i> Sync & Settings
+      </a>
+      <button onclick="triggerManualSync()" class="ml-2 px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md text-sm font-semibold transition flex items-center shadow">
+        <i id="sync-icon" class="fa-solid fa-rotate mr-1.5"></i> Sync Repo
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 overflow-hidden flex">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    async function triggerManualSync() {
+      const icon = document.getElementById("sync-icon");
+      icon.classList.add("fa-spin");
+      try {
+        const res = await fetch("/api/sync", { method: "POST" });
+        const data = await res.json();
+        alert("Sync Completed: " + data.message);
+        window.location.reload();
+      } catch (err) {
+        alert("Sync failed: " + err);
+      } finally {
+        icon.classList.remove("fa-spin");
+      }
+    }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

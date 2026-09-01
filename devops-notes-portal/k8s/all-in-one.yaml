@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: devops-hub
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devops-hub-config
+  namespace: devops-hub
+data:
+  REPO_URL: "[https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git)"
+  REPO_BRANCH: "main"
+  AUTO_SYNC_INTERVAL_MINUTES: "5"
+  NOTES_DIR: "/app/data/notes"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: devops-hub-secret
+  namespace: devops-hub
+type: Opaque
+stringData:
+  GEMINI_API_KEY: "" # Put your Gemini API Key here (or leave blank to supply via web UI)
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: devops-hub-notes-pvc
+  namespace: devops-hub
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-hub-deployment
+  namespace: devops-hub
+  labels:
+    app: devops-hub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-hub
+  template:
+    metadata:
+      labels:
+        app: devops-hub
+    spec:
+      containers:
+        - name: devops-hub
+          image: devops-hub:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: devops-hub-config
+            - secretRef:
+                name: devops-hub-secret
+          volumeMounts:
+            - name: notes-storage
+              mountPath: /app/data/notes
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: notes-storage
+          persistentVolumeClaim:
+            claimName: devops-hub-notes-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-hub-service
+  namespace: devops-hub
+spec:
+  type: NodePort # Docker Desktop routes NodePort directly to localhost
+  selector:
+    app: devops-hub
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      nodePort: 30080

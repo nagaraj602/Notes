@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Notes Explorer - DevOps Hub{% endblock %}
+
+{% block content %}
+<div class="w-80 bg-slate-800/90 border-r border-slate-700 flex flex-col h-full">
+  <!-- Search Header -->
+  <div class="p-3 border-b border-slate-700">
+    <div class="relative">
+      <input type="text" id="searchInput" placeholder="Search notes & content..." class="w-full bg-slate-900 text-sm rounded-lg pl-9 pr-3 py-2 border border-slate-700 text-slate-200 focus:outline-none focus:border-cyan-500">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+    </div>
+  </div>
+
+  <!-- Search Results (hidden by default) -->
+  <div id="searchResults" class="hidden overflow-y-auto flex-1 p-2 space-y-1"></div>
+
+  <!-- Recursive File Tree -->
+  <div id="fileTreeContainer" class="flex-1 overflow-y-auto p-3 text-sm font-mono select-none">
+    <div class="text-xs uppercase text-slate-400 font-bold tracking-wider mb-2 px-1">
+      <i class="fa-solid fa-folder-tree mr-1 text-cyan-400"></i> Repository Files
+    </div>
+    {% macro render_node(node) %}
+      {% if node.type == 'folder' %}
+        <div class="folder-group mb-1">
+          <div class="flex items-center space-x-2 py-1 px-2 rounded hover:bg-slate-700 cursor-pointer text-slate-300 font-sans font-medium" onclick="toggleFolder(this)">
+            <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform"></i>
+            <i class="fa-solid fa-folder text-amber-400"></i>
+            <span>{{ node.name }}</span>
+          </div>
+          <div class="folder-children pl-4 border-l border-slate-700 ml-3 hidden">
+            {% for child in node.children %}
+              {{ render_node(child) }}
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <div class="file-item flex items-center space-x-2 py-1 px-2 rounded hover:bg-slate-700/80 cursor-pointer text-slate-300 hover:text-cyan-300 font-sans text-xs" onclick="loadFile('{{ node.path }}')">
+          {% if node.ext in ['.md', '.markdown'] %}
+            <i class="fa-brands fa-markdown text-blue-400"></i>
+          {% elif node.ext in ['.yaml', '.yml'] %}
+            <i class="fa-solid fa-file-code text-red-400"></i>
+          {% elif node.ext in ['.sh', '.bash'] %}
+            <i class="fa-solid fa-terminal text-green-400"></i>
+          {% else %}
+            <i class="fa-regular fa-file-lines text-slate-400"></i>
+          {% endif %}
+          <span class="truncate">{{ node.name }}</span>
+        </div>
+      {% endif %}
+    {% endmacro %}
+
+    {% for node in tree %}
+      {{ render_node(node) }}
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Main Note Viewer -->
+<div class="flex-1 flex flex-col h-full bg-slate-900 overflow-hidden">
+  <div id="noteHeader" class="bg-slate-800/60 border-b border-slate-700 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <i class="fa-solid fa-file-lines text-cyan-400 text-lg"></i>
+      <span id="activeFilePath" class="text-sm font-mono text-slate-300">Select a note from the left sidebar</span>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="copyRawNote()" class="px-2.5 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded text-slate-200">
+        <i class="fa-regular fa-copy mr-1"></i> Copy Raw
+      </button>
+      <button onclick="downloadNote()" class="px-2.5 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded text-slate-200">
+        <i class="fa-solid fa-download mr-1"></i> Download
+      </button>
+    </div>
+  </div>
+
+  <div id="noteViewer" class="flex-1 overflow-y-auto p-8 prose-custom">
+    <div class="text-center py-24 text-slate-500">
+      <i class="fa-solid fa-book-open text-6xl mb-4 text-slate-600"></i>
+      <h2 class="text-2xl font-bold text-slate-400">Welcome to DevOps Notes Portal</h2>
+      <p class="mt-2 text-sm text-slate-500">Click any folder or note on the left sidebar to start reading.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentFileRaw = "";
+  let currentFilePath = "";
+
+  function toggleFolder(elem) {
+    const children = elem.nextElementSibling;
+    const chevron = elem.querySelector(".fa-chevron-right");
+    children.classList.toggle("hidden");
+    chevron.classList.toggle("rotate-90");
+  }
+
+  async function loadFile(path) {
+    currentFilePath = path;
+    document.getElementById("activeFilePath").innerText = path;
+    const res = await fetch(`/api/file?path=${encodeURIComponent(path)}`);
+    const data = await res.json();
+    currentFileRaw = data.raw;
+    document.getElementById("noteViewer").innerHTML = data.html;
+    Prism.highlightAll();
+  }
+
+  function copyRawNote() {
+    if (!currentFileRaw) return alert("No note selected");
+    navigator.clipboard.writeText(currentFileRaw);
+    alert("Copied raw note to clipboard!");
+  }
+
+  function downloadNote() {
+    if (!currentFileRaw) return alert("No note selected");
+    const blob = new Blob([currentFileRaw], { type: "text/markdown" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = currentFilePath.split("/").pop() || "note.md";
+    a.click();
+  }
+
+  // Live Search
+  const searchInput = document.getElementById("searchInput");
+  const searchResults = document.getElementById("searchResults");
+  const fileTreeContainer = document.getElementById("fileTreeContainer");
+
+  searchInput.addEventListener("input", async (e) => {
+    const q = e.target.value.trim();
+    if (!q) {
+      searchResults.classList.add("hidden");
+      fileTreeContainer.classList.remove("hidden");
+      return;
+    }
+    fileTreeContainer.classList.add("hidden");
+    searchResults.classList.remove("hidden");
+
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const results = await res.json();
+    if (results.length === 0) {
+      searchResults.innerHTML = `<div class="p-3 text-xs text-slate-400">No matching notes found.</div>`;
+      return;
+    }
+    searchResults.innerHTML = results.map(r => `
+      <div onclick="loadFile('${r.path}')" class="p-2 rounded bg-slate-900/60 hover:bg-slate-700 cursor-pointer border border-slate-700">
+        <div class="text-xs font-semibold text-cyan-400">${r.filename}</div>
+        <div class="text-[11px] text-slate-400 truncate">${r.snippet}</div>
+      </div>
+    `).join("");
+  });
+</script>
+{% endblock %}
