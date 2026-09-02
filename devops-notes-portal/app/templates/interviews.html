@@ -44,7 +44,7 @@
     <div id="pendingFollowupsContainer" class="hidden space-y-3"></div>
 
     <!-- Interactive Metrics Summary Cards (Clickable to view detailed lists) -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
       <!-- Total Attended Card -->
       <div onclick="showStatListModal('attended')" class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between cursor-pointer hover:border-emerald-300 hover:shadow-md hover:scale-[1.01] transition-all group" title="Click to view all attended interview rounds">
         <div>
@@ -81,12 +81,24 @@
         </div>
       </div>
 
+      <!-- Upcoming Scheduled Card -->
+      <div onclick="showStatListModal('upcoming')" class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between cursor-pointer hover:border-violet-300 hover:shadow-md hover:scale-[1.01] transition-all group" title="Click to view upcoming scheduled interviews">
+        <div>
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider group-hover:text-violet-700 transition-colors">Upcoming Scheduled</div>
+          <div id="statUpcomingCount" class="text-2xl font-black text-violet-600 mt-0.5">0</div>
+          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-calendar-check text-violet-500 mr-1"></i><span id="statUpcomingSub">0 upcoming scheduled</span></div>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center text-lg border border-violet-100 group-hover:bg-violet-600 group-hover:text-white transition-all">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+      </div>
+
       <!-- Questions Bank Card -->
-      <div onclick="showStatListModal('upcoming')" class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between cursor-pointer hover:border-amber-300 hover:shadow-md hover:scale-[1.01] transition-all group" title="Click to view upcoming scheduled interviews">
+      <div onclick="showStatListModal('questions')" class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between cursor-pointer hover:border-amber-300 hover:shadow-md hover:scale-[1.01] transition-all group" title="Click to view Questions Bank repository">
         <div>
           <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider group-hover:text-amber-700 transition-colors">Questions Bank</div>
           <div id="statTotalQuestions" class="text-2xl font-black text-amber-600 mt-0.5">0</div>
-          <div id="statUpcomingCount" class="text-[10px] text-slate-500 mt-1">0 upcoming scheduled</div>
+          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-layer-group text-amber-500 mr-1"></i><span id="statQuestionsSub">0 questions recorded</span></div>
         </div>
         <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg border border-amber-100 group-hover:bg-amber-600 group-hover:text-white transition-all">
           <i class="fa-solid fa-circle-question"></i>
@@ -810,8 +822,14 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       document.getElementById("statTotalCompanies").innerText = currentStats.total_companies || 0;
       document.getElementById("statWeeklyActivity").innerText = `${currentStats.weekly_interviews || 0} Interviews`;
       document.getElementById("statWeeklyCompanies").innerText = `${currentStats.weekly_companies || 0} companies this week`;
-      document.getElementById("statTotalQuestions").innerText = currentStats.total_questions || 0;
-      document.getElementById("statUpcomingCount").innerText = `${currentStats.upcoming_count || 0} upcoming scheduled`;
+      const upElem = document.getElementById("statUpcomingCount");
+      if (upElem) upElem.innerText = currentStats.upcoming_count || 0;
+      const upSub = document.getElementById("statUpcomingSub");
+      if (upSub) upSub.innerText = `${currentStats.upcoming_count || 0} upcoming scheduled`;
+      const qElem = document.getElementById("statTotalQuestions");
+      if (qElem) qElem.innerText = currentStats.total_questions || 0;
+      const qSub = document.getElementById("statQuestionsSub");
+      if (qSub) qSub.innerText = `${currentStats.total_questions || 0} questions recorded`;
       
       renderTodayInterviews();
     } catch (err) {
@@ -1133,23 +1151,80 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       }
     } else if (type === "upcoming") {
       titleElem.innerText = "Upcoming Scheduled Interviews";
-      iconElem.className = "w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold";
+      iconElem.className = "w-8 h-8 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center font-bold";
       iconElem.innerHTML = `<i class="fa-solid fa-calendar-days text-xs"></i>`;
       const list = currentStats.upcoming_list || [];
       if (list.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 text-slate-400">No upcoming interviews scheduled. Click "+ Schedule Interview" to add one.</div>`;
+        container.innerHTML = `
+          <div class="text-center py-10 text-slate-400">
+            <i class="fa-solid fa-calendar-xmark text-3xl text-slate-300 mb-2 block"></i>
+            <p class="font-bold text-slate-600">No upcoming interviews scheduled</p>
+            <p class="text-xs text-slate-400 mt-0.5">Click below to schedule your next interview round.</p>
+            <button onclick="closeStatListModal(); openScheduleModal();" class="mt-4 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs transition-all shadow-sm">
+              <i class="fa-solid fa-calendar-plus mr-1.5"></i> Schedule Interview
+            </button>
+          </div>
+        `;
       } else {
         container.innerHTML = list.map(s => `
-          <div class="p-3.5 rounded-2xl bg-white border border-amber-100 shadow-xs flex items-center justify-between">
+          <div class="p-3.5 rounded-2xl bg-white border border-violet-100 shadow-xs flex items-center justify-between">
             <div>
               <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
-              <div class="text-xs text-amber-800 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')}</div>
-              <div class="text-[11px] text-amber-700 font-bold mt-0.5 font-mono"><i class="fa-regular fa-clock mr-1"></i>${formatDateCustom(s.date)} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
+              <div class="text-xs text-violet-700 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')}</div>
+              <div class="text-[11px] text-violet-600 font-bold mt-0.5 font-mono"><i class="fa-regular fa-clock mr-1"></i>${formatDateCustom(s.date)} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
               ${s.salary_ctc ? `<div class="text-[10px] text-emerald-800 font-bold mt-0.5"><i class="fa-solid fa-coins mr-1"></i>${escapeHtml(s.salary_ctc)}</div>` : ''}
             </div>
-            <button onclick="closeStatListModal(); editSchedule('${s.id}')" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold border border-amber-200 text-xs">Edit</button>
+            <button onclick="closeStatListModal(); editSchedule('${s.id}')" class="px-3 py-1.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-800 font-bold border border-violet-200 text-xs">Edit</button>
           </div>
         `).join("");
+      }
+    } else if (type === "questions") {
+      titleElem.innerText = "Questions Bank Repository";
+      iconElem.className = "w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold";
+      iconElem.innerHTML = `<i class="fa-solid fa-circle-question text-xs"></i>`;
+      const list = allQuestions || [];
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 text-slate-400">
+            <i class="fa-solid fa-folder-open text-3xl text-slate-300 mb-2 block"></i>
+            <p class="font-bold text-slate-600">No questions recorded yet</p>
+            <p class="text-xs text-slate-400 mt-0.5">Attend an interview and upload questions to build your repository.</p>
+            <button onclick="closeStatListModal(); openUploadQaModal();" class="mt-4 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all shadow-sm">
+              <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Upload Interview Q&A
+            </button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="mb-3 flex items-center justify-between pb-2 border-b border-amber-100">
+            <div>
+              <span class="font-extrabold text-xs text-slate-800">${list.length} Questions Recorded</span>
+              <span class="text-[10px] text-slate-500 ml-1">in your question bank</span>
+            </div>
+            <button onclick="closeStatListModal(); document.getElementById('qaSearchInput')?.scrollIntoView({behavior:'smooth'}); document.getElementById('qaSearchInput')?.focus();" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all flex items-center space-x-1">
+              <span>Go to Explorer</span>
+              <i class="fa-solid fa-arrow-down text-[10px]"></i>
+            </button>
+          </div>
+          <div class="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">
+            ${list.map((q, idx) => `
+              <div class="p-3 rounded-2xl bg-white border border-amber-100 shadow-xs space-y-1 hover:border-amber-200 transition-all">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-mono font-bold text-amber-600">#${idx + 1}</span>
+                    <span class="font-extrabold text-xs text-slate-900">${escapeHtml(q.company)}</span>
+                    ${q.round ? `<span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded">${escapeHtml(q.round)}</span>` : ''}
+                  </div>
+                  <span class="text-[10px] font-mono text-slate-400 font-bold">${q.date ? formatDateCustom(q.date) : ''}</span>
+                </div>
+                <div class="text-xs font-bold text-slate-800">${escapeHtml(q.question)}</div>
+                <div class="flex items-center space-x-1 flex-wrap gap-1 pt-1">
+                  ${(q.categories || []).map(c => `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-50 text-sky-700 border border-sky-100">${escapeHtml(c)}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
       }
     }
 
@@ -1508,19 +1583,45 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     loadQuestions();
   }
 
+  function renderMarkdownSafe(text) {
+    if (!text) return "";
+    if (typeof marked !== "undefined" && typeof marked.parse === "function") {
+      try {
+        return marked.parse(text);
+      } catch (err) {
+        console.warn("Marked parse error:", err);
+      }
+    }
+    // Safe resilient fallback if marked library is unavailable
+    let safe = escapeHtml(text);
+    safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    safe = safe.replace(/`([^`]+)`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sky-700 font-mono text-[11px]">$1</code>');
+    safe = safe.replace(/\n/g, '<br>');
+    return safe;
+  }
+
   function renderQuestionsList() {
     const container = document.getElementById("qaListContainer");
     if (!allQuestions || allQuestions.length === 0) {
+      const qInput = document.getElementById("qaSearchInput")?.value.trim();
+      const isFiltered = (activeCategory && activeCategory !== "All") || !!qInput;
       container.innerHTML = `
         <div class="text-center py-16 p-6 rounded-2xl glass-card border border-sky-100">
           <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl mx-auto mb-3">
             <i class="fa-solid fa-folder-open"></i>
           </div>
-          <h4 class="text-sm font-bold text-slate-800 mb-1">No interview questions uploaded yet</h4>
-          <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">Once you attend an interview, click "Upload Interview Q&A" to record your questions, difficulty, and experience.</p>
-          <button onclick="openUploadQaModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition-all">
-            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Upload Q&A
-          </button>
+          <h4 class="text-sm font-bold text-slate-800 mb-1">${isFiltered ? 'No matching questions found' : 'No interview questions uploaded yet'}</h4>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">${isFiltered ? (qInput ? `No results for "${escapeHtml(qInput)}" in category "${escapeHtml(activeCategory)}".` : `No questions recorded under "${escapeHtml(activeCategory)}" yet.`) : 'Once you attend an interview, click "Upload Interview Q&A" to record your questions, difficulty, and experience.'}</p>
+          ${isFiltered ? `
+            <button onclick="clearQaSearch(); filterCategoryPill('All');" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition-all">
+              <i class="fa-solid fa-list mr-1.5"></i> Reset Filters & View All
+            </button>
+          ` : `
+            <button onclick="openUploadQaModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition-all">
+              <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Upload Q&A
+            </button>
+          `}
         </div>
       `;
       return;
@@ -1531,7 +1632,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
         <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100/90 text-sky-800 border border-sky-200">${escapeHtml(c)}</span>
       `).join("");
 
-      const renderedAnswer = marked.parse(q.answer || "");
+      const renderedAnswer = renderMarkdownSafe(q.answer || "");
 
       const difficultyBadges = {
         "Easy": "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -1584,6 +1685,10 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
         </details>
       `;
     }).join("");
+
+    if (window.Prism) {
+      try { Prism.highlightAllUnder(container); } catch(e) {}
+    }
   }
 
   function toggleAllInterviewAccordions(openState) {
