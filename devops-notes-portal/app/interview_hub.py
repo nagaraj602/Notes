@@ -287,6 +287,80 @@ class InterviewManager:
             self._save_json(self.questions_file, [])
         if not os.path.exists(self.rounds_file):
             self._save_json(self.rounds_file, [])
+        self._reconcile_schedules_from_questions()
+
+    def _reconcile_schedules_from_questions(self):
+        """
+        Auto-reconciles schedules.json from questions.json.
+        If questions were uploaded for a company & round on a date, but no schedule
+        entry exists in schedules.json, automatically creates the completed schedule record.
+        """
+        questions = self._read_json(self.questions_file)
+        if not questions:
+            return
+        
+        schedules = self._read_json(self.schedules_file)
+        modified = False
+
+        grouped = {}
+        for q in questions:
+            comp = (q.get("company") or "").strip()
+            rnd = (q.get("round") or "Technical Round 1").strip()
+            dt = (q.get("date") or date.today().isoformat()).strip()
+            if not comp:
+                continue
+            key = (comp.lower(), rnd.lower(), dt)
+            if key not in grouped:
+                grouped[key] = {
+                    "company": comp,
+                    "round": rnd,
+                    "date": dt,
+                    "experience": q.get("experience", ""),
+                    "notes": q.get("notes", ""),
+                    "difficulty": q.get("difficulty", "Moderate"),
+                    "created_at": q.get("created_at", datetime.utcnow().isoformat())
+                }
+
+        for (comp_lower, rnd_lower, dt), info in grouped.items():
+            matched = False
+            for s in schedules:
+                s_comp = (s.get("company") or "").strip().lower()
+                s_rnd = (s.get("round") or "").strip().lower()
+                s_date = (s.get("date") or "").strip()
+                if s_comp == comp_lower and (s_rnd == rnd_lower or not s_rnd) and (s_date == dt or not s_date):
+                    s["questions_uploaded"] = True
+                    s["status"] = "completed"
+                    if info.get("experience") and not s.get("experience"):
+                        s["experience"] = info["experience"]
+                    if info.get("notes") and not s.get("notes"):
+                        s["notes"] = info["notes"]
+                    if info.get("difficulty") and not s.get("difficulty"):
+                        s["difficulty"] = info["difficulty"]
+                    matched = True
+                    break
+
+            if not matched:
+                new_sched = {
+                    "id": f"sched-{uuid.uuid4().hex[:8]}",
+                    "company": info["company"],
+                    "role": "DevOps Engineer",
+                    "round": info["round"],
+                    "date": info["date"],
+                    "time": "10:00",
+                    "start_time": "10:00",
+                    "end_time": "11:00",
+                    "status": "completed",
+                    "questions_uploaded": True,
+                    "experience": info.get("experience", ""),
+                    "notes": info.get("notes", ""),
+                    "difficulty": info.get("difficulty", "Moderate"),
+                    "created_at": info.get("created_at")
+                }
+                schedules.append(new_sched)
+                modified = True
+
+        if modified:
+            self._save_json(self.schedules_file, schedules, commit_msg="Auto-reconcile completed interview schedules from questions bank")
 
     # --- ROUNDS API ---
     def get_rounds(self) -> List[Dict[str, Any]]:
@@ -425,6 +499,7 @@ class InterviewManager:
 
     # --- SCHEDULES API ---
     def get_schedules(self) -> List[Dict[str, Any]]:
+        self._reconcile_schedules_from_questions()
         schedules = self._read_json(self.schedules_file)
         schedules.sort(key=lambda x: f"{x.get('date', '')} {x.get('start_time') or x.get('time', '')}", reverse=True)
         return schedules
@@ -524,11 +599,15 @@ class InterviewManager:
             # Auto-detect if user left empty
             cats = detect_categories(data.get("question", "") + " " + data.get("answer", ""))
             
+        company_name = data.get("company", "").strip()
+        round_name = data.get("round", "").strip() or "Technical Round 1"
+        interview_date = data.get("date", date.today().isoformat())
+
         new_q = {
             "id": f"q-{uuid.uuid4().hex[:8]}",
-            "company": data.get("company", "").strip(),
-            "round": data.get("round", "").strip(),
-            "date": data.get("date", date.today().isoformat()),
+            "company": company_name,
+            "round": round_name,
+            "date": interview_date,
             "question": data.get("question", "").strip(),
             "answer": data.get("answer", "").strip(),
             "categories": cats,
@@ -537,14 +616,33 @@ class InterviewManager:
         questions.append(new_q)
         self._save_json(self.questions_file, questions)
 
-        # Mark corresponding schedule as completed & uploaded
+        # Mark corresponding schedule as completed & uploaded, or auto-create if missing
         schedules = self._read_json(self.schedules_file)
+        matched = False
         for s in schedules:
-            if s.get("company", "").lower() == new_q["company"].lower():
+            if s.get("company", "").strip().lower() == company_name.lower():
                 s["questions_uploaded"] = True
                 s["status"] = "completed"
-        self._save_json(self.schedules_file, schedules)
+                matched = True
+                break
 
+        if not matched and company_name:
+            new_sched = {
+                "id": f"sched-{uuid.uuid4().hex[:8]}",
+                "company": company_name,
+                "role": "DevOps Engineer",
+                "round": round_name,
+                "date": interview_date,
+                "time": "10:00",
+                "start_time": "10:00",
+                "end_time": "11:00",
+                "status": "completed",
+                "questions_uploaded": True,
+                "created_at": datetime.utcnow().isoformat()
+            }
+            schedules.append(new_sched)
+
+        self._save_json(self.schedules_file, schedules)
         return new_q
 
     def update_question(self, q_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -570,6 +668,10 @@ class InterviewManager:
     def add_bulk_questions(self, company: str, round_name: str, interview_date: str, qa_items: List[Dict[str, Any]], experience: str = "", notes: str = "", difficulty: str = "") -> int:
         questions = self._read_json(self.questions_file)
         added_count = 0
+        company_clean = company.strip()
+        round_clean = round_name.strip() or "Technical Round 1"
+        date_clean = interview_date.strip() or date.today().isoformat()
+
         for item in qa_items:
             q_text = item.get("question", "").strip()
             if not q_text:
@@ -581,9 +683,9 @@ class InterviewManager:
 
             new_q = {
                 "id": f"q-{uuid.uuid4().hex[:8]}",
-                "company": company.strip(),
-                "round": round_name.strip(),
-                "date": interview_date.strip() or date.today().isoformat(),
+                "company": company_clean,
+                "round": round_clean,
+                "date": date_clean,
                 "question": q_text,
                 "answer": item.get("answer", "").strip(),
                 "categories": cats,
@@ -595,12 +697,13 @@ class InterviewManager:
             questions.append(new_q)
             added_count += 1
 
-        self._save_json(self.questions_file, questions, f"Add {added_count} interview questions for {company}")
+        self._save_json(self.questions_file, questions, f"Add {added_count} interview questions for {company_clean}")
 
-        # Update schedule status and attach experience & notes
+        # Update schedule status or auto-create if missing
         schedules = self._read_json(self.schedules_file)
+        matched = False
         for s in schedules:
-            if s.get("company", "").lower() == company.lower() and (not round_name or s.get("round", "").lower() == round_name.lower() or not s.get("questions_uploaded")):
+            if s.get("company", "").strip().lower() == company_clean.lower() and (not round_name or s.get("round", "").strip().lower() == round_clean.lower() or not s.get("questions_uploaded")):
                 s["questions_uploaded"] = True
                 s["status"] = "completed"
                 if experience:
@@ -609,12 +712,34 @@ class InterviewManager:
                     s["notes"] = notes.strip()
                 if difficulty:
                     s["difficulty"] = difficulty.strip()
-        self._save_json(self.schedules_file, schedules, f"Mark interview schedule completed for {company}")
+                matched = True
+                break
 
+        if not matched and company_clean:
+            new_sched = {
+                "id": f"sched-{uuid.uuid4().hex[:8]}",
+                "company": company_clean,
+                "role": "DevOps Engineer",
+                "round": round_clean,
+                "date": date_clean,
+                "time": "10:00",
+                "start_time": "10:00",
+                "end_time": "11:00",
+                "status": "completed",
+                "questions_uploaded": True,
+                "experience": experience.strip(),
+                "notes": notes.strip(),
+                "difficulty": difficulty.strip(),
+                "created_at": datetime.utcnow().isoformat()
+            }
+            schedules.append(new_sched)
+
+        self._save_json(self.schedules_file, schedules, f"Mark interview schedule completed for {company_clean}")
         return added_count
 
     # --- STATISTICS & DETAILED LISTS FOR POPUPS ---
     def get_stats(self) -> Dict[str, Any]:
+        self._reconcile_schedules_from_questions()
         schedules = self._read_json(self.schedules_file)
         questions = self._read_json(self.questions_file)
 
@@ -629,14 +754,29 @@ class InterviewManager:
 
         completed_schedules = [s for s in schedules if s.get("status") == "completed"]
         
-        # Unique companies map
+        # Unique companies map (from all schedules and questions)
         companies_map = {}
-        for s in completed_schedules:
+        for s in schedules:
             comp = s.get("company", "").strip()
             if comp:
                 if comp not in companies_map:
                     companies_map[comp] = []
                 companies_map[comp].append(s)
+
+        # Ensure any company in questions is also present
+        for q in questions:
+            comp = q.get("company", "").strip()
+            if comp and comp not in companies_map:
+                companies_map[comp] = [{
+                    "id": "sched-auto",
+                    "company": comp,
+                    "role": "DevOps Engineer",
+                    "round": q.get("round", "Technical Round 1"),
+                    "date": q.get("date", today_str),
+                    "start_time": "10:00",
+                    "end_time": "11:00",
+                    "status": "completed"
+                }]
 
         # Weekly calculations
         weekly_schedules = []

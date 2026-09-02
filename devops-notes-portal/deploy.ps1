@@ -21,7 +21,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # 3. Push to Docker Hub
 Write-Host "`n[2/4] Pushing images to Docker Hub..." -ForegroundColor Yellow
-docker push nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.2.0
+docker push nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.3.0
 docker push nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:latest
 
 # 4. Apply Kubernetes Manifests

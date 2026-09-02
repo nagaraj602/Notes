@@ -1,1 +1,270 @@
-[]
+[
+  {
+    "id": "q-ab60c2e1",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "How do the Jenkins master and slave communicate?",
+    "answer": "**Follow-up / Sub-questions:**\n- So I said it is through SSH connection right? So how do you establish an SSH connection? Basically how that SSH connection gets authenticated?\n- Is there any other way where master can communicate with slaves other than an SSH connection?\n- Why is there a method called JNLP (Java Network Launch Protocol)? What are the use cases for it?\n\n**Answer / Solution:**\nIf a slave is sitting behind a firewall, the master node cannot directly bypass it and communicate via SSH. In this case, you use JNLP. It establishes an inbound connection where the agent reaches out to communicate with the master.\n\n**Action Items / Takeaways:**\nReview how both SSH and JNLP connections happen, and look at the \"Manage Nodes\" section in Jenkins.\nKubernetes Troubleshooting: Pods & Deployments",
+    "categories": [
+      "Linux",
+      "jenkins",
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674916"
+  },
+  {
+    "id": "q-709942b7",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "You run the kubectl top nodes command. It is showing plenty of CPU available, but a pod remains in a pending state. What could be the possible reasons for it?",
+    "answer": "**Follow-up / Sub-questions:**\n- Any other reasons you can think of?\n\n**Answer / Solution:**\nThe requested CPU might be greater than the allocatable CPU, memory shortage, node taints, node affinity/anti-affinity rules, and topology constraints.",
+    "categories": [
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674933"
+  },
+  {
+    "id": "q-81443dd7",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "You deploy 10 replicas. Five new pods become healthy, but the other five never start. What are the potential causes, how do you investigate, and how will you troubleshoot?",
+    "answer": "To be reviewed / prepared.",
+    "categories": [
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674937"
+  },
+  {
+    "id": "q-eced69e7",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "You deployed version 2 of an application. Within 2 minutes, production traffic starts failing. What are your first five actions?",
+    "answer": "**Answer / Solution:**\nConfirm the impact (verify production is actually down).\nCheck the metrics dashboards and errors, comparing V1 and V2.\nDetermine if it is immediately fixable (create a hotfix).\nIf it is not immediately fixable, roll back to the previous stable deployment.\nThen investigate, do a Root Cause Analysis (RCA), circulate it to the team, and explain the scenario/fix to the clients. Do not prioritize RCA over restoring production.\nKubernetes: Autoscaling & Resource Management",
+    "categories": [
+      "Kubernetes",
+      "Agile",
+      "Monitoring tools"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674943"
+  },
+  {
+    "id": "q-17d00203",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "Your production traffic is increasing, and your cluster has reached around 90% utilization. In this scenario, what would you do?",
+    "answer": "**Follow-up / Sub-questions:**\n- What if the cluster autoscaler refuses to add another node?",
+    "categories": [
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674947"
+  },
+  {
+    "id": "q-1b9c7844",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "CPU utilization is 90% but your HPA (Horizontal Pod Autoscaler) stays at three replicas. What do you check?",
+    "answer": "**Follow-up / Sub-questions:**\n- What in the HPA configuration are you going to increase or decrease?\n- Take a scenario where HPA isn't scaling up. What potential areas are you going to check?",
+    "categories": [
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674950"
+  },
+  {
+    "id": "q-c62bb3ef",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "What is the difference between HPA and VPA (Vertical Pod Autoscaler)?",
+    "answer": "**Follow-up / Sub-questions:**\n- What is VPA? Can you explain again?",
+    "categories": [
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674953"
+  },
+  {
+    "id": "q-fe372313",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "How do you perform a Kubernetes rolling update?",
+    "answer": "**Follow-up / Sub-questions:**\n- Pick any one method (e.g., Blue-Green) and explain it in detail.\n- What are you going to update in order to switch the traffic from blue to green? How are you going to do it?\n- Environments, Promotion & CI/CD Pipelines",
+    "categories": [
+      "jenkins",
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674960"
+  },
+  {
+    "id": "q-c52f9cde",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "Can you describe any issues you have come across or faced when doing a deployment to production?",
+    "answer": "**Answer / Solution:**\nDon't just mention pre-prod issues (like missing ports or basic typos). Have solid, real-world production use cases prepared.",
+    "categories": [
+      "Kubernetes",
+      "Agile"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674963"
+  },
+  {
+    "id": "q-2e4d6718",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "What testing is done with respect to different environments? Why is there a dev, staging, pre-prod, and prod? What happens from stage to stage?",
+    "answer": "To be reviewed / prepared.",
+    "categories": [
+      "Agile"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674965"
+  },
+  {
+    "id": "q-8bb37ecd",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "How are you going to ship/promote the code from dev to production?",
+    "answer": "**Answer / Solution:**\nThe core ideology is \"Build once, deploy many.\" You do not rebuild the image for every environment; you promote the same artifact. Understand architectural strategies (e.g., using a single generic CI pipeline for lower environments deploying to different namespaces, and a separate, restricted pipeline with approval gates for production).\nDocker Images & Security",
+    "categories": [
+      "jenkins",
+      "Build tools",
+      "Docker"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674968"
+  },
+  {
+    "id": "q-836d9684",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "Do you know what a distroless image is? What is the use of it?",
+    "answer": "**Answer / Solution:**\nDon't just stop at Alpine images. Understand the concept and security benefits of distroless images.",
+    "categories": [
+      "Docker"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674970"
+  },
+  {
+    "id": "q-24cb50fe",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "What do you understand by a golden image? Have you heard about it?",
+    "answer": "**Answer / Solution:**\nIn enterprise environments, you don't pull base images randomly via Dockerfile. You create a standardized, pre-configured \"Golden Image\" (or AMI in AWS) and build on top of that.",
+    "categories": [
+      "Docker",
+      "AWS"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674972"
+  },
+  {
+    "id": "q-72c42fb1",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "Your application needs a DB password. How would you securely provide it to the pod?",
+    "answer": "**Answer / Solution:**\nIntegrate with a secrets manager (like AWS Secrets Manager), store the DB password there, and inject it into the pod using a secret key reference.\nHelm & Monitoring",
+    "categories": [
+      "AWS",
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674974"
+  },
+  {
+    "id": "q-02416241",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "What is the use of Helm and why should we go with it?",
+    "answer": "**Follow-up / Sub-questions:**\n- Are you aware of Helm hooks and can you give a use case for it?\n\n**Answer / Solution:**\nLook into Helm hooks deeply, as they are widely used in enterprise deployments.",
+    "categories": [
+      "Kubernetes"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674977"
+  },
+  {
+    "id": "q-b961bc92",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "How would you design monitoring and alerting for a production-grade application?",
+    "answer": "**Follow-up / Sub-questions:**\n- What is the architecture, what tools are you going to use, and what things will you put in place?\n\n**Answer / Solution:**\nPrepare a complete architectural overview for this answer, not just isolated tool names.\nWS/Infrastructure",
+    "categories": [
+      "Monitoring tools"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674979"
+  },
+  {
+    "id": "q-77c6875b",
+    "company": "Hitish QA 1-Sep-2026",
+    "round": "Technical Round 1",
+    "date": "2026-09-01",
+    "question": "You have an EC2 instance which is running, but you cannot SSH into it. How do you check and how do you move forward with this?",
+    "answer": "**Follow-up / Sub-questions:**\n- Any other reasons you can think of?\n\n**Answer / Solution:**\nCheck the Security Groups and Network ACLs to ensure TCP port 22 is explicitly allowed.\n\n**Action Items / Takeaways:**\nJNLP: How it works and how it connects behind firewalls.\nDistroless Images: What they are and their benefits.\nGolden Images: How to create them and why enterprises use them.",
+    "categories": [
+      "Linux",
+      "jenkins",
+      "Docker",
+      "AWS"
+    ],
+    "experience": "",
+    "notes": "",
+    "difficulty": "Moderate",
+    "created_at": "2026-09-02T12:51:29.674981"
+  }
+]
