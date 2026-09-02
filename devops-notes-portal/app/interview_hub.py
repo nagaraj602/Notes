@@ -556,6 +556,64 @@ class InterviewManager:
             return True
         return False
 
+    def delete_company(self, company: str) -> Dict[str, Any]:
+        comp_target = (company or "").strip().lower()
+        if not comp_target:
+            return {"status": "error", "message": "Company name required"}
+
+        # Delete from schedules
+        schedules = self._read_json(self.schedules_file)
+        sched_before = len(schedules)
+        schedules = [s for s in schedules if (s.get("company") or "").strip().lower() != comp_target]
+        deleted_scheds = sched_before - len(schedules)
+        if deleted_scheds > 0:
+            self._save_json(self.schedules_file, schedules)
+
+        # Delete from questions
+        questions = self._read_json(self.questions_file)
+        q_before = len(questions)
+        questions = [q for q in questions if (q.get("company") or "").strip().lower() != comp_target]
+        deleted_questions = q_before - len(questions)
+        if deleted_questions > 0:
+            self._save_json(self.questions_file, questions)
+
+        return {
+            "status": "deleted",
+            "company": company,
+            "deleted_schedules": deleted_scheds,
+            "deleted_questions": deleted_questions
+        }
+
+    def delete_company_round(self, company: str, round_name: str) -> Dict[str, Any]:
+        comp_target = (company or "").strip().lower()
+        round_target = (round_name or "").strip().lower()
+        if not comp_target or not round_target:
+            return {"status": "error", "message": "Company and round name required"}
+
+        # Delete from schedules
+        schedules = self._read_json(self.schedules_file)
+        sched_before = len(schedules)
+        schedules = [s for s in schedules if not ((s.get("company") or "").strip().lower() == comp_target and (s.get("round") or "").strip().lower() == round_target)]
+        deleted_scheds = sched_before - len(schedules)
+        if deleted_scheds > 0:
+            self._save_json(self.schedules_file, schedules)
+
+        # Delete from questions
+        questions = self._read_json(self.questions_file)
+        q_before = len(questions)
+        questions = [q for q in questions if not ((q.get("company") or "").strip().lower() == comp_target and (q.get("round") or "").strip().lower() == round_target)]
+        deleted_questions = q_before - len(questions)
+        if deleted_questions > 0:
+            self._save_json(self.questions_file, questions)
+
+        return {
+            "status": "deleted",
+            "company": company,
+            "round": round_name,
+            "deleted_schedules": deleted_scheds,
+            "deleted_questions": deleted_questions
+        }
+
     # --- QUESTIONS API ---
     def get_questions(self, query: str = "", category: str = "", company: str = "") -> List[Dict[str, Any]]:
         questions = self._read_json(self.questions_file)

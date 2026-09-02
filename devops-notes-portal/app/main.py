@@ -511,6 +511,16 @@ async def api_delete_schedule(sched_id: str):
         raise HTTPException(status_code=404, detail="Schedule not found")
     return JSONResponse({"status": "deleted"})
 
+@app.delete("/api/interviews/company")
+async def api_delete_company(company: str):
+    res = interview_manager.delete_company(company)
+    return JSONResponse(res)
+
+@app.delete("/api/interviews/company/round")
+async def api_delete_company_round(company: str, round: str):
+    res = interview_manager.delete_company_round(company, round)
+    return JSONResponse(res)
+
 @app.get("/api/interviews/questions")
 async def api_get_questions(q: Optional[str] = "", category: Optional[str] = "", company: Optional[str] = ""):
     questions = interview_manager.get_questions(query=q, category=category, company=company)

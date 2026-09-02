@@ -1689,6 +1689,54 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     }
   }
 
+  async function deleteCompany(companyName, questionCount) {
+    const qMsg = questionCount > 0 ? ` and its ${questionCount} questions` : "";
+    if (!confirm(`Are you sure you want to permanently delete "${companyName}"${qMsg}?\n\nThis will remove all interview schedules, rounds, and recorded questions for this company.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/interviews/company?company=${encodeURIComponent(companyName)}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        await loadStats();
+        await loadSchedules();
+        await loadQuestions();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || "Failed to delete company.");
+      }
+    } catch (err) {
+      console.error("Delete company error:", err);
+      alert("Error occurred while deleting company.");
+    }
+  }
+
+  async function deleteCompanyRound(companyName, roundName, questionCount) {
+    const qMsg = questionCount > 0 ? ` along with its ${questionCount} questions` : "";
+    if (!confirm(`Are you sure you want to delete round "${roundName}" for "${companyName}"${qMsg}?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/interviews/company/round?company=${encodeURIComponent(companyName)}&round=${encodeURIComponent(roundName)}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        await loadStats();
+        await loadSchedules();
+        await loadQuestions();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || "Failed to delete round.");
+      }
+    } catch (err) {
+      console.error("Delete round error:", err);
+      alert("Error occurred while deleting round.");
+    }
+  }
+
   function renderSingleQuestionItem(q, idx, isGrouped = false) {
     const catsHtml = (q.categories || []).map(c => `
       <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100/90 text-sky-800 border border-sky-200">${escapeHtml(c)}</span>
@@ -1828,9 +1876,13 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             </div>
 
             <div class="flex items-center space-x-2">
-              <button onclick="event.stopPropagation(); openUploadQaForCompany('${escapeHtml(companyName)}')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-sky-700 font-bold text-xs border border-sky-200 shadow-xs flex items-center space-x-1.5 transition-all" title="Upload interview questions for this company">
+              <button onclick="event.stopPropagation(); openUploadQaForCompany('${escapeHtml(companyName)}')" class="px-3 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-sky-700 font-bold text-xs border border-sky-200 shadow-xs flex items-center space-x-1.5 transition-all" title="Upload interview questions for this company">
                 <i class="fa-solid fa-cloud-arrow-up text-sky-600 text-xs"></i>
                 <span>Upload Q&A</span>
+              </button>
+              <button onclick="event.stopPropagation(); deleteCompany('${escapeHtml(companyName)}', ${compData.totalQuestions})" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 font-bold text-xs border border-rose-200 shadow-xs flex items-center space-x-1 transition-all" title="Delete this company, its rounds, and all recorded questions">
+                <i class="fa-solid fa-trash-can text-rose-500 text-xs"></i>
+                <span class="hidden sm:inline">Delete</span>
               </button>
               <div class="w-8 h-8 rounded-xl bg-white/90 border border-sky-200 flex items-center justify-center text-slate-600 group-hover/comp:border-sky-300 transition-all shadow-2xs">
                 <i class="fa-solid fa-chevron-down text-sky-600 transition-transform duration-200 group-open/comp:rotate-180 text-xs"></i>
@@ -1864,10 +1916,14 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                       </div>
                     </div>
 
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-1.5">
                       <span class="text-[11px] font-extrabold text-slate-700 bg-sky-50 px-2.5 py-1 rounded-xl border border-sky-200 font-mono shadow-2xs">${rndData.questions.length} Question(s)</span>
                       <button onclick="event.stopPropagation(); openUploadQaForCompany('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}')" class="p-1 px-2.5 text-[10px] font-bold rounded-lg bg-white text-sky-600 hover:bg-sky-50 border border-sky-200 shadow-2xs transition-all" title="Add question to this round">
                         <i class="fa-solid fa-plus mr-1"></i>Add
+                      </button>
+                      <button onclick="event.stopPropagation(); deleteCompanyRound('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}', ${rndData.questions.length})" class="p-1 px-2 text-[10px] font-bold rounded-lg bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 shadow-2xs transition-all flex items-center space-x-1" title="Delete this round and its questions">
+                        <i class="fa-solid fa-trash-can text-rose-500 text-[10px]"></i>
+                        <span class="hidden sm:inline">Delete</span>
                       </button>
                       <div class="w-7 h-7 rounded-lg bg-white border border-sky-200 flex items-center justify-center text-slate-600 transition-all shadow-2xs group-hover/round:border-indigo-300">
                         <i class="fa-solid fa-chevron-down text-sky-600 transition-transform duration-200 group-open/round:rotate-180 text-[10px]"></i>
