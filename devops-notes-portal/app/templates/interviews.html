@@ -819,12 +819,49 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     }
   }
 
+  function formatDateCustom(dateStr) {
+    if (!dateStr) return "";
+    try {
+      const parts = dateStr.trim().split("-");
+      if (parts.length === 3) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        if (!isNaN(y) && !isNaN(m) && !isNaN(d) && m >= 0 && m < 12) {
+          return `${d}-${months[m]}-${y}`;
+        }
+      }
+      const dt = new Date(dateStr);
+      if (!isNaN(dt.getTime())) {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return `${dt.getDate()}-${months[dt.getMonth()]}-${dt.getFullYear()}`;
+      }
+    } catch (e) {}
+    return dateStr;
+  }
+
+  function formatTime12Hour(timeStr) {
+    if (!timeStr) return "";
+    const parts = timeStr.trim().split(":");
+    if (parts.length < 2) return timeStr;
+    let h = parseInt(parts[0], 10);
+    const m = parts[1].padStart(2, "0");
+    if (isNaN(h)) return timeStr;
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12;
+    if (h === 0) h = 12;
+    return `${h}:${m} ${ampm}`;
+  }
+
   function formatTimeRange(startT, endT, fallbackT) {
     const s = startT || fallbackT || "10:00";
+    const s12 = formatTime12Hour(s);
     if (endT) {
-      return `${s} – ${endT}`;
+      const e12 = formatTime12Hour(endT);
+      return `${s12} – ${e12}`;
     }
-    return s;
+    return s12;
   }
 
   // --- 💰 DYNAMIC REAL-TIME MONTHLY SALARY CALCULATOR (CTC / 12) ---
@@ -1031,9 +1068,9 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
               <div>
                 <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
                 <div class="text-xs text-sky-700 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')} (${escapeHtml(s.role || 'DevOps')})</div>
-                <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fa-regular fa-clock text-emerald-600 mr-1"></i>${s.date} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
+                <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fa-regular fa-clock text-emerald-600 mr-1"></i>${formatDateCustom(s.date)} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
               </div>
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Completed</span>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 font-mono">Completed</span>
             </div>
             ${s.salary_ctc ? `<div class="text-[11px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md"><i class="fa-solid fa-money-bill-wave mr-1"></i>CTC: ${escapeHtml(s.salary_ctc)} (~${escapeHtml(s.monthly_salary || '')})</div>` : ''}
             ${s.experience ? `<div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-xl"><i class="fa-solid fa-comment-dots text-indigo-500 mr-1"></i>${escapeHtml(s.experience)}</div>` : ''}
@@ -1048,26 +1085,32 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       if (list.length === 0) {
         container.innerHTML = `<div class="text-center py-10 text-slate-400">No companies recorded yet.</div>`;
       } else {
-        container.innerHTML = list.map(c => `
-          <div class="p-3.5 rounded-2xl bg-white border border-sky-100 shadow-xs">
-            <div class="flex items-center justify-between mb-2">
-              <span class="font-extrabold text-sm text-slate-900">${escapeHtml(c.company)}</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-sky-100 text-sky-800">${c.rounds.length} Round(s)</span>
-            </div>
-            <div class="space-y-1.5">
-              ${c.rounds.map(r => `
-                <div class="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-xl flex items-center justify-between border border-slate-100">
-                  <div>
-                    <span class="font-bold text-slate-900">${escapeHtml(r.round || 'Technical Round')}</span>
-                    <span class="text-[10px] text-slate-500 font-mono ml-2">(${r.date} • ${formatTimeRange(r.start_time, r.end_time, r.time)})</span>
-                    ${r.salary_ctc ? `<span class="text-[10px] text-emerald-700 font-bold ml-2">• ${escapeHtml(r.salary_ctc)}</span>` : ''}
-                  </div>
-                  <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">${r.status}</span>
+        container.innerHTML = list.map(c => {
+          const latestDate = c.rounds && c.rounds.length > 0 ? formatDateCustom(c.rounds[0].date) : '';
+          return `
+            <div class="p-3.5 rounded-2xl bg-white border border-sky-100 shadow-xs">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center space-x-2">
+                  <span class="font-extrabold text-sm text-slate-900">${escapeHtml(c.company)}</span>
+                  ${latestDate ? `<span class="text-[11px] text-sky-700 font-mono font-bold bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">${latestDate}</span>` : ''}
                 </div>
-              `).join("")}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-sky-100 text-sky-800">${c.rounds.length} Round(s)</span>
+              </div>
+              <div class="space-y-1.5">
+                ${c.rounds.map(r => `
+                  <div class="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-xl flex items-center justify-between border border-slate-100">
+                    <div>
+                      <span class="font-bold text-slate-900">${escapeHtml(r.round || 'Technical Round')}</span>
+                      <span class="text-[10px] text-slate-500 font-mono ml-2">(${formatDateCustom(r.date)} • ${formatTimeRange(r.start_time, r.end_time, r.time)})</span>
+                      ${r.salary_ctc ? `<span class="text-[10px] text-emerald-700 font-bold ml-2">• ${escapeHtml(r.salary_ctc)}</span>` : ''}
+                    </div>
+                    <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 font-mono">${r.status}</span>
+                  </div>
+                `).join("")}
+              </div>
             </div>
-          </div>
-        `).join("");
+          `;
+        }).join("");
       }
     } else if (type === "weekly") {
       titleElem.innerText = "This Week's Interview Activity";
@@ -1082,7 +1125,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             <div>
               <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
               <div class="text-xs text-indigo-700 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')}</div>
-              <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fa-regular fa-clock text-indigo-600 mr-1"></i>${s.date} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
+              <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fa-regular fa-clock text-indigo-600 mr-1"></i>${formatDateCustom(s.date)} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
             </div>
             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 font-mono">${s.status}</span>
           </div>
@@ -1101,7 +1144,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             <div>
               <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
               <div class="text-xs text-amber-800 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')}</div>
-              <div class="text-[11px] text-amber-700 font-bold mt-0.5 font-mono"><i class="fa-regular fa-clock mr-1"></i>${s.date} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
+              <div class="text-[11px] text-amber-700 font-bold mt-0.5 font-mono"><i class="fa-regular fa-clock mr-1"></i>${formatDateCustom(s.date)} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
               ${s.salary_ctc ? `<div class="text-[10px] text-emerald-800 font-bold mt-0.5"><i class="fa-solid fa-coins mr-1"></i>${escapeHtml(s.salary_ctc)}</div>` : ''}
             </div>
             <button onclick="closeStatListModal(); editSchedule('${s.id}')" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold border border-amber-200 text-xs">Edit</button>
@@ -1375,7 +1418,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                   <span class="font-extrabold text-sm text-slate-900">${escapeHtml(p.company)}</span>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-mono">${escapeHtml(p.round || 'Technical Round')}</span>
-                  <span class="text-xs text-slate-600 font-mono font-bold">(${p.date} • ${timeRange})</span>
+                  <span class="text-xs text-slate-600 font-mono font-bold">(${formatDateCustom(p.date)} • ${timeRange})</span>
                 </div>
                 <p class="text-xs text-slate-600 mt-0.5">Your interview has concluded! Please record the questions, CTC, and experience from this round.</p>
               </div>
@@ -1508,7 +1551,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                   <span class="font-extrabold text-xs text-slate-900 bg-white/90 px-2 py-0.5 rounded-md border border-slate-200 shadow-xs">${escapeHtml(q.company)}</span>
                   ${q.round ? `<span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md">${escapeHtml(q.round)}</span>` : ''}
                   ${q.difficulty ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md border font-mono ${diffClass}"><i class="fa-solid fa-gauge-high mr-1"></i>${escapeHtml(q.difficulty)}</span>` : ''}
-                  <span class="text-[10px] font-mono text-slate-400">${q.date || ''}</span>
+                  <span class="text-[10px] font-mono text-slate-500 font-bold">${q.date ? formatDateCustom(q.date) : ''}</span>
                   ${catsHtml}
                 </div>
                 <h4 class="text-xs sm:text-sm font-bold text-slate-900 leading-snug">${escapeHtml(q.question)}</h4>
