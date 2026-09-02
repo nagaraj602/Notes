@@ -1388,41 +1388,17 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     const experience = document.getElementById("qaExperience").value.trim();
     const rawText = document.getElementById("qaBulkText").value.trim();
 
-    // Auto-parse into Q&A pairs
-    const blocks = rawText.split(/\n\s*(?:Q:|#|\d+\.)/i).filter(Boolean);
-    const parsedQuestions = [];
-
-    for (const block of blocks) {
-      let qText = "";
-      let aText = "";
-
-      if (/A:/i.test(block)) {
-        const parts = block.split(/A:/i);
-        qText = parts[0].replace(/^[:\s\-]+/, "").trim();
-        aText = parts.slice(1).join("A:").trim();
-      } else {
-        qText = block.trim();
-        aText = "Answer to be documented.";
-      }
-
-      if (qText) {
-        const resCat = await fetch("/api/interviews/autodetect-categories", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: qText + " " + aText })
-        });
-        const catData = await resCat.json();
-
-        parsedQuestions.push({
-          question: qText,
-          answer: aText,
-          categories: catData.categories || []
-        });
-      }
-    }
+    // Intelligent server-side parsing & auto-categorization
+    const parseRes = await fetch("/api/interviews/parse-qa", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: rawText })
+    });
+    const parseData = await parseRes.json();
+    const parsedQuestions = parseData.questions || [];
 
     if (parsedQuestions.length === 0) {
-      alert("Could not detect any questions. Please paste formatted text.");
+      alert("Could not detect any questions. Please check the text format.");
       return;
     }
 

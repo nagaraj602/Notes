@@ -506,6 +506,15 @@ async def api_detect_categories(req: DetectCategoriesRequest):
     cats = detect_categories(req.text)
     return JSONResponse({"categories": cats})
 
+class ParseQaRequest(BaseModel):
+    text: str
+
+@app.post("/api/interviews/parse-qa")
+async def api_parse_qa(req: ParseQaRequest):
+    from app.interview_hub import parse_interview_qa_text
+    parsed = parse_interview_qa_text(req.text)
+    return JSONResponse({"questions": parsed, "count": len(parsed)})
+
 @app.post("/api/interviews/questions/bulk")
 async def api_add_bulk_questions(req: BulkQuestionsRequest):
     qa_list = [item.dict() for item in req.questions]
