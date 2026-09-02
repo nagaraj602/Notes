@@ -11,22 +11,16 @@ A modern, production-grade DevOps knowledge portal, interactive notes reader, an
   - [2.1 Notes Explorer & Search](#21-notes-explorer--search)
   - [2.2 Interview Schedule & Q&A Hub (`/interviews`)](#22-interview-schedule--qa-hub-interviews)
   - [2.3 Repository-Backed Session Database & URL Persistence](#23-repository-backed-session-database--url-persistence)
-- [3. Docker Hub Image & Local Deployment](#3-docker-hub-image--local-deployment)
-  - [3.1 Pull & Run with Docker](#31-pull--run-with-docker)
-  - [3.2 Deploy to Kubernetes (Docker Desktop / Minikube)](#32-deploy-to-kubernetes-docker-desktop--minikube)
-- [4. Production Deployment on Oracle Cloud Always Free (K3s Kubernetes)](#4-production-deployment-on-oracle-cloud-always-free-k3s-kubernetes)
-  - [4.1 Step 1: Create Oracle Cloud Always Free Account](#41-step-1-create-oracle-cloud-always-free-account)
-  - [4.2 Step 2: Create Always-Free Compute Instance](#42-step-2-create-always-free-compute-instance)
-  - [4.3 Step 3: Configure Oracle Cloud VCN Firewall](#43-step-3-configure-oracle-cloud-vcn-firewall)
-  - [4.4 Step 4: SSH Connect & Configure Server Firewall](#44-step-4-ssh-connect--configure-server-firewall)
-  - [4.5 Step 5: Install K3s Lightweight Kubernetes](#45-step-5-install-k3s-lightweight-kubernetes)
-  - [4.6 Step 6: Deploy DevOps Hub to K3s](#46-step-6-deploy-devops-hub-to-k3s)
-- [5. Secure GitHub Authentication (Zero Account Risk)](#5-secure-github-authentication-zero-account-risk)
-  - [5.1 Method A: GitHub Deploy Keys (Recommended)](#51-method-a-github-deploy-keys-recommended)
-  - [5.2 Method B: Fine-Grained Personal Access Token (PAT)](#52-method-b-fine-grained-personal-access-token-pat)
-- [6. Project Structure](#6-project-structure)
-- [7. API Reference](#7-api-reference)
-- [8. Local Development Setup](#8-local-development-setup)
+- [3. Deployment Guide (Kubernetes & K3s)](#3-deployment-guide-kubernetes--k3s)
+  - [3.1 Standard Kubernetes Deployment (Docker Desktop, Minikube, Kind)](#31-standard-kubernetes-deployment-docker-desktop-minikube-kind)
+  - [3.2 K3s Lightweight Kubernetes Deployment (Any Linux Server / VM)](#32-k3s-lightweight-kubernetes-deployment-any-linux-server--vm)
+  - [3.3 Standalone Docker Deployment](#33-standalone-docker-deployment)
+- [4. Secure GitHub Authentication (Deploy Keys & PAT)](#4-secure-github-authentication-deploy-keys--pat)
+  - [4.1 Method A: GitHub Deploy Keys (Recommended)](#41-method-a-github-deploy-keys-recommended)
+  - [4.2 Method B: Fine-Grained Personal Access Token (PAT)](#42-method-b-fine-grained-personal-access-token-pat)
+- [5. Project Structure](#5-project-structure)
+- [6. API Reference](#6-api-reference)
+- [7. Local Development Setup](#7-local-development-setup)
 
 ---
 
@@ -94,145 +88,129 @@ flowchart TD
 
 ---
 
-## 3. Docker Hub Image & Local Deployment
+## 3. Deployment Guide (Kubernetes & K3s)
 
-### 3.1 Pull & Run with Docker
-The pre-built multi-arch image is hosted on Docker Hub:
-```bash
-docker pull nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0
-```
+### 3.1 Standard Kubernetes Deployment (Docker Desktop, Minikube, Kind)
+Deploy the entire application stack (Deployment, Service, PVC, ConfigMap) to any local or cloud Kubernetes cluster:
 
-Run container locally:
-```bash
-docker run -d -p 8000:8000 --name devops-hub nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0
-```
-Access at: **`http://localhost:8000`**
-
----
-
-### 3.2 Deploy to Kubernetes (Docker Desktop / Minikube)
-Using the included all-in-one manifest:
-```bash
-kubectl apply -f k8s/all-in-one.yaml
-kubectl rollout status deployment/devops-hub-deployment -n devops-hub
-```
-
----
-
-## 4. Production Deployment on Oracle Cloud Always Free (K3s Kubernetes)
-
-Oracle Cloud provides **Always Free** cloud infrastructure including an Ampere ARM instance with up to **4 OCPUs and 24 GB RAM** (or 2 AMD x86 VMs with 1 GB RAM each) **free forever**.
-
-### 4.1 Step 1: Create Oracle Cloud Always Free Account
-1. Visit **[oracle.com/cloud/free](https://www.oracle.com/cloud/free/)** and click **Start for free**.
-2. Complete signup and choose your **Home Region** (e.g. *India South (Hyderabad)* or *India West (Mumbai)*).
-3. Complete the temporary identity check (temporary ~$1 verification hold refunded immediately).
-
----
-
-### 4.2 Step 2: Create Always-Free Compute Instance
-1. In the Oracle Cloud Console, navigate to **Compute** -> **Instances** -> **Create Instance**.
-2. **Name**: `devops-hub-k3s`
-3. **Image**: Choose **Ubuntu 24.04** or **Ubuntu 22.04 LTS Minimal**.
-4. **Shape**: Choose **Ampere (ARM)** -> `VM.Standard.A1.Flex` -> Set **2 OCPUs and 12 GB RAM** (or 4 OCPUs / 24 GB RAM).
-5. **Networking**: Ensure **"Assign a public IPv4 address"** is checked.
-6. **SSH Keys**: Download and save the private SSH key (`ssh-key.key`).
-7. Click **Create**.
-
----
-
-### 4.3 Step 3: Configure Oracle Cloud VCN Firewall
-1. In your Instance details, click the **Subnet** link under *Instance Access*.
-2. Click **Default Security List**.
-3. Click **Add Ingress Rules**:
-   * **Source CIDR**: `0.0.0.0/0`
-   * **IP Protocol**: `TCP`
-   * **Destination Port Range**: `80, 443, 8000, 6443`
-   * **Description**: `Allow HTTP, HTTPS, Web App & K8s`
-4. Click **Add Ingress Rules**.
-
----
-
-### 4.4 Step 4: SSH Connect & Configure Server Firewall
-From your local terminal (PowerShell / macOS / Linux):
-```bash
-ssh -i "path/to/ssh-key.key" ubuntu@<YOUR_ORACLE_VM_PUBLIC_IP>
-```
-
-Open host iptables firewall rules for web traffic:
-```bash
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 8000 -j ACCEPT
-sudo netfilter-persistent save 2>/dev/null || sudo iptables-save | sudo tee /etc/iptables/rules.v4
-```
-
----
-
-### 4.5 Step 5: Install K3s Lightweight Kubernetes
-Install K3s in one command:
-```bash
-curl -sfL https://get.k3s.io | sh -
-```
-
-Configure `kubectl` permissions:
-```bash
-mkdir -p ~/.kube
-sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-sudo chown $(id -u):$(id -g) ~/.kube/config
-export KUBECONFIG=~/.kube/config
-echo "export KUBECONFIG=~/.kube/config" >> ~/.bashrc
-```
-
-Verify the cluster:
-```bash
-kubectl get nodes
-```
-
----
-
-### 4.6 Step 6: Deploy DevOps Hub to K3s
-Clone your Notes repo and deploy:
-```bash
-git clone https://github.com/nagaraj602/Notes.git
-cd Notes/devops-notes-portal
-kubectl apply -f k8s/all-in-one.yaml
-```
-
-Check deployment status:
-```bash
-kubectl get pods -n devops-hub -w
-```
-
-Open in your browser:
-* **Portal**: `http://<YOUR_ORACLE_VM_PUBLIC_IP>:8000`
-* **Interview Tracker**: `http://<YOUR_ORACLE_VM_PUBLIC_IP>:8000/interviews`
-
----
-
-## 5. Secure GitHub Authentication (Zero Account Risk)
-
-When hosting the application on a public or cloud server, protect your GitHub account credentials using scoped credentials:
-
-### 5.1 Method A: GitHub Deploy Keys (Recommended)
-Deploy keys are tied **strictly to the `Notes` repository** and have zero access to your account or other repos.
-
-1. Generate a dedicated SSH key on your server:
+1. **Verify your Kubernetes cluster is connected**:
    ```bash
-   ssh-keygen -t ed25519 -C "oracle-k3s-notes-sync" -f ~/.ssh/id_notes_deploy -N ""
+   kubectl cluster-info
    ```
-2. Display the public key:
+
+2. **Deploy using the all-in-one manifest**:
+   ```bash
+   kubectl apply -f k8s/all-in-one.yaml
+   ```
+
+3. **Verify the rollout status**:
+   ```bash
+   kubectl rollout status deployment/devops-hub-deployment -n devops-hub
+   ```
+
+4. **Verify running Pod and Service**:
+   ```bash
+   kubectl get pods,svc,pvc -n devops-hub
+   ```
+
+5. **Access the application**:
+   * **Knowledge Portal**: `http://localhost:8000`
+   * **Interview Tracker & Question Hub**: `http://localhost:8000/interviews`
+   *(If running on a remote cluster without LoadBalancer, forward the port: `kubectl port-forward svc/devops-hub-service 8000:8000 -n devops-hub`)*
+
+---
+
+### 3.2 K3s Lightweight Kubernetes Deployment (Any Linux Server / VM)
+[K3s](https://k3s.io/) is an official, lightweight, CNCF-certified Kubernetes distribution packaged as a single binary (< 100MB). It is perfect for running on any Linux server (Ubuntu, Debian, CentOS, AlmaLinux, Rocky) or small VPS:
+
+1. **Install K3s in one command on your server**:
+   ```bash
+   curl -sfL https://get.k3s.io | sh -
+   ```
+
+2. **Configure `kubectl` permissions for regular users**:
+   ```bash
+   mkdir -p ~/.kube
+   sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+   sudo chown $(id -u):$(id -g) ~/.kube/config
+   export KUBECONFIG=~/.kube/config
+   echo "export KUBECONFIG=~/.kube/config" >> ~/.bashrc
+   ```
+
+3. **Verify your K3s cluster**:
+   ```bash
+   kubectl get nodes
+   ```
+
+4. **Clone your Notes repository on the server**:
+   ```bash
+   git clone https://github.com/nagaraj602/Notes.git
+   cd Notes/devops-notes-portal
+   ```
+
+5. **Deploy the DevOps Hub**:
+   ```bash
+   kubectl apply -f k8s/all-in-one.yaml
+   ```
+
+6. **Monitor deployment progress**:
+   ```bash
+   kubectl rollout status deployment/devops-hub-deployment -n devops-hub
+   kubectl get pods -n devops-hub -w
+   ```
+
+7. **Access the portal**:
+   * **Knowledge Portal**: `http://<SERVER_PUBLIC_IP>:8000`
+   * **Interview Hub**: `http://<SERVER_PUBLIC_IP>:8000/interviews`
+   *(Ensure port `8000` is allowed in your server firewall / security group, e.g. `sudo ufw allow 8000/tcp`)*
+
+---
+
+### 3.3 Standalone Docker Deployment
+If you prefer running a standalone container without Kubernetes:
+
+1. **Pull the latest image**:
+   ```bash
+   docker pull nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0
+   ```
+
+2. **Run container**:
+   ```bash
+   docker run -d -p 8000:8000 \
+     --name devops-hub \
+     --restart unless-stopped \
+     nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0
+   ```
+   Access at: **`http://localhost:8000`**
+
+---
+
+## 4. Secure GitHub Authentication (Deploy Keys & PAT)
+
+When hosting the application on a server or shared machine, protect your primary GitHub credentials by using scoped credentials:
+
+### 4.1 Method A: GitHub Deploy Keys (Recommended)
+Deploy keys are tied **strictly to your `Notes` repository** and have zero access to any other repositories or account settings:
+
+1. **Generate a dedicated SSH key on your server**:
+   ```bash
+   ssh-keygen -t ed25519 -C "k3s-notes-sync" -f ~/.ssh/id_notes_deploy -N ""
+   ```
+
+2. **Display and copy the public key**:
    ```bash
    cat ~/.ssh/id_notes_deploy.pub
    ```
-3. In GitHub:
-   * Go to `https://github.com/nagaraj602/Notes/settings/keys`
+
+3. **Add Deploy Key in GitHub**:
+   * Go to: `https://github.com/nagaraj602/Notes/settings/keys`
    * Click **Add deploy key**
-   * **Title**: `Oracle Cloud K3s Server`
-   * **Key**: Paste the public key
-   * Check **Allow write access** (so the portal can push updated Q&A and session state)
-   * Click **Add Key**.
-4. Configure SSH on the server (`~/.ssh/config`):
+   * **Title**: `K3s / Linux Server Sync`
+   * **Key**: Paste the public key content
+   * Check **Allow write access** (allows automated persistence of session states, schedules, and questions directly back to GitHub)
+   * Click **Add Key**
+
+4. **Configure SSH client (`~/.ssh/config`)**:
    ```bash
    cat <<EOF >> ~/.ssh/config
    Host github.com
@@ -244,17 +222,17 @@ Deploy keys are tied **strictly to the `Notes` repository** and have zero access
 
 ---
 
-### 5.2 Method B: Fine-Grained Personal Access Token (PAT)
+### 4.2 Method B: Fine-Grained Personal Access Token (PAT)
 1. Go to `https://github.com/settings/tokens?type=beta`
 2. Click **Generate new token**.
 3. **Repository access**: Select *Only select repositories* -> `nagaraj602/Notes`.
 4. **Permissions**: Under *Repository permissions*, set `Contents` to **Read and Write**.
-5. Set expiration (e.g. 90 days).
-6. Set the token as an environment variable in Kubernetes Secret.
+5. Set an expiration (e.g. 90 days).
+6. Set the token in your Kubernetes configuration or environment.
 
 ---
 
-## 6. Project Structure
+## 5. Project Structure
 
 ```
 devops-notes-portal/
@@ -279,7 +257,7 @@ devops-notes-portal/
 
 ---
 
-## 7. API Reference
+## 6. API Reference
 
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
@@ -307,7 +285,7 @@ devops-notes-portal/
 
 ---
 
-## 8. Local Development Setup
+## 7. Local Development Setup
 
 1. **Clone the repository**:
    ```bash
