@@ -794,12 +794,13 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     }
   }
 
-  // --- PAST TIME VALIDATION FOR SCHEDULE INTERVIEW MODAL ---
+  // --- PAST & FUTURE TIME VALIDATION FOR SCHEDULE INTERVIEW MODAL ---
   function validateScheduleTime() {
     const dateInput = document.getElementById("schedDate").value;
     const startTimeInput = document.getElementById("schedStartTime").value || "00:00";
     const statusSelect = document.getElementById("schedStatus");
     const optScheduled = document.getElementById("optStatusScheduled");
+    const optCompleted = document.getElementById("optStatusCompleted");
     const pastNotice = document.getElementById("pastTimeNotice");
 
     if (!dateInput) return;
@@ -808,18 +809,33 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     const now = new Date();
 
     if (selectedDateTime < now) {
-      // Selected time is in the past! Disable 'Scheduled' option
-      optScheduled.disabled = true;
-      optScheduled.classList.add("hidden");
+      // 1. PAST TIME: Cannot be 'Scheduled' -> disable/hide 'Scheduled', show 'Completed'
+      if (optScheduled) {
+        optScheduled.disabled = true;
+        optScheduled.classList.add("hidden");
+      }
+      if (optCompleted) {
+        optCompleted.disabled = false;
+        optCompleted.classList.remove("hidden");
+      }
       if (statusSelect.value === "scheduled") {
         statusSelect.value = "completed";
       }
-      pastNotice.classList.remove("hidden");
+      if (pastNotice) pastNotice.classList.remove("hidden");
     } else {
-      // Selected time is in the future
-      optScheduled.disabled = false;
-      optScheduled.classList.remove("hidden");
-      pastNotice.classList.add("hidden");
+      // 2. FUTURE TIME: Cannot be 'Completed' yet -> disable/hide 'Completed', show 'Scheduled'
+      if (optScheduled) {
+        optScheduled.disabled = false;
+        optScheduled.classList.remove("hidden");
+      }
+      if (optCompleted) {
+        optCompleted.disabled = true;
+        optCompleted.classList.add("hidden");
+      }
+      if (statusSelect.value === "completed") {
+        statusSelect.value = "scheduled";
+      }
+      if (pastNotice) pastNotice.classList.add("hidden");
     }
   }
 
@@ -1127,13 +1143,19 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
   // --- MODAL: SCHEDULE INTERVIEW ---
   function openScheduleModal() {
+    const now = new Date();
+    let nextH = now.getHours() + 1;
+    let endH = nextH + 1;
+    let nextHStr = (nextH < 10 ? '0' : '') + (nextH > 23 ? '22' : nextH) + ":00";
+    let endHStr = (endH < 10 ? '0' : '') + (endH > 23 ? '23' : endH) + ":00";
+
     document.getElementById("schedId").value = "";
     document.getElementById("schedCompany").value = "";
     document.getElementById("schedRole").value = "DevOps Engineer";
     document.getElementById("schedRound").value = "Technical Round 1";
-    document.getElementById("schedDate").value = new Date().toISOString().split("T")[0];
-    document.getElementById("schedStartTime").value = "10:00";
-    document.getElementById("schedEndTime").value = "11:00";
+    document.getElementById("schedDate").value = now.toISOString().split("T")[0];
+    document.getElementById("schedStartTime").value = nextHStr;
+    document.getElementById("schedEndTime").value = endHStr;
     document.getElementById("schedMeetingLink").value = "";
     document.getElementById("schedNotes").value = "";
     document.getElementById("schedStatus").value = "scheduled";
