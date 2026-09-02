@@ -449,6 +449,41 @@ class FollowupActionRequest(BaseModel):
     new_date: Optional[str] = None
     new_time: Optional[str] = None
 
+class RoundCreateRequest(BaseModel):
+    name: str
+
+class RoundUpdateRequest(BaseModel):
+    name: str
+
+@app.get("/api/interviews/rounds")
+async def api_get_rounds():
+    return JSONResponse(interview_manager.get_rounds())
+
+@app.post("/api/interviews/rounds")
+async def api_add_round(req: RoundCreateRequest):
+    try:
+        new_r = interview_manager.add_custom_round(req.name)
+        return JSONResponse({"status": "success", "round": new_r})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/api/interviews/rounds/{round_id}")
+async def api_rename_round(round_id: str, req: RoundUpdateRequest):
+    try:
+        updated = interview_manager.rename_custom_round(round_id, req.name)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Round not found")
+        return JSONResponse({"status": "success", "round": updated})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/interviews/rounds/{round_id}")
+async def api_delete_round(round_id: str):
+    success = interview_manager.delete_custom_round(round_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Round not found")
+    return JSONResponse({"status": "deleted"})
+
 @app.get("/api/interviews/stats")
 async def api_interview_stats():
     return JSONResponse(interview_manager.get_stats())

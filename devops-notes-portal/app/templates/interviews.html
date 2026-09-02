@@ -199,8 +199,27 @@
           <input type="text" id="schedRole" value="DevOps Engineer" placeholder="e.g. Senior DevOps Engineer" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Round Name *</label>
-          <input type="text" id="schedRound" value="Technical Round 1" required placeholder="e.g. L1 Technical, System Design" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-bold text-slate-700">Round Name *</label>
+            <button type="button" onclick="openManageRoundsModal()" class="text-[11px] font-bold text-sky-600 hover:text-sky-800 flex items-center space-x-1" title="Manage default & custom rounds">
+              <i class="fa-solid fa-gear text-[10px]"></i>
+              <span>Manage Rounds</span>
+            </button>
+          </div>
+          <select id="schedRoundSelect" required onchange="onSchedRoundSelectChange()" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
+            <!-- Populated dynamically with Default Rounds + Custom Rounds -->
+          </select>
+          
+          <!-- Inline quick add custom round box -->
+          <div id="schedCustomRoundBox" class="hidden mt-2 flex items-center space-x-1.5 animate-in fade-in">
+            <input type="text" id="schedCustomRoundInput" placeholder="Enter custom round name..." class="flex-1 rounded-xl px-3 py-1.5 border border-sky-300 focus:outline-none text-xs">
+            <button type="button" onclick="saveInlineCustomRound()" class="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-2xs whitespace-nowrap">
+              <i class="fa-solid fa-plus mr-1"></i> Save
+            </button>
+            <button type="button" onclick="cancelInlineCustomRound()" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -471,9 +490,53 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   </div>
 </div>
 
+<!-- MODAL 6: Manage Interview Rounds (Add, Rename, Delete Custom Rounds) -->
+<div id="manageRoundsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] flex flex-col">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-list-check text-xs"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900">Manage Interview Rounds</h3>
+          <p class="text-[11px] text-slate-500">Configure default and custom interview round names.</p>
+        </div>
+      </div>
+      <button onclick="closeManageRoundsModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Add New Custom Round Input Form -->
+    <div class="p-3 bg-purple-50/60 rounded-2xl border border-purple-200/80 space-y-2">
+      <label class="block font-bold text-slate-800 text-xs"><i class="fa-solid fa-plus-circle text-purple-600 mr-1"></i>Add New Custom Round Name</label>
+      <div class="flex items-center space-x-2">
+        <input type="text" id="newRoundNameInput" placeholder="e.g. Bar Raiser, Assignment Review, Director Round" class="flex-1 rounded-xl px-3.5 py-2 border border-purple-200 focus:ring-2 focus:ring-purple-200 focus:outline-none bg-white text-xs font-sans">
+        <button type="button" onclick="addCustomRoundFromManager()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs whitespace-nowrap">
+          <i class="fa-solid fa-plus mr-1"></i> Add
+        </button>
+      </div>
+    </div>
+
+    <!-- Rounds List (Scrollable) -->
+    <div class="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[350px]">
+      <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1">Available Rounds</div>
+      <div id="manageRoundsListContainer" class="space-y-1.5">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <div class="pt-3 border-t border-sky-100 flex items-center justify-end">
+      <button type="button" onclick="closeManageRoundsModal()" class="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
   let currentWeekOffset = 0;
   let currentMonthOffset = 0;
+  let allRounds = [];
   let allSchedules = [];
   let allQuestions = [];
   let currentStats = {};
@@ -493,10 +556,249 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   async function initInterviewHub() {
     await Promise.all([
       loadStats(),
+      loadRounds(),
       loadSchedules(),
       loadPendingFollowups(),
       loadQuestions()
     ]);
+  }
+
+  // --- ROUNDS MANAGEMENT API & FUNCTIONS ---
+  async function loadRounds(selectedRoundName = null) {
+    try {
+      const res = await fetch("/api/interviews/rounds");
+      allRounds = await res.json();
+      populateSchedRoundSelect(selectedRoundName);
+    } catch (err) {
+      console.error("Failed to load rounds:", err);
+    }
+  }
+
+  function populateSchedRoundSelect(selectedRoundName = null) {
+    const select = document.getElementById("schedRoundSelect");
+    if (!select) return;
+
+    const defaultRounds = (allRounds || []).filter(r => r.is_default);
+    const customRounds = (allRounds || []).filter(r => !r.is_default);
+
+    let html = `<optgroup label="Default Built-in Rounds">`;
+    defaultRounds.forEach(r => {
+      html += `<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)}</option>`;
+    });
+    html += `</optgroup>`;
+
+    if (customRounds.length > 0) {
+      html += `<optgroup label="Custom Added Rounds">`;
+      customRounds.forEach(r => {
+        html += `<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)} (Custom)</option>`;
+      });
+      html += `</optgroup>`;
+    }
+
+    html += `<option value="__custom__">+ Add Custom Round Name...</option>`;
+    select.innerHTML = html;
+
+    if (selectedRoundName) {
+      const exists = (allRounds || []).some(r => r.name.toLowerCase() === selectedRoundName.toLowerCase());
+      if (exists) {
+        select.value = selectedRoundName;
+        document.getElementById("schedCustomRoundBox").classList.add("hidden");
+      } else {
+        select.value = "__custom__";
+        document.getElementById("schedCustomRoundBox").classList.remove("hidden");
+        document.getElementById("schedCustomRoundInput").value = selectedRoundName;
+      }
+    } else {
+      select.value = defaultRounds.length > 0 ? defaultRounds[0].name : "Technical Round 1";
+      document.getElementById("schedCustomRoundBox").classList.add("hidden");
+    }
+  }
+
+  function onSchedRoundSelectChange() {
+    const select = document.getElementById("schedRoundSelect");
+    const customBox = document.getElementById("schedCustomRoundBox");
+    const customInput = document.getElementById("schedCustomRoundInput");
+
+    if (select.value === "__custom__") {
+      customBox.classList.remove("hidden");
+      customInput.focus();
+    } else {
+      customBox.classList.add("hidden");
+    }
+  }
+
+  async function saveInlineCustomRound() {
+    const customInput = document.getElementById("schedCustomRoundInput");
+    const val = customInput.value.trim();
+    if (!val) {
+      alert("Please enter a round name.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/interviews/rounds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: val })
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        await loadRounds(val);
+        customInput.value = "";
+      }
+    } catch (err) {
+      alert("Failed to save round name.");
+    }
+  }
+
+  function cancelInlineCustomRound() {
+    const select = document.getElementById("schedRoundSelect");
+    document.getElementById("schedCustomRoundBox").classList.add("hidden");
+    document.getElementById("schedCustomRoundInput").value = "";
+    select.value = "Technical Round 1";
+  }
+
+  function openManageRoundsModal() {
+    renderManageRoundsList();
+    document.getElementById("newRoundNameInput").value = "";
+    document.getElementById("manageRoundsModal").classList.remove("hidden");
+  }
+
+  function closeManageRoundsModal() {
+    document.getElementById("manageRoundsModal").classList.add("hidden");
+    const currentSelected = document.getElementById("schedRoundSelect") ? document.getElementById("schedRoundSelect").value : null;
+    loadRounds(currentSelected !== "__custom__" ? currentSelected : null);
+  }
+
+  function renderManageRoundsList() {
+    const container = document.getElementById("manageRoundsListContainer");
+    if (!container) return;
+
+    if (!allRounds || allRounds.length === 0) {
+      container.innerHTML = `<p class="text-xs text-slate-400 py-3 text-center">No rounds found</p>`;
+      return;
+    }
+
+    container.innerHTML = allRounds.map(r => {
+      if (r.is_default) {
+        return `
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-layer-group text-slate-400 text-xs"></i>
+              <span class="font-bold text-xs text-slate-800">${escapeHtml(r.name)}</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600 border border-slate-300">Built-in</span>
+          </div>
+        `;
+      } else {
+        return `
+          <div id="round-row-${r.id}" class="flex items-center justify-between p-2.5 rounded-xl bg-purple-50/70 border border-purple-200">
+            <div id="round-display-${r.id}" class="flex items-center space-x-2 flex-1 mr-2">
+              <i class="fa-solid fa-star text-purple-500 text-xs"></i>
+              <span class="font-bold text-xs text-purple-950">${escapeHtml(r.name)}</span>
+              <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-200/80 text-purple-800">Custom</span>
+            </div>
+            
+            <div id="round-editbox-${r.id}" class="hidden flex-1 items-center space-x-1 mr-2">
+              <input type="text" id="round-rename-input-${r.id}" value="${escapeHtml(r.name)}" class="flex-1 rounded-lg px-2.5 py-1 border border-purple-300 text-xs bg-white">
+              <button onclick="saveRenameRound('${r.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px]">Save</button>
+              <button onclick="cancelRenameRound('${r.id}')" class="px-2 py-1 rounded-lg bg-slate-200 text-slate-600 font-bold text-[11px]">Cancel</button>
+            </div>
+
+            <div id="round-actions-${r.id}" class="flex items-center space-x-1 flex-shrink-0">
+              <button onclick="startRenameRound('${r.id}')" class="px-2 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold" title="Rename round">
+                <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+              </button>
+              <button onclick="deleteCustomRound('${r.id}', '${escapeHtml(r.name)}')" class="px-2 py-1 rounded-lg bg-white hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold" title="Delete custom round">
+                <i class="fa-solid fa-trash text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }).join("");
+  }
+
+  async function addCustomRoundFromManager() {
+    const input = document.getElementById("newRoundNameInput");
+    const name = input.value.trim();
+    if (!name) {
+      alert("Please enter a round name.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/interviews/rounds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name })
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        input.value = "";
+        await loadRounds();
+        renderManageRoundsList();
+      }
+    } catch (err) {
+      alert("Failed to add custom round.");
+    }
+  }
+
+  function startRenameRound(roundId) {
+    document.getElementById(`round-display-${roundId}`).classList.add("hidden");
+    document.getElementById(`round-actions-${roundId}`).classList.add("hidden");
+    document.getElementById(`round-editbox-${roundId}`).classList.remove("hidden");
+    document.getElementById(`round-editbox-${roundId}`).classList.add("flex");
+    document.getElementById(`round-rename-input-${roundId}`).focus();
+  }
+
+  function cancelRenameRound(roundId) {
+    document.getElementById(`round-display-${roundId}`).classList.remove("hidden");
+    document.getElementById(`round-actions-${roundId}`).classList.remove("hidden");
+    document.getElementById(`round-editbox-${roundId}`).classList.add("hidden");
+    document.getElementById(`round-editbox-${roundId}`).classList.remove("flex");
+  }
+
+  async function saveRenameRound(roundId) {
+    const input = document.getElementById(`round-rename-input-${roundId}`);
+    const newName = input.value.trim();
+    if (!newName) {
+      alert("Round name cannot be empty.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/interviews/rounds/${roundId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName })
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        await Promise.all([loadRounds(), loadSchedules()]);
+        renderManageRoundsList();
+      }
+    } catch (err) {
+      alert("Failed to rename round.");
+    }
+  }
+
+  async function deleteCustomRound(roundId, roundName) {
+    if (!confirm(`Are you sure you want to delete the custom round "${roundName}"?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/interviews/rounds/${roundId}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        await loadRounds();
+        renderManageRoundsList();
+      }
+    } catch (err) {
+      alert("Failed to delete custom round.");
+    }
   }
 
   // --- STATS ---
@@ -1257,7 +1559,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     document.getElementById("schedId").value = "";
     document.getElementById("schedCompany").value = "";
     document.getElementById("schedRole").value = "DevOps Engineer";
-    document.getElementById("schedRound").value = "Technical Round 1";
+    populateSchedRoundSelect("Technical Round 1");
+    document.getElementById("schedCustomRoundInput").value = "";
     document.getElementById("schedDate").value = now.toISOString().split("T")[0];
     document.getElementById("schedStartTime").value = nextHStr;
     document.getElementById("schedEndTime").value = endHStr;
@@ -1284,7 +1587,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     document.getElementById("schedId").value = s.id;
     document.getElementById("schedCompany").value = s.company || "";
     document.getElementById("schedRole").value = s.role || "DevOps Engineer";
-    document.getElementById("schedRound").value = s.round || "";
+    populateSchedRoundSelect(s.round || "Technical Round 1");
     document.getElementById("schedDate").value = s.date || "";
     document.getElementById("schedStartTime").value = s.start_time || s.time || "10:00";
     document.getElementById("schedEndTime").value = s.end_time || "11:00";
@@ -1309,10 +1612,26 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     const salaryCtc = document.getElementById("schedSalaryCtc").value.trim();
     const monthlySalary = calculateMonthlySalary(salaryCtc);
 
+    let roundName = document.getElementById("schedRoundSelect").value;
+    if (roundName === "__custom__") {
+      const customVal = document.getElementById("schedCustomRoundInput").value.trim();
+      if (!customVal) {
+        alert("Please enter a custom round name.");
+        return;
+      }
+      roundName = customVal;
+      // Also register as custom round
+      await fetch("/api/interviews/rounds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: customVal })
+      }).catch(() => {});
+    }
+
     const payload = {
       company: document.getElementById("schedCompany").value.trim(),
       role: document.getElementById("schedRole").value.trim(),
-      round: document.getElementById("schedRound").value.trim(),
+      round: roundName,
       date: document.getElementById("schedDate").value,
       time: startTime,
       start_time: startTime,

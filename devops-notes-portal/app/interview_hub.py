@@ -243,12 +243,24 @@ def parse_interview_qa_text(raw_text: str) -> List[Dict[str, Any]]:
     flush_current()
     return items
 
+DEFAULT_ROUNDS = [
+    "Technical Round 1",
+    "Technical Round 2",
+    "Managerial / Tech Lead Round",
+    "System Design / Architecture Round",
+    "Live Coding / Hands-on Round",
+    "DevSecOps & Cloud Scenario Round",
+    "HR / Cultural Fit Round",
+    "Client / Final Director Round"
+]
+
 class InterviewManager:
     def __init__(self):
         self.storage_dir = self._resolve_storage_dir()
         os.makedirs(self.storage_dir, exist_ok=True)
         self.schedules_file = os.path.join(self.storage_dir, "schedules.json")
         self.questions_file = os.path.join(self.storage_dir, "questions.json")
+        self.rounds_file = os.path.join(self.storage_dir, "rounds.json")
         self._init_files()
 
     def _resolve_storage_dir(self) -> str:
@@ -273,6 +285,102 @@ class InterviewManager:
             self._save_json(self.schedules_file, [])
         if not os.path.exists(self.questions_file):
             self._save_json(self.questions_file, [])
+        if not os.path.exists(self.rounds_file):
+            self._save_json(self.rounds_file, [])
+
+    # --- ROUNDS API ---
+    def get_rounds(self) -> List[Dict[str, Any]]:
+        custom_list = self._read_json(self.rounds_file)
+        result = []
+        for r in DEFAULT_ROUNDS:
+            result.append({
+                "id": f"def-{r.lower().replace(' ', '-').replace('/', '-')}",
+                "name": r,
+                "is_default": True,
+                "can_delete": False,
+                "can_rename": False
+            })
+        for cr in custom_list:
+            result.append({
+                "id": cr.get("id"),
+                "name": cr.get("name"),
+                "is_default": False,
+                "can_delete": True,
+                "can_rename": True
+            })
+        return result
+
+    def add_custom_round(self, name: str) -> Dict[str, Any]:
+        clean_name = name.strip()
+        if not clean_name:
+            raise ValueError("Round name cannot be empty")
+        custom_list = self._read_json(self.rounds_file)
+        # Check if already exists in default or custom
+        for r in DEFAULT_ROUNDS:
+            if r.lower() == clean_name.lower():
+                return {"id": f"def-{r.lower().replace(' ', '-')}", "name": r, "is_default": True, "can_delete": False, "can_rename": False}
+        for cr in custom_list:
+            if cr.get("name", "").lower() == clean_name.lower():
+                return {"id": cr["id"], "name": cr["name"], "is_default": False, "can_delete": True, "can_rename": True}
+
+        new_round = {
+            "id": f"round-{uuid.uuid4().hex[:8]}",
+            "name": clean_name,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        custom_list.append(new_round)
+        self._save_json(self.rounds_file, custom_list, commit_msg=f"Add custom interview round: {clean_name}")
+        return {
+            "id": new_round["id"],
+            "name": new_round["name"],
+            "is_default": False,
+            "can_delete": True,
+            "can_rename": True
+        }
+
+    def rename_custom_round(self, round_id: str, new_name: str) -> Optional[Dict[str, Any]]:
+        clean_name = new_name.strip()
+        if not clean_name:
+            raise ValueError("Round name cannot be empty")
+        custom_list = self._read_json(self.rounds_file)
+        target = None
+        old_name = ""
+        for r in custom_list:
+            if r.get("id") == round_id:
+                target = r
+                old_name = r.get("name", "")
+                r["name"] = clean_name
+                break
+        if not target:
+            return None
+        self._save_json(self.rounds_file, custom_list, commit_msg=f"Rename custom round '{old_name}' to '{clean_name}'")
+        
+        # Update any schedules with old round name
+        if old_name and old_name != clean_name:
+            schedules = self._read_json(self.schedules_file)
+            updated_sched = False
+            for s in schedules:
+                if s.get("round") == old_name:
+                    s["round"] = clean_name
+                    updated_sched = True
+            if updated_sched:
+                self._save_json(self.schedules_file, schedules, commit_msg=f"Update schedules round name to '{clean_name}'")
+
+        return {
+            "id": target["id"],
+            "name": target["name"],
+            "is_default": False,
+            "can_delete": True,
+            "can_rename": True
+        }
+
+    def delete_custom_round(self, round_id: str) -> bool:
+        custom_list = self._read_json(self.rounds_file)
+        filtered = [r for r in custom_list if r.get("id") != round_id]
+        if len(filtered) == len(custom_list):
+            return False
+        self._save_json(self.rounds_file, filtered, commit_msg=f"Delete custom interview round ID: {round_id}")
+        return True
 
     def _read_json(self, filepath: str) -> List[Dict[str, Any]]:
         try:
