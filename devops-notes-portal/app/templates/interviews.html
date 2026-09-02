@@ -152,13 +152,26 @@
             </button>
           </div>
 
-          <!-- Controls: Expand All / Collapse All -->
-          <div class="flex items-center space-x-2">
-            <button onclick="toggleAllInterviewAccordions(true)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 border border-sky-200 transition-all flex items-center space-x-1 shadow-xs">
+          <!-- Controls: View Switcher + Expand All / Collapse All -->
+          <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+            <!-- View Mode Switcher -->
+            <div class="flex items-center p-0.5 bg-slate-100 rounded-xl border border-sky-200 text-xs font-bold shadow-2xs">
+              <button type="button" onclick="setQuestionsViewMode('company')" id="viewBtnCompany" class="px-3 py-1.5 rounded-lg bg-sky-600 text-white font-bold shadow-xs flex items-center space-x-1.5 transition-all text-xs" title="Group questions with Company heading and round breakdown">
+                <i class="fa-solid fa-building text-[10px]"></i>
+                <span>By Company & Round</span>
+              </button>
+              <button type="button" onclick="setQuestionsViewMode('flat')" id="viewBtnFlat" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-sky-700 font-bold flex items-center space-x-1.5 transition-all text-xs" title="View all questions as a flat list">
+                <i class="fa-solid fa-list-ul text-[10px]"></i>
+                <span>Flat List</span>
+              </button>
+            </div>
+
+            <!-- Controls: Expand All / Collapse All -->
+            <button onclick="toggleAllInterviewAccordions(true)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 border border-sky-200 transition-all flex items-center space-x-1 shadow-xs" title="Expand all questions">
               <i class="fa-solid fa-chevron-down text-sky-600 text-[10px]"></i>
               <span>Expand All</span>
             </button>
-            <button onclick="toggleAllInterviewAccordions(false)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 border border-sky-200 transition-all flex items-center space-x-1 shadow-xs">
+            <button onclick="toggleAllInterviewAccordions(false)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 border border-sky-200 transition-all flex items-center space-x-1 shadow-xs" title="Collapse all questions">
               <i class="fa-solid fa-chevron-up text-sky-600 text-[10px]"></i>
               <span>Collapse All</span>
             </button>
@@ -553,6 +566,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   let allQuestions = [];
   let currentStats = {};
   let activeCategory = "All";
+  let activeViewMode = "company";
   let searchDebounceTimer = null;
   const availableCategories = {{ categories | tojson }};
 
@@ -1601,6 +1615,231 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     return safe;
   }
 
+  function setQuestionsViewMode(mode) {
+    activeViewMode = mode;
+    const btnCompany = document.getElementById("viewBtnCompany");
+    const btnFlat = document.getElementById("viewBtnFlat");
+    if (btnCompany && btnFlat) {
+      if (mode === "company") {
+        btnCompany.className = "px-3 py-1.5 rounded-lg bg-sky-600 text-white font-bold shadow-xs flex items-center space-x-1.5 transition-all text-xs";
+        btnFlat.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-sky-700 font-bold flex items-center space-x-1.5 transition-all text-xs";
+      } else {
+        btnFlat.className = "px-3 py-1.5 rounded-lg bg-sky-600 text-white font-bold shadow-xs flex items-center space-x-1.5 transition-all text-xs";
+        btnCompany.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-sky-700 font-bold flex items-center space-x-1.5 transition-all text-xs";
+      }
+    }
+    renderQuestionsList();
+  }
+
+  function openUploadQaForCompany(companyName, roundName = "") {
+    openUploadQaModal();
+    const select = document.getElementById("qaCompanySelect");
+    if (select) {
+      select.value = companyName.trim();
+      onCompanySelectChange();
+      if (roundName) {
+        const roundSelect = document.getElementById("qaRoundSelect");
+        if (roundSelect) roundSelect.value = roundName.trim();
+      }
+    }
+  }
+
+  function renderSingleQuestionItem(q, idx, isGrouped = false) {
+    const catsHtml = (q.categories || []).map(c => `
+      <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100/90 text-sky-800 border border-sky-200">${escapeHtml(c)}</span>
+    `).join("");
+
+    const renderedAnswer = renderMarkdownSafe(q.answer || "");
+
+    const difficultyBadges = {
+      "Easy": "bg-emerald-100 text-emerald-800 border-emerald-200",
+      "Moderate": "bg-sky-100 text-sky-800 border-sky-200",
+      "Hard": "bg-amber-100 text-amber-800 border-amber-200",
+      "Challenging": "bg-rose-100 text-rose-800 border-rose-200"
+    };
+    const diffClass = difficultyBadges[q.difficulty] || "bg-slate-100 text-slate-700";
+
+    return `
+      <details class="group rounded-2xl border ${isGrouped ? 'border-sky-100/90 bg-white' : 'glass-card border-sky-100/90'} shadow-xs overflow-hidden transition-all duration-200 hover:border-sky-300">
+        <summary class="p-3.5 sm:p-4 cursor-pointer flex items-center justify-between hover:bg-sky-50/50 transition-colors select-text">
+          <div class="flex items-start space-x-3 flex-1 pr-3">
+            <span class="text-xs font-mono font-bold text-sky-600 mt-0.5 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100 flex-shrink-0">#${idx + 1}</span>
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                ${!isGrouped ? `
+                  <span class="font-extrabold text-xs text-slate-900 bg-white/90 px-2 py-0.5 rounded-md border border-slate-200 shadow-xs">${escapeHtml(q.company)}</span>
+                  ${q.round ? `<span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md">${escapeHtml(q.round)}</span>` : ''}
+                ` : ''}
+                ${q.difficulty ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md border font-mono ${diffClass}"><i class="fa-solid fa-gauge-high mr-1"></i>${escapeHtml(q.difficulty)}</span>` : ''}
+                ${!isGrouped && q.date ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${formatDateCustom(q.date)}</span>` : ''}
+                ${catsHtml}
+              </div>
+              <h4 class="text-xs sm:text-sm font-bold text-slate-900 leading-snug pt-0.5">${escapeHtml(q.question)}</h4>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2 flex-shrink-0">
+            <button onclick="event.preventDefault(); event.stopPropagation(); openEditQuestionModal('${q.id}')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white/90 hover:bg-amber-50 text-amber-700 border border-amber-200 transition-all flex items-center space-x-1 shadow-2xs" title="Edit Question & Re-categorize">
+              <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+              <span class="hidden sm:inline">Edit</span>
+            </button>
+            <i class="fa-solid fa-chevron-down text-xs text-sky-600 transition-transform duration-200 group-open:rotate-180"></i>
+          </div>
+        </summary>
+
+        <div class="px-5 pb-5 pt-2 border-t border-sky-100/80 bg-slate-50/40 space-y-3">
+          <div class="prose-custom text-xs sm:text-[13px] leading-relaxed select-text">
+            ${renderedAnswer}
+          </div>
+
+          ${q.experience ? `
+            <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 flex items-start space-x-2 shadow-2xs">
+              <i class="fa-solid fa-comment-dots text-indigo-500 mt-0.5"></i>
+              <div>
+                <strong class="text-slate-900">Interview Experience / Key Topics:</strong>
+                <p class="text-slate-600 mt-0.5">${escapeHtml(q.experience)}</p>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </details>
+    `;
+  }
+
+  function renderGroupedByCompanyAndRound(questions) {
+    const companyMap = new Map();
+
+    questions.forEach(q => {
+      const comp = (q.company || "General Interviews").trim();
+      const rnd = (q.round || "Technical Round 1").trim();
+      const dt = q.date || "";
+      const roundKey = `${rnd}###${dt}`;
+
+      if (!companyMap.has(comp)) {
+        const scheds = (allSchedules || []).filter(s => (s.company || "").trim().toLowerCase() === comp.toLowerCase());
+        const role = scheds.length > 0 && scheds[0].role ? scheds[0].role : "DevOps Engineer";
+        const ctc = scheds.length > 0 && scheds[0].salary_ctc ? scheds[0].salary_ctc : "";
+
+        companyMap.set(comp, {
+          company: comp,
+          role: role,
+          ctc: ctc,
+          roundsMap: new Map(),
+          totalQuestions: 0
+        });
+      }
+
+      const compObj = companyMap.get(comp);
+      compObj.totalQuestions++;
+
+      if (!compObj.roundsMap.has(roundKey)) {
+        const sched = (allSchedules || []).find(s => 
+          (s.company || "").trim().toLowerCase() === comp.toLowerCase() &&
+          (s.round || "").trim().toLowerCase() === rnd.toLowerCase()
+        );
+
+        compObj.roundsMap.set(roundKey, {
+          round: rnd,
+          date: dt,
+          start_time: sched?.start_time || sched?.time || "10:00",
+          end_time: sched?.end_time || "11:00",
+          status: sched?.status || "completed",
+          salary_ctc: sched?.salary_ctc || "",
+          questions: []
+        });
+      }
+
+      compObj.roundsMap.get(roundKey).questions.push(q);
+    });
+
+    let html = "";
+    let compCounter = 0;
+
+    companyMap.forEach((compData, companyName) => {
+      compCounter++;
+      const roundsList = Array.from(compData.roundsMap.values());
+
+      html += `
+        <div class="glass-card rounded-3xl border border-sky-200/90 shadow-md overflow-hidden bg-white/90 transition-all mb-6">
+          <!-- 🏢 COMPANY MAIN HEADING SECTION -->
+          <div class="p-4 sm:p-5 bg-gradient-to-r from-sky-100/70 via-indigo-50/50 to-white border-b border-sky-200/80 flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center space-x-3.5">
+              <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md shadow-sky-500/25 font-black flex-shrink-0">
+                <i class="fa-solid fa-building"></i>
+              </div>
+              <div>
+                <div class="flex items-center space-x-2.5 flex-wrap gap-y-1">
+                  <h2 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">${escapeHtml(companyName)}</h2>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-sky-600 text-white font-mono shadow-xs">${compData.totalQuestions} Questions</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 font-mono">${roundsList.length} Round(s)</span>
+                </div>
+                <div class="text-[11px] text-slate-600 mt-1 flex items-center space-x-2 flex-wrap font-medium">
+                  <span class="flex items-center"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i>${escapeHtml(compData.role)}</span>
+                  ${compData.ctc ? `<span class="flex items-center text-emerald-700 font-bold">• <i class="fa-solid fa-money-bill-wave text-emerald-600 mx-1"></i>CTC: <span class="font-mono">${escapeHtml(compData.ctc)}</span></span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <button onclick="openUploadQaForCompany('${escapeHtml(companyName)}')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-sky-700 font-bold text-xs border border-sky-200 shadow-xs flex items-center space-x-1.5 transition-all" title="Upload interview questions for this company">
+                <i class="fa-solid fa-cloud-arrow-up text-sky-600 text-xs"></i>
+                <span>Upload Q&A</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 🎯 ROUNDS SECTION -->
+          <div class="p-3 sm:p-5 space-y-5 bg-slate-50/50">
+            ${roundsList.map((rndData, rIdx) => {
+              const timeDisplay = formatTimeRange(rndData.start_time, rndData.end_time);
+              const dateDisplay = rndData.date ? formatDateCustom(rndData.date) : '';
+              return `
+                <div class="rounded-2xl border border-sky-200/80 bg-white shadow-xs overflow-hidden">
+                  <!-- ROUND SUB-HEADING -->
+                  <div class="p-3.5 sm:p-4 bg-slate-50/90 border-b border-sky-100 flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center space-x-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs border border-indigo-200 flex-shrink-0">
+                        <i class="fa-solid fa-bullseye text-xs"></i>
+                      </div>
+                      <div>
+                        <div class="flex items-center space-x-2 flex-wrap">
+                          <span class="font-black text-xs sm:text-sm text-slate-900">${escapeHtml(rndData.round)}</span>
+                          <span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">${escapeHtml(rndData.status)}</span>
+                          ${rndData.salary_ctc ? `<span class="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100"><i class="fa-solid fa-coins mr-1"></i>${escapeHtml(rndData.salary_ctc)}</span>` : ''}
+                        </div>
+                        <div class="text-[11px] text-slate-500 font-mono mt-0.5 flex items-center space-x-1.5">
+                          ${dateDisplay ? `<span class="flex items-center"><i class="fa-regular fa-calendar text-sky-600 mr-1"></i>${dateDisplay}</span>` : ''}
+                          ${timeDisplay ? `<span>• <i class="fa-regular fa-clock text-slate-400 mr-1"></i>${timeDisplay}</span>` : ''}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                      <span class="text-[11px] font-extrabold text-slate-700 bg-sky-50 px-2.5 py-1 rounded-xl border border-sky-200 font-mono shadow-2xs">${rndData.questions.length} Question(s)</span>
+                      <button onclick="openUploadQaForCompany('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}')" class="p-1 px-2 text-[10px] font-bold rounded-lg text-sky-600 hover:bg-sky-50 border border-sky-100 transition-all" title="Add question to this round">
+                        <i class="fa-solid fa-plus mr-1"></i>Add
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 📝 LIST OF ALL QUESTIONS FOR THIS ROUND -->
+                  <div class="p-3 sm:p-4 space-y-2.5">
+                    ${rndData.questions.map((q, qIdx) => renderSingleQuestionItem(q, qIdx, true)).join("")}
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    });
+
+    return html;
+  }
+
+  function renderFlatQuestionsList(questions) {
+    return questions.map((q, idx) => renderSingleQuestionItem(q, idx, false)).join("");
+  }
+
   function renderQuestionsList() {
     const container = document.getElementById("qaListContainer");
     if (!allQuestions || allQuestions.length === 0) {
@@ -1627,64 +1866,11 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       return;
     }
 
-    container.innerHTML = allQuestions.map((q, idx) => {
-      const catsHtml = (q.categories || []).map(c => `
-        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100/90 text-sky-800 border border-sky-200">${escapeHtml(c)}</span>
-      `).join("");
-
-      const renderedAnswer = renderMarkdownSafe(q.answer || "");
-
-      const difficultyBadges = {
-        "Easy": "bg-emerald-100 text-emerald-800 border-emerald-200",
-        "Moderate": "bg-sky-100 text-sky-800 border-sky-200",
-        "Hard": "bg-amber-100 text-amber-800 border-amber-200",
-        "Challenging": "bg-rose-100 text-rose-800 border-rose-200"
-      };
-      const diffClass = difficultyBadges[q.difficulty] || "bg-slate-100 text-slate-700";
-
-      return `
-        <details class="group glass-card rounded-2xl border border-sky-100/90 shadow-sm overflow-hidden transition-all duration-200">
-          <summary class="p-4 cursor-pointer flex items-center justify-between hover:bg-sky-50/50 transition-colors select-text">
-            <div class="flex items-start space-x-3 flex-1 pr-4">
-              <span class="text-xs font-mono font-bold text-sky-600 mt-0.5">#${idx + 1}</span>
-              <div class="space-y-1.5 flex-1">
-                <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                  <span class="font-extrabold text-xs text-slate-900 bg-white/90 px-2 py-0.5 rounded-md border border-slate-200 shadow-xs">${escapeHtml(q.company)}</span>
-                  ${q.round ? `<span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md">${escapeHtml(q.round)}</span>` : ''}
-                  ${q.difficulty ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md border font-mono ${diffClass}"><i class="fa-solid fa-gauge-high mr-1"></i>${escapeHtml(q.difficulty)}</span>` : ''}
-                  <span class="text-[10px] font-mono text-slate-500 font-bold">${q.date ? formatDateCustom(q.date) : ''}</span>
-                  ${catsHtml}
-                </div>
-                <h4 class="text-xs sm:text-sm font-bold text-slate-900 leading-snug">${escapeHtml(q.question)}</h4>
-              </div>
-            </div>
-            <div class="flex items-center space-x-2 flex-shrink-0">
-              <button onclick="event.preventDefault(); event.stopPropagation(); openEditQuestionModal('${q.id}')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white/90 hover:bg-amber-50 text-amber-700 border border-amber-200 transition-all flex items-center space-x-1" title="Edit Question & Re-categorize">
-                <i class="fa-solid fa-pen-to-square text-[10px]"></i>
-                <span class="hidden sm:inline">Edit</span>
-              </button>
-              <i class="fa-solid fa-chevron-down text-xs text-sky-600 transition-transform duration-200 group-open:rotate-180"></i>
-            </div>
-          </summary>
-
-          <div class="px-5 pb-5 pt-2 border-t border-sky-100/80 bg-white/60 space-y-3">
-            <div class="prose-custom text-xs sm:text-[13px] leading-relaxed select-text">
-              ${renderedAnswer}
-            </div>
-
-            ${q.experience ? `
-              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-start space-x-2">
-                <i class="fa-solid fa-comment-dots text-indigo-500 mt-0.5"></i>
-                <div>
-                  <strong class="text-slate-900">Interview Experience / Key Topics:</strong>
-                  <p class="text-slate-600 mt-0.5">${escapeHtml(q.experience)}</p>
-                </div>
-              </div>
-            ` : ''}
-          </div>
-        </details>
-      `;
-    }).join("");
+    if (activeViewMode === "flat") {
+      container.innerHTML = renderFlatQuestionsList(allQuestions);
+    } else {
+      container.innerHTML = renderGroupedByCompanyAndRound(allQuestions);
+    }
 
     if (window.Prism) {
       try { Prism.highlightAllUnder(container); } catch(e) {}
