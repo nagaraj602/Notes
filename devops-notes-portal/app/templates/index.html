@@ -220,6 +220,12 @@
         <button id="btnRaw" onclick="setViewMode('raw')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">Raw</button>
       </div>
 
+      <!-- Collapsible Accordions Toggle (Shown when <details> exist) -->
+      <button id="btnToggleAccordions" onclick="toggleAllAccordions()" class="hidden px-3.5 py-2 text-xs bg-white/80 hover:bg-sky-50 border border-sky-100 rounded-xl text-slate-700 hover:text-sky-700 transition-all flex items-center space-x-1.5 shadow-sm font-semibold" title="Expand or Collapse All Q&A Accordions">
+        <i class="fa-solid fa-chevron-down text-sky-600"></i>
+        <span class="hidden md:inline" id="btnToggleAccordionsText">Expand All</span>
+      </button>
+
       <button onclick="copyRawNote()" class="px-3.5 py-2 text-xs bg-white/80 hover:bg-sky-50 border border-sky-100 rounded-xl text-slate-700 hover:text-sky-700 transition-all flex items-center space-x-1.5 shadow-sm font-semibold" title="Copy Markdown">
         <i class="fa-regular fa-copy text-sky-600"></i>
         <span class="hidden md:inline">Copy</span>
@@ -358,9 +364,10 @@
       </button>
     </div>
 
-    <!-- Draggable / Pannable Image Canvas -->
+    <!-- Draggable / Pannable Image & SVG Diagram Canvas -->
     <div id="lightboxCanvas" class="w-full h-full flex items-center justify-center p-4 overflow-hidden cursor-grab active:cursor-grabbing relative">
       <img id="lightboxImg" src="" alt="Zoomed Note Image" class="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl transition-transform duration-75 select-none pointer-events-auto" draggable="false" />
+      <div id="lightboxSvgContainer" class="hidden max-w-[95vw] max-h-[90vh] overflow-visible select-none pointer-events-auto flex items-center justify-center transition-transform duration-75"></div>
     </div>
 
     <!-- Bottom Helper Hint -->
@@ -462,6 +469,12 @@
 
     const activeMark = currentHighlights[currentHighlightIdx];
     if (activeMark) {
+      // Auto-open parent <details> accordion if match is located inside a closed accordion
+      const parentDetails = activeMark.closest("details");
+      if (parentDetails && !parentDetails.open) {
+        parentDetails.open = true;
+        updateAccordionButtonState();
+      }
       activeMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -471,6 +484,34 @@
 
   function nextMatch() { jumpToMatch(currentHighlightIdx + 1); }
   function prevMatch() { jumpToMatch(currentHighlightIdx - 1); }
+
+  function toggleAllAccordions() {
+    const noteViewer = document.getElementById("noteViewer");
+    if (!noteViewer) return;
+    const details = noteViewer.querySelectorAll("details");
+    if (details.length === 0) return;
+    const anyClosed = Array.from(details).some(d => !d.open);
+    details.forEach(d => { d.open = anyClosed; });
+    updateAccordionButtonState();
+  }
+
+  function updateAccordionButtonState() {
+    const noteViewer = document.getElementById("noteViewer");
+    const btn = document.getElementById("btnToggleAccordions");
+    if (!noteViewer || !btn) return;
+    const details = noteViewer.querySelectorAll("details");
+    if (details.length === 0) {
+      btn.classList.add("hidden");
+      return;
+    }
+    btn.classList.remove("hidden");
+    const allOpen = Array.from(details).every(d => d.open);
+    if (allOpen) {
+      btn.innerHTML = `<i class="fa-solid fa-chevron-up text-sky-600"></i> <span class="hidden md:inline">Collapse All</span>`;
+    } else {
+      btn.innerHTML = `<i class="fa-solid fa-chevron-down text-sky-600"></i> <span class="hidden md:inline">Expand All</span>`;
+    }
+  }
 
   // Load Note file (with optional search query to highlight and jump to)
   async function loadFile(path, searchQuery = "") {
@@ -550,6 +591,12 @@
         attachImageZoomHandlers();
         await renderMermaidDiagrams();
         Prism.highlightAll();
+
+        // Check and configure accordion toggle button if <details> exist
+        updateAccordionButtonState();
+        noteViewer.querySelectorAll("details").forEach(d => {
+          d.addEventListener("toggle", updateAccordionButtonState);
+        });
 
         // If a search query was specified, highlight and jump directly to it!
         if (searchQuery) {
@@ -655,6 +702,13 @@
   // --- MERMAID DIAGRAMS RENDERING & INTERACTION CONTROLLER ---
   let mermaidRenderCounter = 0;
 
+  function decodeHtmlEntities(str) {
+    if (!str) return "";
+    const txt = document.createElement("textarea");
+    txt.innerHTML = str;
+    return txt.value;
+  }
+
   async function renderMermaidDiagrams() {
     if (!window.mermaid) return;
     const container = document.getElementById("noteViewer");
@@ -666,14 +720,16 @@
     );
     
     potentialMermaidBlocks.forEach(codeEl => {
-      const codeText = (codeEl.innerText || codeEl.textContent || "").trim();
+      const codeText = decodeHtmlEntities((codeEl.innerText || codeEl.textContent || "").trim());
       const isMermaid = 
         codeEl.classList.contains("language-mermaid") || 
         codeEl.classList.contains("language-flowchart") ||
         codeEl.parentElement.classList.contains("language-mermaid") ||
         codeEl.parentElement.classList.contains("mermaid") ||
         codeText.startsWith("flowchart ") || 
+        codeText.startsWith("flowchart\n") || 
         codeText.startsWith("graph ") || 
+        codeText.startsWith("graph\n") || 
         codeText.startsWith("sequenceDiagram") ||
         codeText.startsWith("classDiagram") ||
         codeText.startsWith("stateDiagram") ||
@@ -705,10 +761,11 @@
       if (el.getAttribute("data-processed") === "true") continue;
 
       if (!el.getAttribute("data-mermaid-src")) {
-        el.setAttribute("data-mermaid-src", (el.textContent || "").trim());
+        el.setAttribute("data-mermaid-src", decodeHtmlEntities((el.textContent || el.innerText || "").trim()));
       }
-      const rawSrc = el.getAttribute("data-mermaid-src");
+      let rawSrc = el.getAttribute("data-mermaid-src");
       if (!rawSrc) continue;
+      rawSrc = decodeHtmlEntities(rawSrc).trim();
 
       mermaidRenderCounter++;
       const uniqueId = `mermaid-chart-${Date.now()}-${mermaidRenderCounter}`;
@@ -717,26 +774,49 @@
         const { svg } = await mermaid.render(uniqueId, rawSrc);
         
         el.innerHTML = `
-          <div class="mermaid-container my-6 p-5 rounded-2xl bg-white/95 border border-sky-200/90 shadow-lg shadow-sky-500/5 hover:border-sky-400 transition-all overflow-x-auto relative group flex flex-col items-center">
+          <div class="mermaid-container my-6 p-5 rounded-2xl bg-white/98 border border-sky-200/90 shadow-xl shadow-sky-500/5 hover:border-sky-400 transition-all relative group flex flex-col items-center">
             <!-- Diagram Toolbar Header -->
-            <div class="mermaid-actions-bar w-full flex items-center justify-between pb-3 mb-2 border-b border-sky-100 text-xs">
-              <div class="flex items-center space-x-2 text-sky-800 font-bold">
+            <div class="mermaid-actions-bar w-full flex flex-wrap items-center justify-between gap-2 pb-3 mb-2 border-b border-sky-100 text-xs select-none">
+              <div class="flex items-center space-x-2 text-sky-900 font-bold">
                 <i class="fa-solid fa-diagram-project text-sky-600"></i>
-                <span class="font-sans text-[11px] uppercase tracking-wider">Interactive Flowchart</span>
+                <span class="font-sans text-[11px] uppercase tracking-wider">Architecture Flowchart</span>
               </div>
-              <div class="flex items-center space-x-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
-                <button onclick="copyMermaidSource(this)" data-src="${encodeURIComponent(rawSrc)}" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-[11px] font-mono transition-all flex items-center space-x-1 shadow-xs cursor-pointer" title="Copy Diagram Source Code">
-                  <i class="fa-regular fa-copy"></i>
-                  <span>Copy Code</span>
+              <div class="flex items-center space-x-1.5 flex-wrap gap-1">
+                <!-- In-card zoom controls -->
+                <div class="flex items-center border border-sky-200 bg-sky-50/80 rounded-xl p-0.5 space-x-1 shadow-xs">
+                  <button onclick="zoomDiagram(this, -0.25)" class="p-1 px-2 rounded-lg hover:bg-white text-sky-800 text-[10px] font-bold transition-all active:scale-95" title="Zoom Out Diagram">
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <span class="diagram-scale-label text-[10px] font-mono font-bold text-sky-800 px-1">100%</span>
+                  <button onclick="zoomDiagram(this, 0.25)" class="p-1 px-2 rounded-lg hover:bg-white text-sky-800 text-[10px] font-bold transition-all active:scale-95" title="Zoom In Diagram">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                  <button onclick="zoomDiagram(this, 0)" class="p-1 px-1.5 rounded-lg hover:bg-white text-slate-500 hover:text-sky-800 text-[10px] transition-all" title="Reset Zoom">
+                    <i class="fa-solid fa-rotate-left"></i>
+                  </button>
+                </div>
+
+                <!-- 100% Original Size Toggle -->
+                <button onclick="toggleDiagramFit(this)" class="px-2.5 py-1 rounded-xl bg-white hover:bg-sky-50 text-sky-800 border border-sky-200 text-[11px] font-mono font-medium transition-all flex items-center space-x-1 shadow-xs cursor-pointer active:scale-95" title="Toggle 100% Unconstrained Width">
+                  <i class="fa-solid fa-expand text-sky-600"></i>
+                  <span>100% Size</span>
                 </button>
-                <button onclick="viewMermaidFullscreen(this)" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-[11px] font-mono transition-all flex items-center space-x-1 shadow-xs cursor-pointer" title="View Full Diagram / Zoom">
-                  <i class="fa-solid fa-magnifying-glass-plus"></i>
-                  <span>Zoom</span>
+
+                <!-- Fullscreen Zoom Lightbox Button -->
+                <button onclick="viewMermaidFullscreen(this)" class="px-2.5 py-1 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold transition-all flex items-center space-x-1.5 shadow-sm shadow-sky-500/20 cursor-pointer active:scale-95" title="Open Fullscreen Interactive Zoom">
+                  <i class="fa-solid fa-magnifying-glass-plus text-xs"></i>
+                  <span>Zoom / Fullscreen</span>
+                </button>
+
+                <!-- Copy Code Button -->
+                <button onclick="copyMermaidSource(this)" data-src="${encodeURIComponent(rawSrc)}" class="px-2.5 py-1 rounded-xl bg-white hover:bg-sky-50 text-slate-700 hover:text-sky-800 border border-sky-200 text-[11px] font-mono transition-all flex items-center space-x-1 shadow-xs cursor-pointer" title="Copy Diagram Code">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>Copy</span>
                 </button>
               </div>
             </div>
             
-            <!-- SVG Diagram Canvas -->
+            <!-- SVG Diagram Canvas (Scrollable) -->
             <div class="mermaid-svg-wrapper w-full flex justify-center py-2 overflow-x-auto">
               ${svg}
             </div>
@@ -765,6 +845,55 @@
     attachMermaidImageZoom();
   }
 
+  function zoomDiagram(btn, delta) {
+    const container = btn.closest(".mermaid-container");
+    const svg = container ? container.querySelector("svg") : null;
+    const label = container ? container.querySelector(".diagram-scale-label") : null;
+    if (!svg) return;
+
+    let scale = parseFloat(svg.getAttribute("data-scale") || "1.0");
+    if (delta === 0) {
+      scale = 1.0;
+    } else {
+      scale = Math.min(Math.max(parseFloat((scale + delta).toFixed(2)), 0.4), 3.0);
+    }
+    svg.setAttribute("data-scale", scale);
+    svg.style.transformOrigin = "top center";
+    svg.style.transform = `scale(${scale})`;
+    if (scale > 1.0) {
+      svg.style.maxWidth = "none";
+      svg.style.width = "auto";
+    } else if (scale === 1.0) {
+      svg.style.transform = "";
+      svg.style.maxWidth = "";
+      svg.style.width = "";
+    }
+    if (label) {
+      label.innerText = `${Math.round(scale * 100)}%`;
+    }
+  }
+
+  function toggleDiagramFit(btn) {
+    const container = btn.closest(".mermaid-container");
+    const wrapper = container ? container.querySelector(".mermaid-svg-wrapper") : null;
+    const svg = container ? container.querySelector("svg") : null;
+    if (!wrapper || !svg) return;
+
+    const isExpanded = wrapper.classList.toggle("is-expanded");
+    if (isExpanded) {
+      btn.innerHTML = `<i class="fa-solid fa-compress text-sky-600"></i> <span>Fit Width</span>`;
+      btn.title = "Fit diagram to page width";
+      svg.style.maxWidth = "none";
+      svg.style.width = "auto";
+    } else {
+      btn.innerHTML = `<i class="fa-solid fa-expand text-sky-600"></i> <span>100% Size</span>`;
+      btn.title = "View at 100% unconstrained size";
+      svg.style.maxWidth = "100%";
+      svg.style.width = "";
+      svg.style.transform = "";
+    }
+  }
+
   function copyMermaidSource(btn) {
     const raw = decodeURIComponent(btn.dataset.src || "");
     if (!raw) return;
@@ -780,12 +909,7 @@
     const container = btn.closest(".mermaid-container");
     const svg = container ? container.querySelector("svg") : null;
     if (!svg) return;
-    const svgClone = svg.cloneNode(true);
-    svgClone.setAttribute("width", "100%");
-    svgClone.setAttribute("height", "100%");
-    const svgXml = new XMLSerializer().serializeToString(svgClone);
-    const svgDataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgXml);
-    openLightbox(svgDataUrl, "Flowchart Diagram Viewer");
+    openLightboxSvg(svg, "Flowchart Architecture Viewer");
   }
 
   function attachMermaidImageZoom() {
@@ -798,7 +922,7 @@
         img.style.cursor = "zoom-in";
         img.addEventListener("click", (e) => {
           e.stopPropagation();
-          openLightbox(src, "Flowchart Screenshot");
+          openLightbox(src, "Screenshot Preview");
         });
       }
     });
@@ -1129,16 +1253,77 @@
   function openLightbox(src, caption) {
     const modal = document.getElementById("imageLightboxModal");
     const lightboxImg = document.getElementById("lightboxImg");
+    const svgContainer = document.getElementById("lightboxSvgContainer");
     const captionElem = document.getElementById("lightboxCaption");
     const newTabBtn = document.getElementById("lightboxNewTabBtn");
     const downloadBtn = document.getElementById("lightboxDownloadBtn");
 
     if (!modal || !lightboxImg) return;
 
+    if (svgContainer) {
+      svgContainer.classList.add("hidden");
+      svgContainer.innerHTML = "";
+    }
+    lightboxImg.classList.remove("hidden");
     lightboxImg.src = src;
+
     if (captionElem) captionElem.innerText = caption || "Image Viewer";
-    if (newTabBtn) newTabBtn.href = src;
-    if (downloadBtn) downloadBtn.href = src;
+    if (newTabBtn) {
+      newTabBtn.href = src;
+      newTabBtn.classList.remove("hidden");
+    }
+    if (downloadBtn) {
+      downloadBtn.href = src;
+      downloadBtn.classList.remove("hidden");
+    }
+
+    // Reset zoom and offsets
+    lightboxZoom = 1;
+    translateX = 0;
+    translateY = 0;
+    applyImgTransform();
+
+    modal.classList.remove("hidden");
+  }
+
+  function openLightboxSvg(svgElement, caption) {
+    const modal = document.getElementById("imageLightboxModal");
+    const lightboxImg = document.getElementById("lightboxImg");
+    const svgContainer = document.getElementById("lightboxSvgContainer");
+    const captionElem = document.getElementById("lightboxCaption");
+    const newTabBtn = document.getElementById("lightboxNewTabBtn");
+    const downloadBtn = document.getElementById("lightboxDownloadBtn");
+
+    if (!modal || !svgContainer || !svgElement) return;
+
+    // Show live SVG container directly in DOM so all external images, foreignObjects, and styles render fully!
+    lightboxImg.classList.add("hidden");
+    lightboxImg.src = "";
+    svgContainer.classList.remove("hidden");
+    svgContainer.innerHTML = "";
+
+    const clonedSvg = svgElement.cloneNode(true);
+    clonedSvg.removeAttribute("style");
+    clonedSvg.style.maxWidth = "90vw";
+    clonedSvg.style.maxHeight = "82vh";
+    clonedSvg.style.height = "auto";
+    clonedSvg.style.display = "block";
+
+    // Enable pointer events on images inside the cloned SVG so users can click on screenshots
+    clonedSvg.querySelectorAll("image, img").forEach(img => {
+      img.style.cursor = "zoom-in";
+      img.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const src = img.src || img.getAttribute("href") || img.getAttribute("xlink:href");
+        if (src) openLightbox(src, "Screenshot Preview");
+      });
+    });
+
+    svgContainer.appendChild(clonedSvg);
+
+    if (captionElem) captionElem.innerText = caption || "Architecture Flowchart";
+    if (newTabBtn) newTabBtn.classList.add("hidden");
+    if (downloadBtn) downloadBtn.classList.add("hidden");
 
     // Reset zoom and offsets
     lightboxZoom = 1;
@@ -1168,9 +1353,15 @@
 
   function applyImgTransform() {
     const img = document.getElementById("lightboxImg");
+    const svgContainer = document.getElementById("lightboxSvgContainer");
     const label = document.getElementById("lightboxZoomLevel");
-    if (img) {
-      img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${lightboxZoom})`;
+    const transformStyle = `translate(${translateX}px, ${translateY}px) scale(${lightboxZoom})`;
+
+    if (img && !img.classList.contains("hidden")) {
+      img.style.transform = transformStyle;
+    }
+    if (svgContainer && !svgContainer.classList.contains("hidden")) {
+      svgContainer.style.transform = transformStyle;
     }
     if (label) {
       label.innerText = `${Math.round(lightboxZoom * 100)}%`;

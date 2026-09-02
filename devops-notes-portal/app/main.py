@@ -51,6 +51,17 @@ app = FastAPI(title="DevOps Knowledge Hub", lifespan=lifespan)
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+@app.api_route("/favicon.ico", methods=["GET", "HEAD"], include_in_schema=False)
+async def favicon():
+    fav_path = os.path.join(STATIC_DIR, "favicon.svg")
+    if os.path.exists(fav_path):
+        return FileResponse(fav_path, media_type="image/svg+xml")
+    raise HTTPException(status_code=404)
+
 # --- WEB ROUTES ---
 
 @app.get("/", response_class=HTMLResponse)

@@ -42,10 +42,12 @@ def rewrite_relative_assets(html_content: str, file_rel_path: str) -> str:
 def render_markdown(raw_content: str, file_rel_path: str = "") -> str:
     """Renders GitHub Flavored Markdown with syntax highlighting, tables, tasklists, mermaid diagrams, and asset resolution."""
     extensions = [
-        'extra',
         'tables',
-        'fenced_code',
-        'codehilite',
+        'attr_list',
+        'def_list',
+        'abbr',
+        'footnotes',
+        'md_in_html',
         'toc',
         'pymdownx.superfences',
         'pymdownx.tasklist',
@@ -53,14 +55,10 @@ def render_markdown(raw_content: str, file_rel_path: str = "") -> str:
         'pymdownx.inlinehilite',
     ]
     extension_configs = {
-        'codehilite': {
+        'pymdownx.highlight': {
             'linenums': False,
             'css_class': 'highlight',
             'guess_lang': False
-        },
-        'pymdownx.highlight': {
-            'linenums': False,
-            'css_class': 'highlight'
         },
         'pymdownx.tasklist': {
             'custom_checkbox': True
