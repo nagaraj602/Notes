@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Cloud CIDR & Subnet Visual Planner | DevOps Architect{% endblock %}
+{% block title %}VPC & Subnet CIDR Range Planner | DevOps Knowledge Hub{% endblock %}
 
 {% block content %}
-<div class="w-full h-full flex flex-col overflow-hidden relative">
-  <!-- Top Header Bar with Cloud Switcher & Quick Navigation -->
-  <div class="glass-nav px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2.5 border-b border-sky-200/80 bg-white/95 shadow-sm flex-shrink-0 z-30">
+<div class="w-full h-full flex flex-col overflow-hidden relative bg-slate-50/50">
+
+  <!-- Top Header Bar with Cloud Switcher -->
+  <div class="px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 border-b border-sky-100 bg-white/80 backdrop-blur-md flex-shrink-0 z-30 shadow-2xs">
     <!-- Left Title & Branding -->
     <div class="flex items-center space-x-3">
       <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-sky-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20 flex-shrink-0">
@@ -13,10 +14,10 @@
       </div>
       <div>
         <div class="flex items-center space-x-2">
-          <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight font-sans">Cloud CIDR Architect</h1>
-          <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold bg-sky-100 text-sky-800 border border-sky-200 uppercase">Interactive</span>
+          <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight font-sans">VPC & Subnet Range Planner</h1>
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold bg-sky-100 text-sky-800 border border-sky-200 uppercase">CIDR Calculator</span>
         </div>
-        <p class="text-[11px] text-slate-500 font-mono hidden sm:block">Subnet Division Matrix • Mathematical Derivations • Multi-Cloud Specs</p>
+        <p class="text-[11px] text-slate-500 font-sans hidden sm:block">Plan VPC ranges, select subnet masks, and auto-calculate non-overlapping subnet ranges.</p>
       </div>
     </div>
 
@@ -39,716 +40,561 @@
         <span>Traditional (2)</span>
       </button>
     </div>
-
-    <!-- Right Actions: History Drawer -->
-    <div class="flex items-center space-x-2">
-      <button onclick="toggleHistoryDrawer()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-sky-50 border border-sky-200 text-xs font-bold text-slate-800 shadow-sm flex items-center space-x-1.5 transition-all" title="View Calculation History">
-        <i class="fa-solid fa-clock-rotate-left text-sky-600"></i>
-        <span>History</span>
-        <span id="historyBadgeCount" class="px-1.5 py-0.2 rounded-full bg-sky-100 text-sky-800 text-[10px] font-mono">0</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Sticky Quick Jump Ribbon -->
-  <div class="px-4 sm:px-6 py-2 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between gap-2 overflow-x-auto text-[11px] font-mono font-bold select-none flex-shrink-0 z-20">
-    <div class="flex items-center space-x-2 truncate">
-      <span class="text-slate-400 font-sans uppercase tracking-wider text-[10px] font-extrabold mr-1">Quick Jump:</span>
-      <a href="#sectionCalculator" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 hover:text-sky-800 shadow-2xs transition-all flex items-center space-x-1">
-        <span>⚡</span><span>Calculator & Math</span>
-      </a>
-      <a href="#sectionSubnetMatrix" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 hover:text-sky-800 shadow-2xs transition-all flex items-center space-x-1">
-        <span>🔢</span><span>Subnet Division Matrix</span>
-      </a>
-      <a href="#sectionReserved" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 hover:text-sky-800 shadow-2xs transition-all flex items-center space-x-1">
-        <span>🛡️</span><span>Reserved IPs</span>
-      </a>
-      <a href="#sectionBinary" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 hover:text-sky-800 shadow-2xs transition-all flex items-center space-x-1">
-        <span>💾</span><span>32-Bit Binary</span>
-      </a>
-      <a href="#sectionComparison" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 hover:text-sky-800 shadow-2xs transition-all flex items-center space-x-1">
-        <span>⚖️</span><span>Cloud Comparison</span>
-      </a>
-    </div>
-    <span class="text-[10px] text-sky-700 font-sans hidden md:inline">↓ Scroll down for deep derivation & lists</span>
   </div>
 
   <!-- Scrollable Main Application Container -->
-  <div id="mainScrollContainer" onscroll="handleScrollIndicator()" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto w-full scroll-smooth">
+  <div id="mainScrollContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full scroll-smooth">
 
-    <!-- SECTION 1: SIDE BY SIDE - INTERACTIVE CALCULATOR & MATHEMATICAL DERIVATION -->
-    <div id="sectionCalculator" class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+    <!-- 🌟 CORE PLANNER CARD: STEP 1 (VPC) -> STEP 2 (SUBNET MASK) -> STEP 3 (COUNT) -->
+    <div class="glass-card p-6 rounded-3xl border-2 border-sky-200/90 bg-white/95 shadow-xl shadow-sky-900/5 space-y-5">
       
-      <!-- LEFT CARD: Interactive CIDR Calculator -->
-      <div class="glass-card p-6 rounded-3xl border-2 border-sky-200/90 bg-white/95 shadow-xl shadow-sky-900/5 space-y-4 flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-            <div class="flex items-center space-x-2">
-              <span class="w-7 h-7 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-calculator"></i></span>
-              <h2 class="text-sm font-extrabold text-slate-900">Interactive CIDR Calculator</h2>
-            </div>
-            <span id="rfcClassBadge" class="px-2.5 py-0.5 rounded-lg bg-sky-50 border border-sky-200 text-sky-800 text-[10px] font-mono font-bold">RFC 1918 Private</span>
-          </div>
-
-          <!-- RFC Presets Pill Ribbon -->
-          <div class="flex items-center gap-1.5 mb-3 flex-wrap text-xs">
-            <span class="text-[10px] font-extrabold text-slate-400 uppercase">Presets:</span>
-            <button onclick="applyPreset('10.0.0.0/16')" class="px-2 py-0.5 rounded-md bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-900 font-mono text-[10px] font-bold transition-all">10.0.0.0/16 (Class A)</button>
-            <button onclick="applyPreset('172.16.0.0/16')" class="px-2 py-0.5 rounded-md bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 font-mono text-[10px] font-bold transition-all">172.16.0.0/16 (Class B)</button>
-            <button onclick="applyPreset('192.168.0.0/16')" class="px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 font-mono text-[10px] font-bold transition-all">192.168.0.0/16 (Class C)</button>
-            <button onclick="applyPreset('10.0.0.0/8')" class="px-2 py-0.5 rounded-md bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 font-mono text-[10px] font-bold transition-all">10.0.0.0/8</button>
-          </div>
-
-          <!-- IP Input & Calculate Button -->
-          <div class="space-y-3">
-            <div class="relative">
-              <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">IPv4 Network CIDR Block</label>
-              <div class="relative">
-                <input type="text" id="cidrInput" value="10.0.0.0/16" placeholder="e.g. 10.0.0.0/16" 
-                  onkeydown="if(event.key === 'Enter') calculateCIDR(true)"
-                  class="w-full pl-4 pr-28 py-2.5 rounded-2xl bg-slate-50 border-2 border-sky-200 focus:border-sky-500 focus:bg-white text-slate-900 text-base font-mono font-black tracking-wide outline-none transition-all shadow-inner" />
-                <button onclick="calculateCIDR(true)" class="absolute right-1.5 top-1.5 px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-sm transition-all flex items-center space-x-1">
-                  <i class="fa-solid fa-calculator"></i>
-                  <span>Calculate</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Quick Subnet Mask Selection Ribbon -->
-            <div class="space-y-1">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-extrabold text-slate-700">Subnet Mask (Prefix Length)</span>
-                <span id="sliderPrefixLabel" class="font-mono font-extrabold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md">/16 (255.255.0.0)</span>
-              </div>
-              <div class="flex items-center gap-1 flex-wrap pt-0.5">
-                {% for p in [8, 12, 16, 20, 22, 24, 25, 26, 27, 28, 29, 30, 31, 32] %}
-                  <button onclick="setPrefix({{ p }})" class="prefix-btn px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-sky-50 text-slate-800 text-[11px] font-mono font-bold transition-all shadow-2xs" data-prefix="{{ p }}">
-                    /{{ p }}
-                  </button>
-                {% endfor %}
-              </div>
-            </div>
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+        <div class="flex items-center space-x-2.5">
+          <span class="w-8 h-8 rounded-xl bg-sky-600 text-white flex items-center justify-center text-xs font-bold shadow-md shadow-sky-600/20">
+            <i class="fa-solid fa-sliders"></i>
+          </span>
+          <div>
+            <h2 class="text-sm sm:text-base font-extrabold text-slate-900">VPC & Subnet Calculator</h2>
+            <p class="text-[11px] text-slate-500 font-sans">Select your VPC network, target subnet size, and the number of subnets needed.</p>
           </div>
         </div>
 
-        <!-- 4 Quick Metric Cards -->
-        <div class="grid grid-cols-2 gap-2.5 pt-2">
-          <div class="p-3 rounded-2xl bg-gradient-to-br from-sky-50 to-blue-50/50 border border-sky-200/80 shadow-2xs">
-            <div class="text-[10px] font-bold text-sky-700 uppercase tracking-wider">Total IP Count</div>
-            <div id="statTotalIps" class="text-base sm:text-lg font-black text-slate-900 font-mono mt-0.5">65,536</div>
-            <div class="text-[9px] text-slate-500 font-mono">2^(32-16) = 2^16</div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-200/80 shadow-2xs">
-            <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider flex items-center justify-between">
-              <span>Usable Hosts</span>
-              <span id="cloudReservedTag" class="text-[8px] px-1 rounded bg-white text-emerald-800 border border-emerald-200">-5 AWS</span>
-            </div>
-            <div id="statUsableIps" class="text-base sm:text-lg font-black text-emerald-900 font-mono mt-0.5">65,531</div>
-            <div id="statUsableFormula" class="text-[9px] text-slate-500 font-mono">65,536 - 5 Reserved</div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50/50 border border-indigo-200/80 shadow-2xs">
-            <div class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">Subnet Netmask</div>
-            <div id="statNetmask" class="text-xs sm:text-sm font-bold text-indigo-950 font-mono mt-0.5">255.255.0.0</div>
-            <div class="text-[9px] text-slate-500 font-mono">16 network bits</div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50/50 border border-amber-200/80 shadow-2xs">
-            <div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Wildcard Mask</div>
-            <div id="statWildcard" class="text-xs sm:text-sm font-bold text-amber-950 font-mono mt-0.5">0.0.255.255</div>
-            <div class="text-[9px] text-slate-500 font-mono">16 host bits</div>
-          </div>
+        <!-- 1-Click Architecture Blueprints -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mr-1">Presets:</span>
+          <button onclick="applyArchitecturePreset('aws_3tier')" class="px-2.5 py-1 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold transition-all shadow-2xs">
+            🏢 3-Tier (6 Subnets)
+          </button>
+          <button onclick="applyArchitecturePreset('eks_cluster')" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold transition-all shadow-2xs">
+            ☸️ EKS / K8s (8 Subnets)
+          </button>
+          <button onclick="applyArchitecturePreset('10_subnets')" class="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all shadow-2xs">
+            🔟 10 Subnets Plan
+          </button>
         </div>
       </div>
 
-      <!-- RIGHT CARD: Step-by-Step Mathematical Derivations (Side by Side!) -->
-      <div id="sectionMath" class="glass-card p-6 rounded-3xl border-2 border-sky-200/90 bg-white/95 shadow-xl shadow-sky-900/5 space-y-4 flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-            <div class="flex items-center space-x-2">
-              <span class="w-7 h-7 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-square-root-variable"></i></span>
-              <h3 class="text-sm font-extrabold text-slate-900">Step-by-Step Mathematical Derivation</h3>
-            </div>
-            <span class="px-2.5 py-0.5 rounded-lg bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-mono font-bold">2^(32-n) & 2^(s) Formulas</span>
+      <!-- 3-STEP SELECTION CONTROLS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        <!-- STEP 1: VPC CIDR Range Selection -->
+        <div class="p-4 rounded-2xl bg-slate-50/80 border border-sky-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded-full bg-sky-600 text-white text-[10px] flex items-center justify-center font-bold">1</span>
+              <span>VPC CIDR Range</span>
+            </label>
+            <span id="vpcTotalIpsBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800">65,536 IPs</span>
           </div>
 
-          <!-- Dynamic Derivation Steps -->
-          <div id="mathDerivationContainer" class="space-y-2.5">
-            <!-- Populated dynamically -->
-          </div>
+          <input type="text" id="vpcCidrInput" value="10.0.0.0/16" placeholder="e.g. 10.0.0.0/16" 
+            oninput="onVpcInputChange()"
+            class="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-sky-200 focus:border-sky-500 text-slate-900 text-sm font-mono font-black tracking-wide outline-none transition-all shadow-2xs">
 
-          <!-- Interactive Subnet Slicer Derivation Box -->
-          <div id="subnetSlicerBox" class="mt-3 p-3.5 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-purple-50/60 border border-indigo-200 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-black text-indigo-950 flex items-center space-x-1.5">
-                <i class="fa-solid fa-calculator text-indigo-600"></i>
-                <span>Interactive Subnet Slicer:</span>
-              </span>
-              <div class="flex items-center space-x-1 text-xs font-mono font-bold">
-                <label class="text-[10px] text-slate-500 uppercase">Subnet Mask:</label>
-                <select id="slicerTargetPrefix" onchange="updateSlicerDerivation()" class="px-2 py-0.5 rounded-lg border border-indigo-300 bg-white text-indigo-900 font-bold outline-none focus:border-indigo-600">
-                  <!-- Populated dynamically -->
-                </select>
-              </div>
-            </div>
-
-            <div id="slicerFormulaOutput" class="space-y-1 text-xs font-mono text-slate-700">
-              <!-- Rendered dynamically -->
+          <!-- VPC Range Presets -->
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Common VPC Ranges:</span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="setVpcCidr('10.0.0.0/16')" class="vpc-pill px-2 py-0.8 rounded-lg bg-white hover:bg-sky-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">10.0.0.0/16</button>
+              <button onclick="setVpcCidr('172.16.0.0/16')" class="vpc-pill px-2 py-0.8 rounded-lg bg-white hover:bg-sky-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">172.16.0.0/16</button>
+              <button onclick="setVpcCidr('192.168.0.0/16')" class="vpc-pill px-2 py-0.8 rounded-lg bg-white hover:bg-sky-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">192.168.0.0/16</button>
+              <button onclick="setVpcCidr('10.100.0.0/16')" class="vpc-pill px-2 py-0.8 rounded-lg bg-white hover:bg-sky-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">10.100.0.0/16</button>
+              <button onclick="setVpcCidr('10.0.0.0/20')" class="vpc-pill px-2 py-0.8 rounded-lg bg-white hover:bg-sky-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">10.0.0.0/20</button>
             </div>
           </div>
         </div>
 
-        <!-- IP Range Summary Box -->
-        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono space-y-1 mt-2">
-          <div class="text-[10px] font-sans font-extrabold uppercase tracking-wider text-slate-500 mb-1">Calculated Address Boundaries:</div>
-          <div class="grid grid-cols-2 gap-2 text-[11px]">
-            <div><span class="text-slate-400">Network:</span> <span id="mathNetworkAddr" class="font-bold text-slate-900">10.0.0.0</span></div>
-            <div><span class="text-slate-400">Broadcast:</span> <span id="mathBroadcastAddr" class="font-bold text-slate-900">10.0.255.255</span></div>
-            <div><span class="text-slate-400">First Usable:</span> <span id="mathFirstUsable" class="font-bold text-emerald-700">10.0.0.5</span></div>
-            <div><span class="text-slate-400">Last Usable:</span> <span id="mathLastUsable" class="font-bold text-emerald-700">10.0.255.254</span></div>
+        <!-- STEP 2: Subnet Range / Mask Selection -->
+        <div class="p-4 rounded-2xl bg-slate-50/80 border border-sky-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-bold">2</span>
+              <span>Subnet Size / Mask</span>
+            </label>
+            <span id="subnetSizeBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">256 IPs / subnet</span>
+          </div>
+
+          <select id="subnetMaskSelect" onchange="onSubnetMaskChange()" class="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-indigo-200 focus:border-indigo-500 text-slate-900 text-sm font-mono font-black tracking-wide outline-none transition-all shadow-2xs">
+            <option value="24" selected>/24 (256 IPs / 251 Usable in AWS — Standard)</option>
+            <option value="20">/20 (4,096 IPs / 4,091 Usable — Large EKS Clusters)</option>
+            <option value="22">/22 (1,024 IPs / 1,019 Usable)</option>
+            <option value="23">/23 (512 IPs / 507 Usable)</option>
+            <option value="25">/25 (128 IPs / 123 Usable)</option>
+            <option value="26">/26 (64 IPs / 59 Usable)</option>
+            <option value="27">/27 (32 IPs / 27 Usable)</option>
+            <option value="28">/28 (16 IPs / 11 Usable — Bastion / NAT)</option>
+          </select>
+
+          <!-- Quick Subnet Mask Pills -->
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Quick Subnet Masks:</span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="setSubnetMask(24)" class="submask-pill px-2 py-0.8 rounded-lg bg-indigo-600 text-white font-mono text-[10px] font-bold transition-all shadow-2xs" data-mask="24">/24</button>
+              <button onclick="setSubnetMask(20)" class="submask-pill px-2 py-0.8 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 font-mono text-[10px] font-bold text-slate-700 transition-all" data-mask="20">/20</button>
+              <button onclick="setSubnetMask(22)" class="submask-pill px-2 py-0.8 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 font-mono text-[10px] font-bold text-slate-700 transition-all" data-mask="22">/22</button>
+              <button onclick="setSubnetMask(23)" class="submask-pill px-2 py-0.8 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 font-mono text-[10px] font-bold text-slate-700 transition-all" data-mask="23">/23</button>
+              <button onclick="setSubnetMask(25)" class="submask-pill px-2 py-0.8 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 font-mono text-[10px] font-bold text-slate-700 transition-all" data-mask="25">/25</button>
+              <button onclick="setSubnetMask(26)" class="submask-pill px-2 py-0.8 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 font-mono text-[10px] font-bold text-slate-700 transition-all" data-mask="26">/26</button>
+              <button onclick="setSubnetMask(28)" class="submask-pill px-2 py-0.8 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 font-mono text-[10px] font-bold text-slate-700 transition-all" data-mask="28">/28</button>
+            </div>
           </div>
         </div>
+
+        <!-- STEP 3: Number of Subnets Needed -->
+        <div class="p-4 rounded-2xl bg-slate-50/80 border border-sky-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] flex items-center justify-center font-bold">3</span>
+              <span>Number of Subnets</span>
+            </label>
+            <span id="maxAvailableSubnetsBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Max 256 Subnets</span>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <input type="number" id="subnetsCountInput" value="10" min="1" max="256" 
+              oninput="renderCalculatedSubnets()"
+              class="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-emerald-200 focus:border-emerald-500 text-slate-900 text-sm font-mono font-black tracking-wide outline-none transition-all shadow-2xs">
+            <button onclick="renderCalculatedSubnets()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold whitespace-nowrap shadow-sm transition-all">
+              Update List
+            </button>
+          </div>
+
+          <!-- Quick Subnet Count Buttons -->
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Quick Subnet Counts:</span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="setSubnetsCount(2)" class="count-pill px-2 py-0.8 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">2</button>
+              <button onclick="setSubnetsCount(4)" class="count-pill px-2 py-0.8 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">4</button>
+              <button onclick="setSubnetsCount(6)" class="count-pill px-2 py-0.8 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">6</button>
+              <button onclick="setSubnetsCount(8)" class="count-pill px-2 py-0.8 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">8</button>
+              <button onclick="setSubnetsCount(10)" class="count-pill px-2 py-0.8 rounded-lg bg-emerald-600 text-white font-mono text-[10px] font-bold transition-all shadow-2xs">10</button>
+              <button onclick="setSubnetsCount(16)" class="count-pill px-2 py-0.8 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">16</button>
+              <button onclick="setSubnetsCount('all')" class="count-pill px-2 py-0.8 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-all">All</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
 
-    <!-- SECTION 2: EXACT SUBNET DIVISION & IP CAPACITY MATRIX -->
-    <div id="sectionSubnetMatrix" class="glass-card p-6 rounded-3xl border-2 border-sky-300/90 bg-white/95 shadow-xl space-y-5">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+    <!-- 🌟 SECTION 2: GENERATED SUBNET RANGES BREAKDOWN (THE MAIN USER VIEW) -->
+    <div class="glass-card p-6 rounded-3xl border-2 border-sky-300/90 bg-white/95 shadow-xl space-y-4">
+      
+      <!-- Results Header & Quick Actions -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
         <div>
           <div class="flex items-center space-x-2">
-            <span class="w-7 h-7 rounded-xl bg-sky-600 text-white flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-table-cells"></i></span>
-            <h2 class="text-base font-black text-slate-900">Exact Subnet Division & IP Capacity Matrix</h2>
+            <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-md shadow-indigo-600/20">
+              <i class="fa-solid fa-list-check"></i>
+            </span>
+            <h2 id="subnetListHeading" class="text-base font-black text-slate-900">Generated Subnet Ranges Breakdown</h2>
           </div>
-          <p class="text-xs text-slate-500 font-mono mt-0.5">
-            Shows exactly how many subnets and usable IPs you can create from <strong id="matrixParentCidrText" class="text-sky-700">10.0.0.0/16</strong>:
+          <p id="subnetListSubheading" class="text-xs text-slate-500 font-mono mt-0.5">
+            Showing Subnet-1 to Subnet-10 derived sequentially from VPC 10.0.0.0/16
           </p>
         </div>
 
-        <span class="px-3 py-1 rounded-xl bg-sky-50 border border-sky-200 text-sky-800 text-xs font-mono font-bold">
-          Formula: 2^(Subnet_Prefix - Parent_Prefix)
-        </span>
+        <!-- Export & Copy Action Buttons -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="copySubnetCidrList()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-sky-200 text-xs font-bold shadow-2xs transition-all flex items-center space-x-1.5">
+            <i class="fa-solid fa-copy text-sky-600"></i>
+            <span>Copy CIDRs</span>
+          </button>
+          <button onclick="copyTerraformCode()" class="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold shadow-2xs transition-all flex items-center space-x-1.5">
+            <i class="fa-solid fa-cube text-indigo-600"></i>
+            <span>Copy Terraform</span>
+          </button>
+          <div class="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs">
+            <button onclick="toggleViewMode('cards')" id="btnViewCards" class="px-2.5 py-1 rounded-lg font-bold bg-white text-slate-900 shadow-2xs transition-all">Cards</button>
+            <button onclick="toggleViewMode('table')" id="btnViewTable" class="px-2.5 py-1 rounded-lg font-bold text-slate-600 hover:text-slate-900 transition-all">Table</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Subnet Division Table -->
-      <div class="overflow-x-auto rounded-2xl border border-slate-200">
+      <!-- VIEW 1: Subnet Cards Grid View (Default) -->
+      <div id="subnetsCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- VIEW 2: Subnet Detailed Table View -->
+      <div id="subnetsTableContainer" class="hidden overflow-x-auto rounded-2xl border border-slate-200">
         <table class="w-full text-xs text-left">
           <thead class="bg-slate-100 text-slate-700 font-extrabold uppercase text-[10px] tracking-wider">
             <tr>
-              <th class="p-3">Target Subnet Mask</th>
-              <th class="p-3">Borrowed Bits</th>
-              <th class="p-3">Exact Number of Subnets</th>
-              <th class="p-3">Total IPs / Subnet</th>
-              <th class="p-3">Usable Hosts / Subnet</th>
-              <th class="p-3">Subnet Netmask</th>
-              <th class="p-3 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody id="subnetMatrixTableBody" class="divide-y divide-slate-200 bg-white font-mono">
-            <!-- Populated dynamically -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Generated Subnet Range Explorer (Interactive Subnet List) -->
-      <div id="generatedSubnetsContainer" class="hidden space-y-3 pt-4 border-t border-slate-200">
-        <div class="flex items-center justify-between">
-          <h3 id="generatedSubnetsTitle" class="text-xs font-black text-slate-900 flex items-center space-x-2">
-            <i class="fa-solid fa-list-check text-sky-600"></i>
-            <span>Generated Subnets for /24</span>
-          </h3>
-          <button onclick="closeGeneratedSubnets()" class="text-xs text-slate-500 hover:text-slate-800 font-bold underline">Hide List</button>
-        </div>
-        
-        <div class="overflow-x-auto rounded-2xl border border-sky-200 max-h-80 overflow-y-auto">
-          <table class="w-full text-xs text-left">
-            <thead class="bg-sky-50 text-sky-900 font-extrabold uppercase text-[10px] sticky top-0">
-              <tr>
-                <th class="p-2.5">#</th>
-                <th class="p-2.5">Subnet CIDR</th>
-                <th class="p-2.5">Network Address</th>
-                <th class="p-2.5">Usable Host Range (First - Last)</th>
-                <th class="p-2.5">Broadcast Address</th>
-                <th class="p-2.5">Usable IPs</th>
-              </tr>
-            </thead>
-            <tbody id="generatedSubnetsTableBody" class="divide-y divide-slate-200 bg-white font-mono">
-              <!-- Populated dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECTION 3: CLOUD RESERVED IPS & 32-BIT BINARY MATRIX -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-      
-      <!-- Cloud Reserved IPs with Rich Interactive Tooltips -->
-      <div id="sectionReserved" class="glass-card p-6 rounded-3xl border border-sky-200/80 bg-white/95 shadow-lg space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div class="flex items-center space-x-2">
-            <span class="w-7 h-7 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-shield-halved"></i></span>
-            <h3 class="text-sm font-extrabold text-slate-900">Cloud Reserved IP Addresses</h3>
-          </div>
-          <span id="cloudReservedLabel" class="text-xs font-mono font-extrabold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-lg border border-indigo-200">AWS Reserved (5)</span>
-        </div>
-
-        <div id="reservedIpsList" class="space-y-2 text-xs">
-          <!-- Dynamic Reserved IPs List -->
-        </div>
-      </div>
-
-      <!-- 32-BIT BINARY VISUALIZATION MATRIX -->
-      <div id="sectionBinary" class="glass-card p-6 rounded-3xl border border-sky-200/80 bg-white/95 shadow-lg space-y-4 flex flex-col justify-between">
-        <div>
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
-            <div class="flex items-center space-x-2">
-              <span class="w-7 h-7 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-microchip"></i></span>
-              <h3 class="text-sm font-extrabold text-slate-900">32-Bit Binary Breakdown Matrix</h3>
-            </div>
-            <div class="flex items-center space-x-3 text-xs font-mono">
-              <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span> <span class="font-bold text-slate-700">Network Bits (1s)</span></span>
-              <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> <span class="font-bold text-slate-700">Host Bits (0s)</span></span>
-            </div>
-          </div>
-
-          <!-- 32 Bits Display Container -->
-          <div class="space-y-2">
-            <div class="text-[11px] text-slate-500 font-mono">Real-time bit alignment for current prefix:</div>
-            <div id="binaryBitsGrid" class="grid grid-cols-8 sm:grid-cols-16 md:grid-cols-32 gap-1 font-mono text-center text-xs">
-              <!-- Rendered dynamically -->
-            </div>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 text-[11px] font-mono bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
-          <div><span class="text-slate-500">IP Binary:</span> <span id="binIpVal" class="font-bold text-slate-900 block truncate">00001010...</span></div>
-          <div><span class="text-slate-500">Mask Binary:</span> <span id="binMaskVal" class="font-bold text-sky-700 block truncate">11111111...</span></div>
-          <div><span class="text-slate-500">Wildcard:</span> <span id="binWildcardVal" class="font-bold text-emerald-700 block truncate">00000000...</span></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- SECTION 4: MULTI-CLOUD COMPARISON MATRIX -->
-    <div id="sectionComparison" class="glass-card p-6 rounded-3xl border border-sky-200/80 bg-white/95 shadow-lg space-y-4">
-      <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
-        <span class="w-7 h-7 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-scale-balanced"></i></span>
-        <h3 class="text-sm font-extrabold text-slate-900">Side-by-Side Multi-Cloud Comparison Matrix</h3>
-      </div>
-
-      <div class="overflow-x-auto rounded-2xl border border-slate-200">
-        <table class="w-full text-xs text-left">
-          <thead class="bg-slate-100 text-slate-700 font-extrabold uppercase text-[10px]">
-            <tr>
-              <th class="p-3">Cloud Provider</th>
-              <th class="p-3">Reserved IPs</th>
-              <th class="p-3">Total IPs</th>
+              <th class="p-3"># Name</th>
+              <th class="p-3">Subnet CIDR</th>
+              <th class="p-3">Network Address (Start)</th>
+              <th class="p-3">Usable Host Range (First – Last)</th>
+              <th class="p-3">Broadcast (End)</th>
               <th class="p-3">Usable Hosts</th>
-              <th class="p-3">Subnet Prefix Limits</th>
-              <th class="p-3">Key Architectural Rules</th>
+              <th class="p-3">Suggested Role / Tier</th>
             </tr>
           </thead>
-          <tbody id="comparisonTableBody" class="divide-y divide-slate-200 bg-white">
-            <!-- Populated dynamically -->
+          <tbody id="subnetsTableBody" class="divide-y divide-slate-200 bg-white font-mono">
+            <!-- Rendered dynamically -->
           </tbody>
         </table>
       </div>
+
     </div>
 
-  </div>
-
-  <!-- FLOATING SCROLL DOWN INDICATOR PILL -->
-  <div id="floatingScrollPill" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-300">
-    <button onclick="scrollDownToMatrix()" class="px-4 py-2 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-bold shadow-xl border border-sky-400/40 backdrop-blur-md flex items-center space-x-2 hover:scale-105 transition-all animate-bounce">
-      <span>Subnet Division Matrix & Derivations Below</span>
-      <i class="fa-solid fa-arrow-down text-sky-400"></i>
-    </button>
-  </div>
-
-  <!-- HISTORY DRAWER (Right Slide-in) -->
-  <div id="historyDrawer" class="hidden fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white shadow-2xl border-l-2 border-sky-300 p-6 flex flex-col justify-between select-none">
-    <div class="space-y-4 flex-1 overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+    <!-- 🛡️ SECTION 3: CLOUD RESERVED IPS EXPLANATION -->
+    <div class="glass-card p-6 rounded-3xl border border-sky-100 bg-white/95 shadow-sm space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
         <div class="flex items-center space-x-2">
-          <i class="fa-solid fa-clock-rotate-left text-sky-600"></i>
-          <h3 class="text-sm font-black text-slate-900">Calculation History</h3>
+          <span class="w-7 h-7 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-shield-halved"></i></span>
+          <h3 id="reservedIpsHeader" class="text-xs sm:text-sm font-extrabold text-slate-900">Cloud Reserved IP Addresses per Subnet (AWS)</h3>
         </div>
-        <button onclick="toggleHistoryDrawer()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        <span class="text-[10px] font-mono font-bold text-slate-500">Auto-deducted from total capacity</span>
       </div>
 
-      <div id="historyItemsList" class="space-y-2">
-        <!-- Populated dynamically -->
+      <div id="reservedIpsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5 text-xs font-sans">
+        <!-- Rendered dynamically -->
       </div>
     </div>
 
-    <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-      <button onclick="clearHistory()" class="text-xs text-rose-600 hover:text-rose-800 font-bold">Clear History</button>
-      <button onclick="toggleHistoryDrawer()" class="px-4 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Close</button>
-    </div>
   </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
-  // State Management
-  let currentUsername = "default";
-  let activeCloud = localStorage.getItem("devops_cidr_cloud") || "aws";
-  let activeVpcCidr = "10.0.0.0/16";
+  let currentCloud = "aws";
+  let currentViewMode = "cards";
+  let generatedSubnets = [];
 
-  // --- INITIALIZATION ---
-  window.addEventListener("DOMContentLoaded", async () => {
-    setCloudProvider(activeCloud);
-    calculateCIDR(false);
-    loadComparisonMatrix();
-    refreshUserHistory();
+  const ROLE_SUGGESTIONS = [
+    { role: "Public Web / Ingress (AZ-1a)", tier: "Public", badge: "bg-sky-100 text-sky-800 border-sky-200" },
+    { role: "Public Web / Ingress (AZ-1b)", tier: "Public", badge: "bg-sky-100 text-sky-800 border-sky-200" },
+    { role: "Private App / Worker Nodes (AZ-1a)", tier: "Private", badge: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+    { role: "Private App / Worker Nodes (AZ-1b)", tier: "Private", badge: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+    { role: "Database / RDS Multi-AZ (AZ-1a)", tier: "Database", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+    { role: "Database / RDS Multi-AZ (AZ-1b)", tier: "Database", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+    { role: "Private Cache / Redis (AZ-1a)", tier: "Private", badge: "bg-purple-100 text-purple-800 border-purple-200" },
+    { role: "Private Cache / Redis (AZ-1b)", tier: "Private", badge: "bg-purple-100 text-purple-800 border-purple-200" },
+    { role: "Spare / Future Expansion (AZ-1a)", tier: "Spare", badge: "bg-slate-100 text-slate-700 border-slate-200" },
+    { role: "Spare / Future Expansion (AZ-1b)", tier: "Spare", badge: "bg-slate-100 text-slate-700 border-slate-200" }
+  ];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderCalculatedSubnets();
   });
 
-  // Cloud Provider Switcher
   function setCloudProvider(cloud) {
-    activeCloud = cloud;
-    localStorage.setItem("devops_cidr_cloud", cloud);
+    currentCloud = cloud;
     document.querySelectorAll(".cloud-btn").forEach(btn => {
-      const isSelected = btn.dataset.cloud === cloud;
-      btn.className = `cloud-btn px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
-        isSelected ? "bg-white text-sky-900 font-extrabold shadow-sm" : "text-slate-600 hover:text-slate-900"
-      }`;
-    });
-    calculateCIDR(false);
-  }
-
-  // Prefix Selection
-  function setPrefix(prefix) {
-    const cidrVal = document.getElementById("cidrInput").value.trim();
-    const baseIp = cidrVal.split("/")[0] || "10.0.0.0";
-    document.getElementById("cidrInput").value = `${baseIp}/${prefix}`;
-    calculateCIDR(false);
-  }
-
-  function applyPreset(presetCidr) {
-    document.getElementById("cidrInput").value = presetCidr;
-    calculateCIDR(false);
-  }
-
-  // --- CORE CIDR CALCULATION ENGINE ---
-  async function calculateCIDR(saveHistory = false) {
-    const cidrVal = document.getElementById("cidrInput").value.trim();
-    if (!cidrVal) return;
-    activeVpcCidr = cidrVal;
-
-    try {
-      const res = await fetch("/api/cidr/calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cidr: cidrVal,
-          cloud_provider: activeCloud,
-          username: currentUsername,
-          save_history: saveHistory
-        })
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        alert(`Error: ${err.detail || "Invalid CIDR"}`);
-        return;
-      }
-
-      const data = await res.json();
-      renderCIDRResults(data);
-      if (saveHistory) {
-        refreshUserHistory();
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  let currentCidrData = null;
-
-  function renderCIDRResults(data) {
-    currentCidrData = data;
-    // 1. Stats Cards
-    document.getElementById("statTotalIps").innerText = data.total_ips.toLocaleString();
-    document.getElementById("statUsableIps").innerText = data.usable_ips.toLocaleString();
-    document.getElementById("statNetmask").innerText = data.netmask;
-    document.getElementById("statWildcard").innerText = data.wildcard;
-    document.getElementById("rfcClassBadge").innerText = data.rfc_class;
-    document.getElementById("sliderPrefixLabel").innerText = `/${data.prefix_len} (${data.netmask})`;
-    document.getElementById("cloudReservedTag").innerText = `-${data.reserved_count} ${data.cloud_name.split(" ")[0]}`;
-    document.getElementById("statUsableFormula").innerText = `${data.total_ips.toLocaleString()} - ${data.reserved_count} Reserved`;
-    document.getElementById("cloudReservedLabel").innerText = `${data.cloud_name.split(" ")[0]} Reserved (${data.reserved_count})`;
-    document.getElementById("matrixParentCidrText").innerText = data.cidr;
-
-    document.getElementById("mathNetworkAddr").innerText = data.network_address;
-    document.getElementById("mathBroadcastAddr").innerText = data.broadcast_address;
-    document.getElementById("mathFirstUsable").innerText = data.first_usable;
-    document.getElementById("mathLastUsable").innerText = data.last_usable;
-
-    // Highlight Prefix Ribbon
-    document.querySelectorAll(".prefix-btn").forEach(btn => {
-      const isSel = parseInt(btn.dataset.prefix) === data.prefix_len;
-      btn.className = `prefix-btn px-2 py-1 rounded-lg border font-mono font-bold transition-all ${
-        isSel ? "border-2 border-sky-600 bg-sky-600 text-white shadow-md scale-105" : "border-slate-200 bg-slate-50 hover:bg-sky-50 text-slate-800"
-      }`;
-    });
-
-    // Slicer Selector in Math Card
-    const slicerSelect = document.getElementById("slicerTargetPrefix");
-    const slicerBox = document.getElementById("subnetSlicerBox");
-    if (!data.subnet_matrix || data.subnet_matrix.length === 0) {
-      if (slicerBox) slicerBox.classList.add("hidden");
-    } else {
-      if (slicerBox) slicerBox.classList.remove("hidden");
-      const prevVal = parseInt(slicerSelect.value);
-      slicerSelect.innerHTML = data.subnet_matrix.map(m => `
-        <option value="${m.prefix}">/${m.prefix} (${m.netmask})</option>
-      `).join("");
-      
-      const has24 = data.subnet_matrix.find(m => m.prefix === 24);
-      if (prevVal && data.subnet_matrix.find(m => m.prefix === prevVal)) {
-        slicerSelect.value = prevVal;
-      } else if (has24) {
-        slicerSelect.value = 24;
+      if (btn.dataset.cloud === cloud) {
+        btn.className = "cloud-btn px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 active-cloud-btn";
       } else {
-        slicerSelect.value = data.subnet_matrix[0].prefix;
+        btn.className = "cloud-btn px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 text-slate-600 hover:text-slate-900";
       }
-      updateSlicerDerivation();
-    }
-
-    // 2. Exact Subnet Division Matrix Table
-    const matrixTbody = document.getElementById("subnetMatrixTableBody");
-    if (!data.subnet_matrix || data.subnet_matrix.length === 0) {
-      matrixTbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 font-mono">Current prefix /${data.prefix_len} is too small to subdivide into standard subnets.</td></tr>`;
-    } else {
-      matrixTbody.innerHTML = data.subnet_matrix.map(m => `
-        <tr class="hover:bg-sky-50/60 transition-colors">
-          <td class="p-3 font-extrabold text-sky-800">/${m.prefix}</td>
-          <td class="p-3 text-slate-600">${m.borrowed_bits} bits</td>
-          <td class="p-3 font-black text-slate-900 text-sm">${m.subnet_count.toLocaleString()} Subnets</td>
-          <td class="p-3 text-slate-700">${m.total_ips.toLocaleString()}</td>
-          <td class="p-3 font-bold text-emerald-700">${m.usable_ips.toLocaleString()} Usable</td>
-          <td class="p-3 text-slate-600 text-[11px]">${m.netmask}</td>
-          <td class="p-3 text-right">
-            <button onclick="generateSubnetList(${m.prefix})" class="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold shadow-xs transition-all">
-              Inspect Subnets
-            </button>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    // 3. Step-by-Step Mathematical Derivations
-    const mathBox = document.getElementById("mathDerivationContainer");
-    mathBox.innerHTML = data.math_steps.map(s => `
-      <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 flex items-start space-x-2.5">
-        <div class="w-5 h-5 rounded-md bg-sky-600 text-white font-mono font-bold text-[11px] flex items-center justify-center flex-shrink-0 mt-0.5">${s.step}</div>
-        <div class="space-y-0.5">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-extrabold text-slate-900">${s.title}:</span>
-            <span class="text-[11px] font-mono font-bold text-sky-700 bg-sky-100/90 px-1.5 py-0.2 rounded">${s.formula}</span>
-          </div>
-          <p class="text-[11px] text-slate-600 leading-tight">${s.explanation}</p>
-        </div>
-      </div>
-    `).join("");
-
-    // 4. Reserved IPs with Full Explanations
-    const resBox = document.getElementById("reservedIpsList");
-    if (data.reserved_ips.length === 0) {
-      resBox.innerHTML = `<div class="text-xs text-slate-400 font-mono">No reserved IPs for prefix /${data.prefix_len}.</div>`;
-    } else {
-      resBox.innerHTML = data.reserved_ips.map(r => `
-        <div class="p-3 rounded-2xl bg-slate-50/90 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-200 transition-all space-y-1 group">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-              <span class="text-xs font-mono font-black text-indigo-950">${r.ip}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 border border-indigo-200">${r.title}</span>
-            </div>
-            <span class="text-[10px] text-slate-400 font-mono">${r.offset}</span>
-          </div>
-          <p class="text-[11px] text-slate-600 leading-relaxed font-sans">${r.description}</p>
-        </div>
-      `).join("");
-    }
-
-    // 5. Binary Matrix
-    const bitsBox = document.getElementById("binaryBitsGrid");
-    bitsBox.innerHTML = data.binary.bits.map(b => `
-      <div class="p-1 rounded border text-center font-bold ${
-        b.is_network ? 'bg-sky-100 border-sky-300 text-sky-900' : 'bg-emerald-100 border-emerald-300 text-emerald-900'
-      }" title="Bit #${b.index+1} (Octet ${b.octet}): ${b.type}">
-        ${b.bit}
-      </div>
-    `).join("");
-
-    document.getElementById("binIpVal").innerText = data.binary.ip;
-    document.getElementById("binMaskVal").innerText = data.binary.netmask;
-    document.getElementById("binWildcardVal").innerText = data.binary.wildcard;
+    });
+    renderCalculatedSubnets();
   }
 
-  function updateSlicerDerivation() {
-    if (!currentCidrData || !currentCidrData.subnet_matrix) return;
-    const selectElem = document.getElementById("slicerTargetPrefix");
-    if (!selectElem) return;
-    const targetPrefix = parseInt(selectElem.value);
-    const item = currentCidrData.subnet_matrix.find(m => m.prefix === targetPrefix);
-    if (!item) return;
-
-    const parentPrefix = currentCidrData.prefix_len;
-    const borrowed = targetPrefix - parentPrefix;
-    const subCount = item.subnet_count;
-    const totalPerSub = item.total_ips;
-    const usablePerSub = item.usable_ips;
-    const totalFleetUsable = subCount * usablePerSub;
-
-    const out = document.getElementById("slicerFormulaOutput");
-    if (!out) return;
-    out.innerHTML = `
-      <div class="p-2.5 rounded-xl bg-white/95 border border-indigo-200/90 space-y-1.5 text-[11px] shadow-2xs">
-        <div class="flex justify-between items-center"><span class="text-slate-500 font-sans">1. Borrowed Subnet Bits:</span> <strong class="text-indigo-900">${targetPrefix} - ${parentPrefix} = ${borrowed} borrowed bits</strong></div>
-        <div class="flex justify-between items-center"><span class="text-slate-500 font-sans">2. Exact Subnet Count:</span> <strong class="text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200">2^${borrowed} = ${subCount.toLocaleString()} Subnets</strong></div>
-        <div class="flex justify-between items-center"><span class="text-slate-500 font-sans">3. Total IPs per Subnet:</span> <strong class="text-slate-900">2^(32 - ${targetPrefix}) = ${totalPerSub.toLocaleString()} IPs</strong></div>
-        <div class="flex justify-between items-center"><span class="text-slate-500 font-sans">4. Usable Hosts per Subnet:</span> <strong class="text-emerald-700 font-black">${totalPerSub.toLocaleString()} - ${currentCidrData.reserved_count} = ${usablePerSub.toLocaleString()} Hosts</strong></div>
-        <div class="flex justify-between items-center pt-1.5 border-t border-indigo-100 text-indigo-950 font-bold">
-          <span class="font-sans">Total Fleet Capacity (All Subnets):</span>
-          <span class="text-xs text-sky-800 font-black">${totalFleetUsable.toLocaleString()} Usable Hosts</span>
-        </div>
-      </div>
-    `;
+  function setVpcCidr(cidr) {
+    document.getElementById("vpcCidrInput").value = cidr;
+    renderCalculatedSubnets();
   }
 
-  // --- GENERATED SUBNETS LIST EXPLORER ---
-  async function generateSubnetList(targetPrefix) {
-    try {
-      const res = await fetch("/api/cidr/generate-subnets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          parent_cidr: activeVpcCidr,
-          target_prefix: targetPrefix,
-          cloud_provider: activeCloud,
-          limit: 100
-        })
+  function onVpcInputChange() {
+    renderCalculatedSubnets();
+  }
+
+  function setSubnetMask(mask) {
+    document.getElementById("subnetMaskSelect").value = mask;
+    onSubnetMaskChange();
+  }
+
+  function onSubnetMaskChange() {
+    const mask = parseInt(document.getElementById("subnetMaskSelect").value);
+    document.querySelectorAll(".submask-pill").forEach(p => {
+      if (parseInt(p.dataset.mask) === mask) {
+        p.className = "submask-pill px-2 py-0.8 rounded-lg bg-indigo-600 text-white font-mono text-[10px] font-bold transition-all shadow-2xs";
+      } else {
+        p.className = "submask-pill px-2 py-0.8 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 font-mono text-[10px] font-bold text-slate-700 transition-all";
+      }
+    });
+    renderCalculatedSubnets();
+  }
+
+  function setSubnetsCount(count) {
+    if (count === 'all') {
+      const vpcCidr = document.getElementById("vpcCidrInput").value.trim() || "10.0.0.0/16";
+      const parentPrefix = parseInt(vpcCidr.split("/")[1] || "16");
+      const subnetPrefix = parseInt(document.getElementById("subnetMaskSelect").value);
+      const totalPossible = Math.pow(2, Math.max(0, subnetPrefix - parentPrefix));
+      document.getElementById("subnetsCountInput").value = Math.min(totalPossible, 256);
+    } else {
+      document.getElementById("subnetsCountInput").value = count;
+    }
+    renderCalculatedSubnets();
+  }
+
+  function applyArchitecturePreset(type) {
+    if (type === "aws_3tier") {
+      setVpcCidr("10.0.0.0/16");
+      setSubnetMask(24);
+      setSubnetsCount(6);
+    } else if (type === "eks_cluster") {
+      setVpcCidr("10.100.0.0/16");
+      setSubnetMask(20);
+      setSubnetsCount(8);
+    } else if (type === "10_subnets") {
+      setVpcCidr("10.0.0.0/16");
+      setSubnetMask(24);
+      setSubnetsCount(10);
+    }
+  }
+
+  // --- IP CALCULATOR HELPERS ---
+  function ipToLong(ip) {
+    return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+  }
+
+  function longToIp(long) {
+    return [(long >>> 24) & 255, (long >>> 16) & 255, (long >>> 8) & 255, long & 255].join('.');
+  }
+
+  // --- MAIN RENDER FUNCTION ---
+  async function renderCalculatedSubnets() {
+    let vpcCidr = document.getElementById("vpcCidrInput").value.trim();
+    if (!vpcCidr) vpcCidr = "10.0.0.0/16";
+    if (!vpcCidr.includes("/")) vpcCidr += "/16";
+
+    const vpcParts = vpcCidr.split("/");
+    const vpcIp = vpcParts[0];
+    const parentPrefix = parseInt(vpcParts[1], 10) || 16;
+    let subnetPrefix = parseInt(document.getElementById("subnetMaskSelect").value, 10) || 24;
+
+    if (subnetPrefix <= parentPrefix) {
+      subnetPrefix = parentPrefix + 1;
+      document.getElementById("subnetMaskSelect").value = subnetPrefix;
+    }
+
+    const totalVpcIps = Math.pow(2, 32 - parentPrefix);
+    document.getElementById("vpcTotalIpsBadge").innerText = `${totalVpcIps.toLocaleString()} IPs`;
+
+    const totalSubnetIps = Math.pow(2, 32 - subnetPrefix);
+    const totalPossibleSubnets = Math.pow(2, subnetPrefix - parentPrefix);
+    document.getElementById("maxAvailableSubnetsBadge").innerText = `Max ${totalPossibleSubnets.toLocaleString()} Subnets`;
+    document.getElementById("subnetSizeBadge").innerText = `${totalSubnetIps.toLocaleString()} IPs / subnet`;
+
+    let requestedCount = parseInt(document.getElementById("subnetsCountInput").value, 10) || 10;
+    requestedCount = Math.max(1, Math.min(requestedCount, totalPossibleSubnets, 256));
+
+    // Reserved IPs count by cloud provider
+    let reservedCount = 5; // default AWS
+    if (currentCloud === "azure") reservedCount = 5;
+    else if (currentCloud === "gcp") reservedCount = 4;
+    else if (currentCloud === "rfc") reservedCount = 2;
+
+    const usableIpsPerSubnet = Math.max(0, totalSubnetIps - reservedCount);
+
+    // Update Headings
+    document.getElementById("subnetListHeading").innerText = 
+      `Generated ${requestedCount} Subnets of /${subnetPrefix} (${usableIpsPerSubnet.toLocaleString()} Usable Hosts each)`;
+    document.getElementById("subnetListSubheading").innerText = 
+      `Subnet-1 to Subnet-${requestedCount} sequentially divided from VPC ${vpcCidr} (${totalPossibleSubnets.toLocaleString()} total available in this VPC)`;
+
+    // Calculate each subnet sequentially
+    generatedSubnets = [];
+    const baseIpLong = ipToLong(vpcIp) & (~((1 << (32 - parentPrefix)) - 1) >>> 0);
+
+    for (let i = 0; i < requestedCount; i++) {
+      const subStartLong = baseIpLong + (i * totalSubnetIps);
+      const subEndLong = subStartLong + totalSubnetIps - 1;
+      const networkAddr = longToIp(subStartLong);
+      const broadcastAddr = longToIp(subEndLong);
+      const firstUsable = longToIp(subStartLong + reservedCount);
+      const lastUsable = longToIp(subEndLong - 1);
+      const subnetCidr = `${networkAddr}/${subnetPrefix}`;
+
+      const roleObj = ROLE_SUGGESTIONS[i % ROLE_SUGGESTIONS.length];
+      const roleText = i < ROLE_SUGGESTIONS.length ? roleObj.role : `Spare Subnet ${i + 1} (Multi-AZ)`;
+      const tierBadge = i < ROLE_SUGGESTIONS.length ? roleObj.badge : "bg-slate-100 text-slate-700 border-slate-200";
+
+      generatedSubnets.push({
+        index: i + 1,
+        name: `Subnet-${i + 1}`,
+        cidr: subnetCidr,
+        network: networkAddr,
+        broadcast: broadcastAddr,
+        firstUsable: firstUsable,
+        lastUsable: lastUsable,
+        totalIps: totalSubnetIps,
+        usableIps: usableIpsPerSubnet,
+        role: roleText,
+        tierBadge: tierBadge
       });
-      const data = await res.json();
-      
-      const container = document.getElementById("generatedSubnetsContainer");
-      const title = document.getElementById("generatedSubnetsTitle");
-      const tbody = document.getElementById("generatedSubnetsTableBody");
-
-      container.classList.remove("hidden");
-      title.innerHTML = `<i class="fa-solid fa-list-check text-sky-600"></i><span>Subnets for /${targetPrefix} (Showing ${data.returned_count} of ${data.total_possible_subnets.toLocaleString()} Total Subnets)</span>`;
-
-      tbody.innerHTML = data.subnets.map(s => `
-        <tr class="hover:bg-sky-50/50">
-          <td class="p-2.5 text-slate-400 font-bold">${s.index}</td>
-          <td class="p-2.5 text-sky-800 font-black">${s.cidr}</td>
-          <td class="p-2.5 text-slate-700">${s.network}</td>
-          <td class="p-2.5 text-emerald-700 font-bold">${s.first_usable} - ${s.last_usable}</td>
-          <td class="p-2.5 text-slate-600">${s.broadcast}</td>
-          <td class="p-2.5 font-bold text-slate-900">${s.usable_ips.toLocaleString()}</td>
-        </tr>
-      `).join("");
-
-      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch (e) {
-      console.error(e);
     }
+
+    renderCardsView();
+    renderTableView();
+    renderReservedIpsSection();
   }
 
-  function closeGeneratedSubnets() {
-    document.getElementById("generatedSubnetsContainer").classList.add("hidden");
-  }
-
-  // Scroll Down Indicator Controls
-  function handleScrollIndicator() {
-    const container = document.getElementById("mainScrollContainer");
-    const pill = document.getElementById("floatingScrollPill");
-    if (!container || !pill) return;
-    if (container.scrollTop > 150) {
-      pill.style.opacity = "0";
-      pill.style.pointerEvents = "none";
-    } else {
-      pill.style.opacity = "1";
-      pill.style.pointerEvents = "auto";
-    }
-  }
-
-  function scrollDownToMatrix() {
-    const elem = document.getElementById("sectionSubnetMatrix");
-    if (elem) elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // Multi-Cloud Comparison
-  async function loadComparisonMatrix() {
-    try {
-      const res = await fetch(`/api/cidr/comparison?cidr=10.0.0.0/16`);
-      const comp = await res.json();
-      const tbody = document.getElementById("comparisonTableBody");
-      
-      const rows = [
-        { key: "aws", rules: "5 IPs Reserved (.0, .1 Router, .2 DNS, .3 Future, .255 Broadcast). VPC max /16 to /28." },
-        { key: "azure", rules: "5 IPs Reserved (.0, .1 Gateway, .2/.3 DNS, .255 Broadcast). VNet prefix /8 to /29." },
-        { key: "gcp", rules: "4 IPs Reserved (.0, .1 Gateway, Second-to-last, .255 Broadcast). Global VPC /8 to /29." },
-        { key: "rfc", rules: "2 IPs Reserved (.0 Network, .255 Broadcast). Standard On-Premise RFC 791 routing." }
-      ];
-
-      tbody.innerHTML = rows.map(r => {
-        const item = comp[r.key];
-        return `
-          <tr class="hover:bg-slate-50 font-mono">
-            <td class="p-3 font-bold text-slate-900 font-sans">${item.cloud_name}</td>
-            <td class="p-3 text-rose-600 font-bold">${item.reserved_count} Reserved</td>
-            <td class="p-3 text-slate-900">${item.total_ips.toLocaleString()}</td>
-            <td class="p-3 text-emerald-700 font-black">${item.usable_ips.toLocaleString()}</td>
-            <td class="p-3 text-slate-600">/16 - /28</td>
-            <td class="p-3 text-slate-600 font-sans text-xs">${r.rules}</td>
-          </tr>
-        `;
-      }).join("");
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  // History Drawer
-  function toggleHistoryDrawer() { document.getElementById("historyDrawer").classList.toggle("hidden"); }
-
-  async function refreshUserHistory() {
-    try {
-      const res = await fetch(`/api/user/history?username=${encodeURIComponent(currentUsername)}`);
-      const history = await res.json();
-      renderHistory(history);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  function renderHistory(items) {
-    const list = document.getElementById("historyItemsList");
-    const countBadge = document.getElementById("historyBadgeCount");
-    if (countBadge) countBadge.innerText = items ? items.length : 0;
-    if (!items || items.length === 0) {
-      list.innerHTML = `<div class="text-xs font-mono text-slate-400 py-6 text-center">No calculations yet.</div>`;
-      return;
-    }
-    list.innerHTML = items.map(h => `
-      <div onclick="applyPreset('${h.cidr}')" class="p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-sky-50 cursor-pointer transition-all">
+  function renderCardsView() {
+    const container = document.getElementById("subnetsCardsContainer");
+    container.innerHTML = generatedSubnets.map(s => `
+      <div class="p-4 rounded-2xl bg-white border border-sky-200/90 shadow-2xs hover:border-sky-400 hover:shadow-md transition-all space-y-2.5 group">
+        <!-- Subnet Header & Name -->
         <div class="flex items-center justify-between">
-          <span class="text-xs font-mono font-extrabold text-sky-900">${h.cidr}</span>
-          <span class="text-[10px] font-bold uppercase px-1.5 py-0.2 rounded bg-sky-100 text-sky-800">${h.cloud_provider}</span>
+          <div class="flex items-center space-x-2">
+            <span class="w-6 h-6 rounded-lg bg-sky-100 text-sky-800 font-mono font-black text-xs flex items-center justify-center">#${s.index}</span>
+            <span class="font-black text-sm text-slate-900 font-mono">${s.name}</span>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border font-sans ${s.tierBadge}">${s.role.split('(')[0].trim()}</span>
         </div>
-        <div class="text-[11px] text-slate-500 font-mono mt-1">${h.usable_ips.toLocaleString()} Usable • ${h.subnet_mask}</div>
+
+        <!-- Prominent CIDR Block -->
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <div class="font-mono font-black text-base text-sky-700 tracking-wide">${s.cidr}</div>
+          <span class="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+            ${s.usableIps.toLocaleString()} Usable
+          </span>
+        </div>
+
+        <!-- IP Range & Usable Details -->
+        <div class="space-y-1 text-xs font-mono text-slate-600">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Total Range:</span>
+            <span class="font-bold text-slate-800">${s.network} – ${s.broadcast}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Usable Hosts:</span>
+            <span class="font-bold text-emerald-700">${s.firstUsable} – ${s.lastUsable}</span>
+          </div>
+        </div>
+
+        <!-- Suggested Role & Copy Button -->
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <span class="text-slate-500 font-sans truncate pr-2"><i class="fa-solid fa-tag text-indigo-500 mr-1"></i>${s.role}</span>
+          <button onclick="copySingleCidr('${s.cidr}')" class="px-2 py-0.8 rounded-lg bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-800 font-bold transition-all flex items-center space-x-1" title="Copy CIDR">
+            <i class="fa-regular fa-copy text-[10px]"></i>
+            <span>Copy</span>
+          </button>
+        </div>
       </div>
     `).join("");
   }
 
-  async function clearHistory() {
-    await fetch(`/api/user/history?username=${encodeURIComponent(currentUsername)}`, { method: "DELETE" });
-    refreshUserHistory();
+  function renderTableView() {
+    const tbody = document.getElementById("subnetsTableBody");
+    tbody.innerHTML = generatedSubnets.map(s => `
+      <tr class="hover:bg-sky-50/50 transition-colors">
+        <td class="p-3 font-bold text-slate-900">${s.name}</td>
+        <td class="p-3 font-black text-sky-700 text-sm">${s.cidr}</td>
+        <td class="p-3 text-slate-700">${s.network}</td>
+        <td class="p-3 font-bold text-emerald-700">${s.firstUsable} – ${s.lastUsable}</td>
+        <td class="p-3 text-slate-700">${s.broadcast}</td>
+        <td class="p-3 font-bold text-slate-900">${s.usableIps.toLocaleString()}</td>
+        <td class="p-3 font-sans text-xs text-slate-600">${s.role}</td>
+      </tr>
+    `).join("");
+  }
+
+  function renderReservedIpsSection() {
+    const header = document.getElementById("reservedIpsHeader");
+    const grid = document.getElementById("reservedIpsGrid");
+    const cloudNames = { aws: "AWS (5 IPs)", azure: "Azure (5 IPs)", gcp: "GCP (4 IPs)", rfc: "Traditional RFC (2 IPs)" };
+    header.innerText = `Cloud Reserved IP Addresses per Subnet (${cloudNames[currentCloud] || 'AWS'})`;
+
+    let items = [];
+    if (currentCloud === "aws") {
+      items = [
+        { ip: ".0", title: "Network Address", desc: "Identifies the subnet, cannot be assigned to instances" },
+        { ip: ".1", title: "VPC Virtual Router", desc: "Default gateway for routing traffic inside the VPC" },
+        { ip: ".2", title: "Amazon DNS Server", desc: "Route 53 Resolver / AmazonProvidedDNS" },
+        { ip: ".3", title: "Future AWS Use", desc: "Reserved by AWS for future management functions" },
+        { ip: ".255", title: "Broadcast Address", desc: "Broadcast reserved (no broadcast in AWS VPC)" }
+      ];
+    } else if (currentCloud === "azure") {
+      items = [
+        { ip: ".0", title: "Network Address", desc: "Reserved protocol network identification" },
+        { ip: ".1", title: "Azure Gateway", desc: "Default gateway for routing out of the subnet" },
+        { ip: ".2", title: "Azure Primary DNS", desc: "Azure DNS recursive name resolution" },
+        { ip: ".3", title: "Azure Secondary DNS", desc: "Secondary DNS resolver" },
+        { ip: ".255", title: "Broadcast Address", desc: "Reserved broadcast semantics" }
+      ];
+    } else if (currentCloud === "gcp") {
+      items = [
+        { ip: ".0", title: "Network Address", desc: "Subnet network identifier" },
+        { ip: ".1", title: "GCP Gateway", desc: "Default gateway for VPC network routing" },
+        { ip: ".254", title: "Second-to-Last IP", desc: "Reserved by Google Cloud for management" },
+        { ip: ".255", title: "Broadcast Address", desc: "Subnet broadcast address" }
+      ];
+    } else {
+      items = [
+        { ip: ".0", title: "Network Address", desc: "RFC 791 network routing identifier" },
+        { ip: ".255", title: "Broadcast Address", desc: "RFC 791 directed broadcast address" }
+      ];
+    }
+
+    grid.innerHTML = items.map(it => `
+      <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+        <div class="flex items-center space-x-1.5 font-mono font-bold text-slate-900">
+          <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[11px]">${it.ip}</span>
+          <span class="text-xs">${it.title}</span>
+        </div>
+        <p class="text-[10px] text-slate-500 mt-1 leading-tight">${it.desc}</p>
+      </div>
+    `).join("");
+  }
+
+  function toggleViewMode(mode) {
+    currentViewMode = mode;
+    const cards = document.getElementById("subnetsCardsContainer");
+    const table = document.getElementById("subnetsTableContainer");
+    const btnCards = document.getElementById("btnViewCards");
+    const btnTable = document.getElementById("btnViewTable");
+
+    if (mode === "cards") {
+      cards.classList.remove("hidden");
+      table.classList.add("hidden");
+      btnCards.className = "px-2.5 py-1 rounded-lg font-bold bg-white text-slate-900 shadow-2xs transition-all";
+      btnTable.className = "px-2.5 py-1 rounded-lg font-bold text-slate-600 hover:text-slate-900 transition-all";
+    } else {
+      cards.classList.add("hidden");
+      table.classList.remove("hidden");
+      btnTable.className = "px-2.5 py-1 rounded-lg font-bold bg-white text-slate-900 shadow-2xs transition-all";
+      btnCards.className = "px-2.5 py-1 rounded-lg font-bold text-slate-600 hover:text-slate-900 transition-all";
+    }
+  }
+
+  // --- COPY ACTIONS ---
+  function copySingleCidr(cidr) {
+    navigator.clipboard.writeText(cidr);
+    alert(`Copied ${cidr} to clipboard!`);
+  }
+
+  function copySubnetCidrList() {
+    const list = generatedSubnets.map(s => s.cidr);
+    const jsonStr = JSON.stringify(list, null, 2);
+    navigator.clipboard.writeText(jsonStr);
+    alert(`Copied ${list.length} subnet CIDRs as JSON array to clipboard!\n\n${jsonStr}`);
+  }
+
+  function copyTerraformCode() {
+    const vpcCidr = document.getElementById("vpcCidrInput").value.trim() || "10.0.0.0/16";
+    let code = `# Terraform AWS VPC & Subnets Configuration\n`;
+    code += `resource "aws_vpc" "main" {\n`;
+    code += `  cidr_block           = "${vpcCidr}"\n`;
+    code += `  enable_dns_hostnames = true\n`;
+    code += `  enable_dns_support   = true\n`;
+    code += `  tags = {\n    Name = "main-vpc"\n  }\n}\n\n`;
+
+    generatedSubnets.forEach((s, idx) => {
+      const az = (idx % 2 === 0) ? "us-east-1a" : "us-east-1b";
+      const cleanName = s.name.toLowerCase().replace(/-/g, "_");
+      code += `resource "aws_subnet" "${cleanName}" {\n`;
+      code += `  vpc_id            = aws_vpc.main.id\n`;
+      code += `  cidr_block        = "${s.cidr}"\n`;
+      code += `  availability_zone = "${az}"\n`;
+      code += `  tags = {\n    Name = "${s.name} (${s.role})"\n  }\n}\n\n`;
+    });
+
+    navigator.clipboard.writeText(code);
+    alert(`Copied complete Terraform HCL code (${generatedSubnets.length} Subnets) to clipboard!`);
   }
 </script>
 {% endblock %}
