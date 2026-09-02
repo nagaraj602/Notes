@@ -1759,9 +1759,9 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       const roundsList = Array.from(compData.roundsMap.values());
 
       html += `
-        <div class="glass-card rounded-3xl border border-sky-200/90 shadow-md overflow-hidden bg-white/90 transition-all mb-6">
-          <!-- 🏢 COMPANY MAIN HEADING SECTION -->
-          <div class="p-4 sm:p-5 bg-gradient-to-r from-sky-100/70 via-indigo-50/50 to-white border-b border-sky-200/80 flex items-center justify-between flex-wrap gap-3">
+        <details class="group/comp glass-card rounded-3xl border border-sky-200/90 shadow-md overflow-hidden bg-white/90 transition-all mb-6" open>
+          <!-- 🏢 COMPANY MAIN HEADING (CLICKABLE TO COLLAPSE/EXPAND) -->
+          <summary class="p-4 sm:p-5 bg-gradient-to-r from-sky-100/70 via-indigo-50/50 to-white border-b border-sky-200/80 flex items-center justify-between flex-wrap gap-3 cursor-pointer select-none hover:bg-sky-50/90 transition-colors list-none [&::-webkit-details-marker]:hidden" title="Click to collapse or expand this company">
             <div class="flex items-center space-x-3.5">
               <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md shadow-sky-500/25 font-black flex-shrink-0">
                 <i class="fa-solid fa-building"></i>
@@ -1780,22 +1780,25 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             </div>
 
             <div class="flex items-center space-x-2">
-              <button onclick="openUploadQaForCompany('${escapeHtml(companyName)}')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-sky-700 font-bold text-xs border border-sky-200 shadow-xs flex items-center space-x-1.5 transition-all" title="Upload interview questions for this company">
+              <button onclick="event.stopPropagation(); openUploadQaForCompany('${escapeHtml(companyName)}')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-sky-700 font-bold text-xs border border-sky-200 shadow-xs flex items-center space-x-1.5 transition-all" title="Upload interview questions for this company">
                 <i class="fa-solid fa-cloud-arrow-up text-sky-600 text-xs"></i>
                 <span>Upload Q&A</span>
               </button>
+              <div class="w-8 h-8 rounded-xl bg-white/90 border border-sky-200 flex items-center justify-center text-slate-600 group-hover/comp:border-sky-300 transition-all shadow-2xs">
+                <i class="fa-solid fa-chevron-down text-sky-600 transition-transform duration-200 group-open/comp:rotate-180 text-xs"></i>
+              </div>
             </div>
-          </div>
+          </summary>
 
-          <!-- 🎯 ROUNDS SECTION -->
-          <div class="p-3 sm:p-5 space-y-5 bg-slate-50/50">
+          <!-- 🎯 ROUNDS SECTION INSIDE COMPANY -->
+          <div class="p-3 sm:p-5 space-y-4 bg-slate-50/50">
             ${roundsList.map((rndData, rIdx) => {
               const timeDisplay = formatTimeRange(rndData.start_time, rndData.end_time);
               const dateDisplay = rndData.date ? formatDateCustom(rndData.date) : '';
               return `
-                <div class="rounded-2xl border border-sky-200/80 bg-white shadow-xs overflow-hidden">
-                  <!-- ROUND SUB-HEADING -->
-                  <div class="p-3.5 sm:p-4 bg-slate-50/90 border-b border-sky-100 flex items-center justify-between flex-wrap gap-2">
+                <details class="group/round rounded-2xl border border-sky-200/80 bg-white shadow-xs overflow-hidden transition-all" open>
+                  <!-- ROUND SUB-HEADING (CLICKABLE TO COLLAPSE/EXPAND) -->
+                  <summary class="p-3.5 sm:p-4 bg-slate-50/90 border-b border-sky-100 flex items-center justify-between flex-wrap gap-2 cursor-pointer select-none hover:bg-indigo-50/40 transition-colors list-none [&::-webkit-details-marker]:hidden" title="Click to collapse or expand this round">
                     <div class="flex items-center space-x-2.5">
                       <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs border border-indigo-200 flex-shrink-0">
                         <i class="fa-solid fa-bullseye text-xs"></i>
@@ -1815,21 +1818,24 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
                     <div class="flex items-center space-x-2">
                       <span class="text-[11px] font-extrabold text-slate-700 bg-sky-50 px-2.5 py-1 rounded-xl border border-sky-200 font-mono shadow-2xs">${rndData.questions.length} Question(s)</span>
-                      <button onclick="openUploadQaForCompany('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}')" class="p-1 px-2 text-[10px] font-bold rounded-lg text-sky-600 hover:bg-sky-50 border border-sky-100 transition-all" title="Add question to this round">
+                      <button onclick="event.stopPropagation(); openUploadQaForCompany('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}')" class="p-1 px-2.5 text-[10px] font-bold rounded-lg bg-white text-sky-600 hover:bg-sky-50 border border-sky-200 shadow-2xs transition-all" title="Add question to this round">
                         <i class="fa-solid fa-plus mr-1"></i>Add
                       </button>
+                      <div class="w-7 h-7 rounded-lg bg-white border border-sky-200 flex items-center justify-center text-slate-600 transition-all shadow-2xs group-hover/round:border-indigo-300">
+                        <i class="fa-solid fa-chevron-down text-sky-600 transition-transform duration-200 group-open/round:rotate-180 text-[10px]"></i>
+                      </div>
                     </div>
-                  </div>
+                  </summary>
 
                   <!-- 📝 LIST OF ALL QUESTIONS FOR THIS ROUND -->
-                  <div class="p-3 sm:p-4 space-y-2.5">
+                  <div class="p-3 sm:p-4 space-y-2.5 bg-white">
                     ${rndData.questions.map((q, qIdx) => renderSingleQuestionItem(q, qIdx, true)).join("")}
                   </div>
-                </div>
+                </details>
               `;
             }).join("")}
           </div>
-        </div>
+        </details>
       `;
     });
 
@@ -1878,8 +1884,16 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   function toggleAllInterviewAccordions(openState) {
-    const accordions = document.querySelectorAll("#qaListContainer details");
-    accordions.forEach(d => { d.open = openState; });
+    if (openState) {
+      document.querySelectorAll("#qaListContainer details").forEach(d => { d.open = true; });
+    } else {
+      const nested = document.querySelectorAll("#qaListContainer details details");
+      if (nested.length > 0) {
+        nested.forEach(d => { d.open = false; });
+      } else {
+        document.querySelectorAll("#qaListContainer details").forEach(d => { d.open = false; });
+      }
+    }
   }
 
   // --- MODAL: SCHEDULE INTERVIEW ---
