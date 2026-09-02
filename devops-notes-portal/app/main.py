@@ -515,4 +515,24 @@ async def api_dismiss_followup(req: FollowupActionRequest):
         })
     elif req.action == "skip":
         interview_manager.update_schedule(req.schedule_id, {"status": "dismissed"})
-    return JSONResponse({"status": "success", "action": req.action})
+    return JSONResponse({"status": "success", "action": req.action})
+
+# --- REPOSITORY-BACKED SESSION STATE APIS ---
+from app.session_manager import session_manager
+
+class SessionStateUpdateRequest(BaseModel):
+    last_active_file: Optional[str] = None
+    last_active_tab: Optional[str] = None
+    last_page: Optional[str] = None
+    scroll_position: Optional[float] = None
+    view_mode: Optional[str] = None
+    sidebar_expanded_folders: Optional[List[str]] = None
+
+@app.get("/api/session/state")
+async def api_get_session_state():
+    return JSONResponse(session_manager.get_state())
+
+@app.post("/api/session/state")
+async def api_update_session_state(req: SessionStateUpdateRequest):
+    data = session_manager.update_state(req.dict(exclude_unset=True))
+    return JSONResponse({"status": "success", "state": data})

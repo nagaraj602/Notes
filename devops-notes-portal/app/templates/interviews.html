@@ -443,6 +443,11 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   const availableCategories = {{ categories | tojson }};
 
   document.addEventListener("DOMContentLoaded", () => {
+    fetch("/api/session/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ last_page: "/interviews", last_active_tab: "interviews" })
+    }).catch(() => {});
     initInterviewHub();
   });
 

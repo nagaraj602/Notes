@@ -514,8 +514,33 @@
   }
 
   // Load Note file (with optional search query to highlight and jump to, or target anchor)
-  async function loadFile(path, searchQuery = "", targetAnchor = "") {
+  async function loadFile(path, searchQuery = "", targetAnchor = "", skipHistory = false) {
+    if (!path) return;
     currentFilePath = path;
+
+    // 1. Sync Browser URL so refresh keeps the exact note & anchor
+    if (!skipHistory) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("file", path);
+      if (targetAnchor) {
+        url.hash = targetAnchor.startsWith("#") ? targetAnchor : "#" + targetAnchor;
+      } else {
+        url.hash = "";
+      }
+      window.history.pushState({ path: path, anchor: targetAnchor }, "", url.toString());
+    }
+
+    // 2. Persist state directly into the Notes Repository Database
+    fetch("/api/session/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        last_active_file: path,
+        last_active_tab: typeof currentRepoFilter !== "undefined" ? currentRepoFilter : "all",
+        last_page: "/"
+      })
+    }).catch(() => {});
+
     const parts = path.split("/");
     const filename = parts.pop() || path;
     const dir = parts.join("/");
@@ -549,13 +574,26 @@
     
     document.getElementById("headerIcon").className = "fa-brands fa-markdown text-lg text-white";
     
-    // Highlight active item in sidebar
+    // Highlight active item in sidebar & auto-expand all parent folders
     document.querySelectorAll(".file-item").forEach(el => {
       el.classList.remove("bg-sky-100", "border-sky-300", "text-sky-900", "font-bold");
     });
     const currentEl = document.querySelector(`.file-item[data-path='${path.toLowerCase()}']`);
     if (currentEl) {
       currentEl.classList.add("bg-sky-100", "border-sky-300", "text-sky-900", "font-bold");
+      // Auto-expand all parent folder-children groups in sidebar
+      let parent = currentEl.parentElement;
+      while (parent && parent.id !== "fileTreeContainer") {
+        if (parent.classList.contains("folder-children")) {
+          parent.classList.remove("hidden");
+          const folderHeader = parent.previousElementSibling;
+          if (folderHeader) {
+            const chevron = folderHeader.querySelector(".fa-chevron-right");
+            if (chevron) chevron.classList.add("rotate-90");
+          }
+        }
+        parent = parent.parentElement;
+      }
     }
 
     const noteViewer = document.getElementById("noteViewer");
@@ -1479,12 +1517,37 @@
     }
   });
 
-  // Auto-load note if passed in URL query parameters
-  window.addEventListener("DOMContentLoaded", () => {
+  // Window popstate event handler (Back/Forward browser buttons)
+  window.addEventListener("popstate", (e) => {
     const params = new URLSearchParams(window.location.search);
-    const noteParam = params.get("note") || params.get("file") || params.get("path");
+    const noteParam = params.get("file") || params.get("note") || params.get("path");
     if (noteParam) {
-      loadFile(noteParam);
+      loadFile(noteParam, "", window.location.hash, true);
+    }
+  });
+
+  // Auto-restore session on page load / refresh:
+  window.addEventListener("DOMContentLoaded", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const noteParam = params.get("file") || params.get("note") || params.get("path");
+    const targetAnchor = window.location.hash;
+
+    if (noteParam) {
+      // 1. If URL has file parameter, load it immediately
+      loadFile(noteParam, "", targetAnchor, true);
+    } else {
+      // 2. If no URL parameter, fetch last session from Notes repository database!
+      try {
+        const res = await fetch("/api/session/state");
+        if (res.ok) {
+          const state = await res.json();
+          if (state && state.last_active_file) {
+            loadFile(state.last_active_file, "", "", true);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load repo session state:", err);
+      }
     }
   });
 </script>
