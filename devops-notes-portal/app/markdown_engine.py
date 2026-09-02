@@ -25,10 +25,22 @@ def rewrite_relative_assets(html_content: str, file_rel_path: str) -> str:
         return f'{prefix}/raw/{resolved}{suffix}'
 
     html_content = re.sub(r'(<img\s+[^>]*?src=["\'])([^"\']+)(["\'])', replace_img_src, html_content, flags=re.IGNORECASE)
+    
+    # Rewrite relative image references inside mermaid diagrams (e.g. img: "images/ami.png")
+    def replace_mermaid_img(match):
+        prefix = match.group(1)
+        src = match.group(2)
+        suffix = match.group(3)
+        if src.startswith("http://") or src.startswith("https://") or src.startswith("data:") or src.startswith("/raw/"):
+            return match.group(0)
+        resolved = resolve_path(base_dir, src)
+        return f'{prefix}/raw/{resolved}{suffix}'
+
+    html_content = re.sub(r'(\bimg\s*:\s*["\'])([^"\']+)(["\'])', replace_mermaid_img, html_content, flags=re.IGNORECASE)
     return html_content
 
 def render_markdown(raw_content: str, file_rel_path: str = "") -> str:
-    """Renders GitHub Flavored Markdown with syntax highlighting, tables, tasklists, and asset resolution."""
+    """Renders GitHub Flavored Markdown with syntax highlighting, tables, tasklists, mermaid diagrams, and asset resolution."""
     extensions = [
         'extra',
         'tables',
@@ -52,6 +64,25 @@ def render_markdown(raw_content: str, file_rel_path: str = "") -> str:
         },
         'pymdownx.tasklist': {
             'custom_checkbox': True
+        },
+        'pymdownx.superfences': {
+            'custom_fences': [
+                {
+                    'name': 'mermaid',
+                    'class': 'mermaid',
+                    'format': superfences.fence_div_format
+                },
+                {
+                    'name': 'flowchart',
+                    'class': 'mermaid',
+                    'format': superfences.fence_div_format
+                },
+                {
+                    'name': 'sequenceDiagram',
+                    'class': 'mermaid',
+                    'format': superfences.fence_div_format
+                }
+            ]
         }
     }
     rendered_html = markdown.markdown(raw_content, extensions=extensions, extension_configs=extension_configs)

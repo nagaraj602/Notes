@@ -548,6 +548,7 @@
         decorateCodeBlocks();
         attachLinkInterceptors();
         attachImageZoomHandlers();
+        await renderMermaidDiagrams();
         Prism.highlightAll();
 
         // If a search query was specified, highlight and jump directly to it!
@@ -630,7 +631,7 @@
   }
 
   // View Mode: Preview vs Raw
-  function setViewMode(mode) {
+  async function setViewMode(mode) {
     currentViewMode = mode;
     const btnPreview = document.getElementById("btnPreview");
     const btnRaw = document.getElementById("btnRaw");
@@ -642,6 +643,7 @@
       btnRaw.className = "px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
       noteViewer.classList.remove("hidden");
       rawViewer.classList.add("hidden");
+      await renderMermaidDiagrams();
     } else {
       btnRaw.className = "px-2.5 py-1 rounded-lg font-bold bg-sky-600 text-white transition-all shadow-sm";
       btnPreview.className = "px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
@@ -650,14 +652,172 @@
     }
   }
 
+  // --- MERMAID DIAGRAMS RENDERING & INTERACTION CONTROLLER ---
+  let mermaidRenderCounter = 0;
+
+  async function renderMermaidDiagrams() {
+    if (!window.mermaid) return;
+    const container = document.getElementById("noteViewer");
+    if (!container) return;
+
+    // 1. Detect and convert any unformatted <pre><code class="language-mermaid"> or <pre class="language-mermaid"> blocks into <div class="mermaid">
+    const potentialMermaidBlocks = container.querySelectorAll(
+      "pre code.language-mermaid, pre code.language-flowchart, pre.language-mermaid, pre.mermaid code, div.highlight pre code"
+    );
+    
+    potentialMermaidBlocks.forEach(codeEl => {
+      const codeText = (codeEl.innerText || codeEl.textContent || "").trim();
+      const isMermaid = 
+        codeEl.classList.contains("language-mermaid") || 
+        codeEl.classList.contains("language-flowchart") ||
+        codeEl.parentElement.classList.contains("language-mermaid") ||
+        codeEl.parentElement.classList.contains("mermaid") ||
+        codeText.startsWith("flowchart ") || 
+        codeText.startsWith("graph ") || 
+        codeText.startsWith("sequenceDiagram") ||
+        codeText.startsWith("classDiagram") ||
+        codeText.startsWith("stateDiagram") ||
+        codeText.startsWith("erDiagram") ||
+        codeText.startsWith("gantt") ||
+        codeText.startsWith("pie");
+
+      if (isMermaid && codeText) {
+        const pre = codeEl.closest("pre") || codeEl;
+        const highlightWrapper = pre.closest(".highlight");
+        const div = document.createElement("div");
+        div.className = "mermaid";
+        div.textContent = codeText;
+
+        if (highlightWrapper && highlightWrapper.parentElement) {
+          highlightWrapper.parentElement.replaceChild(div, highlightWrapper);
+        } else if (pre && pre.parentElement) {
+          pre.parentElement.replaceChild(div, pre);
+        }
+      }
+    });
+
+    // 2. Select all .mermaid elements
+    const mermaidElements = Array.from(container.querySelectorAll(".mermaid"));
+    if (mermaidElements.length === 0) return;
+
+    for (let i = 0; i < mermaidElements.length; i++) {
+      const el = mermaidElements[i];
+      if (el.getAttribute("data-processed") === "true") continue;
+
+      if (!el.getAttribute("data-mermaid-src")) {
+        el.setAttribute("data-mermaid-src", (el.textContent || "").trim());
+      }
+      const rawSrc = el.getAttribute("data-mermaid-src");
+      if (!rawSrc) continue;
+
+      mermaidRenderCounter++;
+      const uniqueId = `mermaid-chart-${Date.now()}-${mermaidRenderCounter}`;
+
+      try {
+        const { svg } = await mermaid.render(uniqueId, rawSrc);
+        
+        el.innerHTML = `
+          <div class="mermaid-container my-6 p-5 rounded-2xl bg-white/95 border border-sky-200/90 shadow-lg shadow-sky-500/5 hover:border-sky-400 transition-all overflow-x-auto relative group flex flex-col items-center">
+            <!-- Diagram Toolbar Header -->
+            <div class="mermaid-actions-bar w-full flex items-center justify-between pb-3 mb-2 border-b border-sky-100 text-xs">
+              <div class="flex items-center space-x-2 text-sky-800 font-bold">
+                <i class="fa-solid fa-diagram-project text-sky-600"></i>
+                <span class="font-sans text-[11px] uppercase tracking-wider">Interactive Flowchart</span>
+              </div>
+              <div class="flex items-center space-x-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                <button onclick="copyMermaidSource(this)" data-src="${encodeURIComponent(rawSrc)}" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-[11px] font-mono transition-all flex items-center space-x-1 shadow-xs cursor-pointer" title="Copy Diagram Source Code">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>Copy Code</span>
+                </button>
+                <button onclick="viewMermaidFullscreen(this)" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-[11px] font-mono transition-all flex items-center space-x-1 shadow-xs cursor-pointer" title="View Full Diagram / Zoom">
+                  <i class="fa-solid fa-magnifying-glass-plus"></i>
+                  <span>Zoom</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- SVG Diagram Canvas -->
+            <div class="mermaid-svg-wrapper w-full flex justify-center py-2 overflow-x-auto">
+              ${svg}
+            </div>
+          </div>
+        `;
+        el.setAttribute("data-processed", "true");
+      } catch (renderError) {
+        console.warn("Mermaid diagram rendering error:", renderError);
+        // Clean up temporary DOM element created by Mermaid if failed
+        const tempElem = document.getElementById("d" + uniqueId) || document.getElementById(uniqueId);
+        if (tempElem) tempElem.remove();
+
+        el.innerHTML = `
+          <div class="my-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs shadow-sm">
+            <div class="font-bold flex items-center space-x-2 text-amber-800 mb-2">
+              <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+              <span>Mermaid Diagram Preview</span>
+            </div>
+            <pre class="bg-slate-900 text-slate-100 p-3 rounded-xl overflow-x-auto font-mono text-[11px]">${rawSrc}</pre>
+          </div>
+        `;
+        el.setAttribute("data-processed", "true");
+      }
+    }
+
+    attachMermaidImageZoom();
+  }
+
+  function copyMermaidSource(btn) {
+    const raw = decodeURIComponent(btn.dataset.src || "");
+    if (!raw) return;
+    navigator.clipboard.writeText(raw);
+    const original = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-check text-emerald-600"></i> <span class="text-emerald-700 font-bold">Copied!</span>`;
+    setTimeout(() => {
+      btn.innerHTML = original;
+    }, 2000);
+  }
+
+  function viewMermaidFullscreen(btn) {
+    const container = btn.closest(".mermaid-container");
+    const svg = container ? container.querySelector("svg") : null;
+    if (!svg) return;
+    const svgClone = svg.cloneNode(true);
+    svgClone.setAttribute("width", "100%");
+    svgClone.setAttribute("height", "100%");
+    const svgXml = new XMLSerializer().serializeToString(svgClone);
+    const svgDataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgXml);
+    openLightbox(svgDataUrl, "Flowchart Diagram Viewer");
+  }
+
+  function attachMermaidImageZoom() {
+    const container = document.getElementById("noteViewer");
+    if (!container) return;
+    // Handle HTML <img> tags or SVG <image> tags within mermaid diagram foreignObjects
+    container.querySelectorAll(".mermaid-container img, .mermaid-container image").forEach(img => {
+      const src = img.src || img.getAttribute("href") || img.getAttribute("xlink:href");
+      if (src) {
+        img.style.cursor = "zoom-in";
+        img.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openLightbox(src, "Flowchart Screenshot");
+        });
+      }
+    });
+  }
+
   // Decorate code blocks with sleek top-right copy button (no big headers)
   function decorateCodeBlocks() {
     document.querySelectorAll("#noteViewer pre").forEach(pre => {
-      if (pre.querySelector(".code-copy-btn")) return;
+      if (
+        pre.querySelector(".code-copy-btn") || 
+        pre.closest(".mermaid-container") || 
+        pre.classList.contains("mermaid") || 
+        pre.querySelector("code.language-mermaid") || 
+        pre.querySelector("code.language-flowchart")
+      ) return;
       pre.classList.add("group", "relative");
 
       const copyBtn = document.createElement("button");
-      copyBtn.className = "code-copy-btn absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] font-mono border border-slate-700 transition-all opacity-0 group-hover:opacity-100 flex items-center space-x-1 shadow-sm";
+      copyBtn.className = "code-copy-btn absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] font-mono border border-slate-700 transition-all opacity-0 group-hover:opacity-100 flex items-center space-x-1 shadow-sm cursor-pointer";
       copyBtn.innerHTML = `<i class="fa-regular fa-copy text-[10px]"></i> <span>Copy</span>`;
 
       copyBtn.addEventListener("click", () => {

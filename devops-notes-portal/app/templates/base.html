@@ -21,6 +21,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
   
+  <!-- Mermaid.js for Diagrams & Flowcharts -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'neutral',
+        securityLevel: 'loose',
+        fontFamily: '"Plus Jakarta Sans", Inter, system-ui, -apple-system, sans-serif',
+        flowchart: {
+          useMaxWidth: true,
+          htmlLabels: true,
+          curve: 'basis'
+        }
+      });
+    }
+  </script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -256,6 +274,51 @@
       filter: brightness(1.02);
     }
 
+    /* Mermaid Flowchart & Diagram Modern Glass Styling */
+    .prose-custom .mermaid-container {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(186, 230, 253, 0.9);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 8px 24px rgba(14, 165, 233, 0.08);
+      overflow-x: auto;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      margin: 1.75rem 0;
+    }
+    .prose-custom .mermaid-container:hover {
+      border-color: rgba(56, 189, 248, 0.95);
+      box-shadow: 0 12px 32px rgba(14, 165, 233, 0.18);
+    }
+    .prose-custom .mermaid {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      background: transparent;
+    }
+    .prose-custom .mermaid svg {
+      max-width: 100% !important;
+      height: auto !important;
+      display: block;
+      margin: 0 auto;
+    }
+    .prose-custom .mermaid foreignObject {
+      overflow: visible;
+    }
+    .prose-custom .mermaid svg image,
+    .prose-custom .mermaid svg img {
+      cursor: zoom-in;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      border-radius: 0.5rem;
+    }
+    .prose-custom .mermaid svg image:hover,
+    .prose-custom .mermaid svg img:hover {
+      filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.2));
+    }
+
     /* Modern Cyber-Cyan & Electric Indigo Search Highlight Styles */
     mark.search-highlight {
       background: rgba(14, 165, 233, 0.18) !important;
@@ -438,6 +501,24 @@
         background: #f8fafc !important;
         color: #1e293b !important;
         page-break-inside: avoid;
+      }
+
+      .mermaid-container {
+        page-break-inside: avoid;
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        margin: 10pt 0 !important;
+      }
+
+      .mermaid-actions-bar,
+      .mermaid-container button {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      .prose-custom .mermaid svg {
+        max-width: 100% !important;
       }
     }
   </style>
