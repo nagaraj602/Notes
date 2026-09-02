@@ -385,6 +385,11 @@ class ScheduleCreateRequest(BaseModel):
     end_time: Optional[str] = "11:00"
     status: Optional[str] = "scheduled"
     meeting_link: Optional[str] = ""
+    about_company: Optional[str] = ""
+    role_info: Optional[str] = ""
+    job_description: Optional[str] = ""
+    salary_ctc: Optional[str] = ""
+    monthly_salary: Optional[str] = ""
     notes: Optional[str] = ""
 
 class ScheduleUpdateRequest(BaseModel):
@@ -397,6 +402,11 @@ class ScheduleUpdateRequest(BaseModel):
     end_time: Optional[str] = None
     status: Optional[str] = None
     meeting_link: Optional[str] = None
+    about_company: Optional[str] = None
+    role_info: Optional[str] = None
+    job_description: Optional[str] = None
+    salary_ctc: Optional[str] = None
+    monthly_salary: Optional[str] = None
     notes: Optional[str] = None
     questions_uploaded: Optional[bool] = None
 

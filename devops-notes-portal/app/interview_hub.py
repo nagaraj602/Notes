@@ -142,6 +142,11 @@ class InterviewManager:
             "end_time": end_t,
             "status": data.get("status", "scheduled"), # scheduled, completed, cancelled, rescheduled
             "meeting_link": data.get("meeting_link", "").strip(),
+            "about_company": data.get("about_company", "").strip(),
+            "role_info": data.get("role_info", "").strip(),
+            "job_description": data.get("job_description", "").strip(),
+            "salary_ctc": data.get("salary_ctc", "").strip(),
+            "monthly_salary": data.get("monthly_salary", "").strip(),
             "notes": data.get("notes", "").strip(),
             "questions_uploaded": False,
             "created_at": datetime.utcnow().isoformat()

@@ -16,7 +16,7 @@
             <span>Interview Schedule & Question Hub</span>
             <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold border border-sky-200">Nagaraj Tracker</span>
           </h1>
-          <p class="text-xs text-slate-500">Track schedules, start & end timings, smart follow-ups, and categorized Q&A repository.</p>
+          <p class="text-xs text-slate-500">Track company info, role requirements, JD, CTC, start & end timings, and categorized Q&A.</p>
         </div>
       </div>
     </div>
@@ -38,9 +38,7 @@
   <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
 
     <!-- 🌟 TOP HIGHLIGHT: TODAY'S LIVE & SCHEDULED INTERVIEWS WIDGET -->
-    <div id="todayInterviewsContainer" class="hidden space-y-3">
-      <!-- Populated dynamically via JS: Highlights interviews happening today sorted by time -->
-    </div>
+    <div id="todayInterviewsContainer" class="hidden space-y-3"></div>
 
     <!-- Smart Pending Follow-Up Alert Banner (Appears when a past interview is missing Q&A) -->
     <div id="pendingFollowupsContainer" class="hidden space-y-3"></div>
@@ -96,7 +94,7 @@
       </div>
     </div>
 
-    <!-- 1-Week Interactive Calendar Strip (Shows Company Name, Round Name & Timings) -->
+    <!-- 1-Week Interactive Calendar Strip (Shows Company Name, Round Name, Timings & Salary) -->
     <div class="glass-card rounded-2xl border border-sky-100 overflow-hidden shadow-sm">
       <div class="p-4 bg-white/60 border-b border-sky-100 flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center space-x-3">
@@ -172,9 +170,9 @@
   </div>
 </div>
 
-<!-- MODAL 1: Schedule Interview Modal (With Past Time Validation) -->
+<!-- MODAL 1: Schedule Interview Modal (With Company Info, Role Info, JD, and Auto-Calculated Monthly CTC) -->
 <div id="scheduleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+  <div class="bg-white rounded-3xl max-w-xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100">
       <div class="flex items-center space-x-2.5">
         <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
@@ -197,7 +195,7 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Role</label>
+          <label class="block font-bold text-slate-700 mb-1">Role / Position</label>
           <input type="text" id="schedRole" value="DevOps Engineer" placeholder="e.g. Senior DevOps Engineer" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
         </div>
         <div>
@@ -223,7 +221,7 @@
         </div>
       </div>
 
-      <!-- Status Selection with Dynamic Past-Time Filter -->
+      <!-- Status Selection with Dynamic Past vs Future Time Filter -->
       <div>
         <label class="block font-bold text-slate-700 mb-1">Status</label>
         <select id="schedStatus" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
@@ -238,14 +236,37 @@
         </div>
       </div>
 
+      <!-- 💰 Salary & CTC Section with Auto-Calculated Monthly Gross -->
+      <div class="p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-200/80 space-y-2">
+        <label class="block font-bold text-slate-800"><i class="fa-solid fa-money-bill-wave text-emerald-600 mr-1"></i>Offered / Target Salary (Annual CTC)</label>
+        <input type="text" id="schedSalaryCtc" oninput="calculateMonthlySalary()" placeholder="e.g. 18 LPA, 24,00,000, 15.5 LPA, $120,000" class="w-full rounded-xl px-3.5 py-2 border border-emerald-200 focus:ring-2 focus:ring-emerald-200 focus:outline-none bg-white font-sans text-xs">
+        
+        <!-- Live Monthly Salary Output Card -->
+        <div id="monthlySalaryDisplay" class="hidden p-2.5 rounded-xl bg-white border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between shadow-xs">
+          <span class="flex items-center"><i class="fa-solid fa-coins text-emerald-500 mr-1.5 text-xs"></i>Estimated Monthly Gross Salary:</span>
+          <span id="monthlySalaryValue" class="font-black text-xs sm:text-sm text-emerald-800 font-mono">₹1,50,000 / month</span>
+        </div>
+      </div>
+
+      <!-- About Company, Role Requirements, and Job Description (JD) -->
       <div>
-        <label class="block font-bold text-slate-700 mb-1">Meeting Link (Optional)</label>
-        <input type="url" id="schedMeetingLink" placeholder="https://teams.microsoft.com or https://meet.google.com" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-building-circle-check text-sky-600 mr-1"></i>About the Company</label>
+        <textarea id="schedAboutCompany" rows="2" placeholder="e.g. Product FinTech company, Series B funded, US & India operations, hybrid working culture..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
       </div>
 
       <div>
-        <label class="block font-bold text-slate-700 mb-1">Preparation Notes / Focus Areas</label>
-        <textarea id="schedNotes" rows="2" placeholder="e.g. Review AWS VPC, Docker multi-stage, Kubernetes Ingress, Terraform modules..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
+        <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-id-card-clip text-indigo-600 mr-1"></i>About the Role / Position & Requirements</label>
+        <textarea id="schedRoleInfo" rows="2" placeholder="e.g. Senior DevOps position, managing AWS EKS, Terraform IaC, ArgoCD GitOps, Jenkins CI/CD..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-file-contract text-amber-600 mr-1"></i>Job Description (JD)</label>
+        <textarea id="schedJobDescription" rows="3" placeholder="Paste full JD, required skills, tools stack, and interview round expectations..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-mono text-[11px]"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Meeting Link (Optional)</label>
+        <input type="url" id="schedMeetingLink" placeholder="https://teams.microsoft.com or https://meet.google.com" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
       </div>
 
       <div class="pt-3 border-t border-sky-100 flex items-center justify-end space-x-2">
@@ -421,7 +442,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   </div>
 </div>
 
-<!-- MODAL 5: Full Month Calendar Modal (Shows Company Name, Round Name & Timings) -->
+<!-- MODAL 5: Full Month Calendar Modal (Shows Company Name, Round Name, Timings & Salary) -->
 <div id="fullCalendarModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
   <div class="bg-white rounded-3xl max-w-4xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] flex flex-col">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100">
@@ -504,6 +525,68 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     return s;
   }
 
+  // --- 💰 DYNAMIC REAL-TIME MONTHLY SALARY CALCULATOR (CTC / 12) ---
+  function calculateMonthlySalary(val) {
+    val = val !== undefined ? val : (document.getElementById("schedSalaryCtc") ? document.getElementById("schedSalaryCtc").value : "");
+    val = (val || "").trim();
+    const display = document.getElementById("monthlySalaryDisplay");
+    const valElem = document.getElementById("monthlySalaryValue");
+    if (!val) {
+      if (display) display.classList.add("hidden");
+      return "";
+    }
+
+    let raw = val.toLowerCase().replace(/,/g, "").trim();
+    let annualAmount = 0;
+    let currencySymbol = "₹";
+
+    if (raw.includes("$")) {
+      currencySymbol = "$";
+      raw = raw.replace(/\$/g, "");
+    } else if (raw.includes("€") || raw.includes("eur")) {
+      currencySymbol = "€";
+      raw = raw.replace(/€|eur/g, "");
+    } else if (raw.includes("£") || raw.includes("gbp")) {
+      currencySymbol = "£";
+      raw = raw.replace(/£|gbp/g, "");
+    } else if (raw.includes("₹") || raw.includes("inr") || raw.includes("rs")) {
+      currencySymbol = "₹";
+      raw = raw.replace(/₹|inr|rs\.?/g, "");
+    }
+
+    if (raw.includes("lpa") || raw.includes("lakh") || raw.includes("lac") || raw.includes("l")) {
+      const num = parseFloat(raw.replace(/[^0-9.]/g, ""));
+      if (!isNaN(num) && num > 0) {
+        annualAmount = num * 100000;
+      }
+    } else if (raw.includes("k")) {
+      const num = parseFloat(raw.replace(/[^0-9.]/g, ""));
+      if (!isNaN(num) && num > 0) {
+        annualAmount = num * 1000;
+      }
+    } else {
+      const num = parseFloat(raw.replace(/[^0-9.]/g, ""));
+      if (!isNaN(num) && num > 0) {
+        annualAmount = num;
+      }
+    }
+
+    if (annualAmount > 0) {
+      const monthly = Math.round(annualAmount / 12);
+      const formattedMonthly = `${currencySymbol}${monthly.toLocaleString('en-IN')}`;
+      let lakhText = "";
+      if (currencySymbol === "₹" && monthly >= 100000) {
+        lakhText = ` (~₹${(monthly / 100000).toFixed(2)} Lakhs/mo)`;
+      }
+      if (valElem) valElem.innerText = `${formattedMonthly} / month${lakhText}`;
+      if (display) display.classList.remove("hidden");
+      return `${formattedMonthly} / month`;
+    } else {
+      if (display) display.classList.add("hidden");
+      return "";
+    }
+  }
+
   // --- 🌟 RENDER TODAY'S LIVE & SCHEDULED INTERVIEWS WIDGET AT TOP ---
   function renderTodayInterviews() {
     const container = document.getElementById("todayInterviewsContainer");
@@ -564,7 +647,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             }
 
             return `
-              <div class="p-3.5 rounded-2xl bg-white border border-sky-200/80 shadow-xs flex flex-col justify-between space-y-2 hover:border-sky-400 transition-all">
+              <div class="p-3.5 rounded-2xl bg-white border border-sky-200/80 shadow-xs flex flex-col justify-between space-y-2.5 hover:border-sky-400 transition-all">
                 <div class="flex items-start justify-between gap-2">
                   <div>
                     <div class="font-black text-sm text-slate-900 flex items-center gap-1.5">
@@ -580,6 +663,22 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                   </div>
                   <div>${timeBadge}</div>
                 </div>
+
+                <!-- Salary CTC & Monthly Display -->
+                ${s.salary_ctc ? `
+                  <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-100 text-[11px] font-bold text-emerald-900 flex items-center justify-between">
+                    <span><i class="fa-solid fa-coins text-emerald-600 mr-1"></i>CTC: ${escapeHtml(s.salary_ctc)}</span>
+                    <span class="text-emerald-700 font-mono">(${escapeHtml(s.monthly_salary || '')})</span>
+                  </div>
+                ` : ''}
+
+                <!-- About Company & Role Preview if present -->
+                ${(s.about_company || s.role_info) ? `
+                  <div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100 space-y-1">
+                    ${s.about_company ? `<div><strong class="text-slate-800">Company:</strong> ${escapeHtml(s.about_company)}</div>` : ''}
+                    ${s.role_info ? `<div><strong class="text-slate-800">Role:</strong> ${escapeHtml(s.role_info)}</div>` : ''}
+                  </div>
+                ` : ''}
 
                 <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
                   <span class="font-mono font-bold text-slate-700 flex items-center bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
@@ -602,8 +701,6 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                     </button>
                   </div>
                 </div>
-
-                ${s.notes ? `<div class="text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded-lg border border-slate-100 truncate"><i class="fa-regular fa-note-sticky text-amber-500 mr-1"></i>${escapeHtml(s.notes)}</div>` : ''}
               </div>
             `;
           }).join("")}
@@ -627,14 +724,17 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
         container.innerHTML = `<div class="text-center py-10 text-slate-400">No completed interviews yet.</div>`;
       } else {
         container.innerHTML = list.map(s => `
-          <div class="p-3.5 rounded-2xl bg-white border border-emerald-100 shadow-xs flex items-center justify-between">
-            <div>
-              <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
-              <div class="text-xs text-sky-700 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')}</div>
-              <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fa-regular fa-clock text-emerald-600 mr-1"></i>${s.date} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
-              ${s.experience ? `<div class="text-[11px] text-slate-600 mt-1"><i class="fa-solid fa-comment-dots text-indigo-500 mr-1"></i>${escapeHtml(s.experience)}</div>` : ''}
+          <div class="p-3.5 rounded-2xl bg-white border border-emerald-100 shadow-xs space-y-1.5">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
+                <div class="text-xs text-sky-700 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')} (${escapeHtml(s.role || 'DevOps')})</div>
+                <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fa-regular fa-clock text-emerald-600 mr-1"></i>${s.date} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Completed</span>
             </div>
-            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Completed</span>
+            ${s.salary_ctc ? `<div class="text-[11px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md"><i class="fa-solid fa-money-bill-wave mr-1"></i>CTC: ${escapeHtml(s.salary_ctc)} (~${escapeHtml(s.monthly_salary || '')})</div>` : ''}
+            ${s.experience ? `<div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-xl"><i class="fa-solid fa-comment-dots text-indigo-500 mr-1"></i>${escapeHtml(s.experience)}</div>` : ''}
           </div>
         `).join("");
       }
@@ -658,6 +758,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                   <div>
                     <span class="font-bold text-slate-900">${escapeHtml(r.round || 'Technical Round')}</span>
                     <span class="text-[10px] text-slate-500 font-mono ml-2">(${r.date} • ${formatTimeRange(r.start_time, r.end_time, r.time)})</span>
+                    ${r.salary_ctc ? `<span class="text-[10px] text-emerald-700 font-bold ml-2">• ${escapeHtml(r.salary_ctc)}</span>` : ''}
                   </div>
                   <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">${r.status}</span>
                 </div>
@@ -699,6 +800,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
               <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
               <div class="text-xs text-amber-800 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')}</div>
               <div class="text-[11px] text-amber-700 font-bold mt-0.5 font-mono"><i class="fa-regular fa-clock mr-1"></i>${s.date} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
+              ${s.salary_ctc ? `<div class="text-[10px] text-emerald-800 font-bold mt-0.5"><i class="fa-solid fa-coins mr-1"></i>${escapeHtml(s.salary_ctc)}</div>` : ''}
             </div>
             <button onclick="closeStatListModal(); editSchedule('${s.id}')" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold border border-amber-200 text-xs">Edit</button>
           </div>
@@ -922,6 +1024,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                 <i class="fa-regular fa-clock text-sky-600 mr-1"></i>
                 <span class="font-bold">${timeRange}</span>
               </div>
+
+              ${s.salary_ctc ? `<div class="mt-1 text-[10px] text-emerald-700 font-bold truncate"><i class="fa-solid fa-coins mr-1"></i>${escapeHtml(s.salary_ctc)}</div>` : ''}
             </div>
           `;
         }).join("");
@@ -971,7 +1075,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-mono">${escapeHtml(p.round || 'Technical Round')}</span>
                   <span class="text-xs text-slate-600 font-mono font-bold">(${p.date} • ${timeRange})</span>
                 </div>
-                <p class="text-xs text-slate-600 mt-0.5">Your interview has concluded! Please record the questions and feedback from this round.</p>
+                <p class="text-xs text-slate-600 mt-0.5">Your interview has concluded! Please record the questions, CTC, and experience from this round.</p>
               </div>
             </div>
 
@@ -1005,6 +1109,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       const newDate = prompt("Enter new interview date (YYYY-MM-DD):", new Date().toISOString().split("T")[0]);
       if (!newDate) return;
       const newStart = prompt("Enter new start time (HH:MM):", "10:00") || "10:00";
+      const newEnd = prompt("Enter new end time (HH:MM):", "11:00") || "11:00";
       await fetch("/api/interviews/dismiss-followup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1156,10 +1261,15 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     document.getElementById("schedDate").value = now.toISOString().split("T")[0];
     document.getElementById("schedStartTime").value = nextHStr;
     document.getElementById("schedEndTime").value = endHStr;
+    document.getElementById("schedSalaryCtc").value = "";
+    document.getElementById("schedAboutCompany").value = "";
+    document.getElementById("schedRoleInfo").value = "";
+    document.getElementById("schedJobDescription").value = "";
     document.getElementById("schedMeetingLink").value = "";
-    document.getElementById("schedNotes").value = "";
     document.getElementById("schedStatus").value = "scheduled";
     document.getElementById("scheduleModalTitle").innerText = "Schedule Interview";
+    
+    calculateMonthlySalary("");
     validateScheduleTime();
     document.getElementById("scheduleModal").classList.remove("hidden");
   }
@@ -1178,10 +1288,15 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     document.getElementById("schedDate").value = s.date || "";
     document.getElementById("schedStartTime").value = s.start_time || s.time || "10:00";
     document.getElementById("schedEndTime").value = s.end_time || "11:00";
+    document.getElementById("schedSalaryCtc").value = s.salary_ctc || "";
+    document.getElementById("schedAboutCompany").value = s.about_company || "";
+    document.getElementById("schedRoleInfo").value = s.role_info || "";
+    document.getElementById("schedJobDescription").value = s.job_description || "";
     document.getElementById("schedMeetingLink").value = s.meeting_link || "";
-    document.getElementById("schedNotes").value = s.notes || "";
     document.getElementById("schedStatus").value = s.status || "scheduled";
     document.getElementById("scheduleModalTitle").innerText = "Edit Schedule";
+    
+    calculateMonthlySalary(s.salary_ctc || "");
     validateScheduleTime();
     document.getElementById("scheduleModal").classList.remove("hidden");
   }
@@ -1191,6 +1306,9 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     const id = document.getElementById("schedId").value;
     const startTime = document.getElementById("schedStartTime").value || "10:00";
     const endTime = document.getElementById("schedEndTime").value || "";
+    const salaryCtc = document.getElementById("schedSalaryCtc").value.trim();
+    const monthlySalary = calculateMonthlySalary(salaryCtc);
+
     const payload = {
       company: document.getElementById("schedCompany").value.trim(),
       role: document.getElementById("schedRole").value.trim(),
@@ -1199,8 +1317,12 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       time: startTime,
       start_time: startTime,
       end_time: endTime,
+      salary_ctc: salaryCtc,
+      monthly_salary: monthlySalary,
+      about_company: document.getElementById("schedAboutCompany").value.trim(),
+      role_info: document.getElementById("schedRoleInfo").value.trim(),
+      job_description: document.getElementById("schedJobDescription").value.trim(),
       meeting_link: document.getElementById("schedMeetingLink").value.trim(),
-      notes: document.getElementById("schedNotes").value.trim(),
       status: document.getElementById("schedStatus").value
     };
 
@@ -1420,6 +1542,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             <div class="font-extrabold text-slate-900 truncate">${escapeHtml(s.company)}</div>
             <div class="text-[9px] text-indigo-700 font-bold truncate">${escapeHtml(s.round || 'Round')}</div>
             <div class="text-[9px] text-slate-500 font-mono font-bold">${timeRange}</div>
+            ${s.salary_ctc ? `<div class="text-[9px] text-emerald-700 font-bold font-mono truncate">${escapeHtml(s.salary_ctc)}</div>` : ''}
           </div>
         `;
       }).join("");
