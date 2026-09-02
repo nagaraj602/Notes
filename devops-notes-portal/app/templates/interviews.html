@@ -1,0 +1,942 @@
+{% extends "base.html" %}
+{% block title %}Nagaraj Interviews Tracker & Q&A Hub - DevOps Knowledge Hub{% endblock %}
+
+{% block content %}
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50/50">
+
+  <!-- Top Action & Statistics Header -->
+  <div class="px-6 py-4 bg-white/70 backdrop-blur-md border-b border-sky-100 flex-shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+          <i class="fa-solid fa-bullseye text-sm"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <span>Interview Schedule & Question Hub</span>
+            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold border border-sky-200">Nagaraj Tracker</span>
+          </h1>
+          <p class="text-xs text-slate-500">Track interview schedules, automated follow-ups, and categorized Q&A repository.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <button onclick="openScheduleModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5">
+        <i class="fa-solid fa-calendar-plus text-xs"></i>
+        <span>Schedule Interview</span>
+      </button>
+      <button onclick="openAddQuestionModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-sky-200 transition-all flex items-center space-x-1.5 shadow-sm">
+        <i class="fa-solid fa-file-circle-plus text-sky-600"></i>
+        <span>Add Q&A</span>
+      </button>
+      <button onclick="openBulkUploadModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-sky-200 transition-all flex items-center space-x-1.5 shadow-sm">
+        <i class="fa-solid fa-paste text-indigo-600"></i>
+        <span>Bulk Paste</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Scrollable Content Area -->
+  <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+
+    <!-- Smart Pending Follow-Up Alert Banner (If Any Past Interview Missing Q&A) -->
+    <div id="pendingFollowupsContainer" class="hidden space-y-3"></div>
+
+    <!-- Metrics Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Attended</div>
+          <div id="statTotalAttended" class="text-2xl font-black text-slate-900 mt-0.5">--</div>
+          <div class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Completed Rounds</div>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg border border-emerald-100">
+          <i class="fa-solid fa-user-check"></i>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Companies</div>
+          <div id="statTotalCompanies" class="text-2xl font-black text-slate-900 mt-0.5">--</div>
+          <div class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-building text-sky-500 mr-1"></i>Unique Companies</div>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg border border-sky-100">
+          <i class="fa-solid fa-building-user"></i>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">This Week's Activity</div>
+          <div id="statWeeklyActivity" class="text-2xl font-black text-indigo-600 mt-0.5">--</div>
+          <div id="statWeeklyCompanies" class="text-[10px] text-slate-500 mt-1">-- companies this week</div>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg border border-indigo-100">
+          <i class="fa-solid fa-calendar-week"></i>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Questions Bank</div>
+          <div id="statTotalQuestions" class="text-2xl font-black text-amber-600 mt-0.5">--</div>
+          <div id="statUpcomingCount" class="text-[10px] text-slate-500 mt-1">-- upcoming interviews</div>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg border border-amber-100">
+          <i class="fa-solid fa-circle-question"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1-Week Interactive Calendar Strip -->
+    <div class="glass-card rounded-2xl border border-sky-100 overflow-hidden shadow-sm">
+      <div class="p-4 bg-white/60 border-b border-sky-100 flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-1.5">
+            <button onclick="navigateWeek(-1)" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs" title="Previous Week">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button onclick="navigateWeek(0)" class="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 text-xs font-bold transition-all shadow-xs" title="Go to Current Week">
+              Today
+            </button>
+            <button onclick="navigateWeek(1)" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs" title="Next Week">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+          <div id="weekRangeLabel" class="text-xs font-bold text-slate-800 font-mono">--</div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <button onclick="openFullCalendarModal()" class="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold transition-all flex items-center space-x-1.5 shadow-xs">
+            <i class="fa-solid fa-expand text-[10px]"></i>
+            <span>Full Month View</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 7-Day Grid -->
+      <div id="weekDaysGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40 min-h-[140px]">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- Middle Section: Interview Questions & Answers Explorer -->
+    <div class="space-y-4">
+      <!-- Search and Filter Bar -->
+      <div class="glass-card p-4 rounded-2xl border border-sky-100 space-y-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <!-- Search Input -->
+          <div class="relative flex-1">
+            <input type="text" id="qaSearchInput" oninput="debounceSearch()" placeholder="Search interview questions, answers, companies (e.g. Terraform, Ingress, Docker)..." class="w-full text-xs rounded-xl pl-9 pr-10 py-2.5 border border-sky-200 bg-white/90 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all font-sans shadow-xs">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+            <button id="qaClearSearchBtn" onclick="clearQaSearch()" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Controls: Expand All / Collapse All -->
+          <div class="flex items-center space-x-2">
+            <button onclick="toggleAllInterviewAccordions(true)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 border border-sky-200 transition-all flex items-center space-x-1 shadow-xs">
+              <i class="fa-solid fa-chevron-down text-sky-600 text-[10px]"></i>
+              <span>Expand All</span>
+            </button>
+            <button onclick="toggleAllInterviewAccordions(false)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 border border-sky-200 transition-all flex items-center space-x-1 shadow-xs">
+              <i class="fa-solid fa-chevron-up text-sky-600 text-[10px]"></i>
+              <span>Collapse All</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Category Pills Filter -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 text-[11px] font-medium scrollbar-none">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">Filter:</span>
+          <button onclick="filterCategoryPill('All')" class="qa-cat-pill px-3 py-1 rounded-xl bg-sky-600 text-white font-bold transition-all whitespace-nowrap shadow-sm shadow-sky-500/20 active-qa-pill" data-cat="All">All</button>
+          {% for cat in categories %}
+          <button onclick="filterCategoryPill('{{ cat }}')" class="qa-cat-pill px-3 py-1 rounded-xl bg-white/80 border border-sky-100 text-slate-600 hover:text-sky-700 hover:bg-sky-50 transition-all whitespace-nowrap shadow-xs" data-cat="{{ cat }}">{{ cat }}</button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Question List Container -->
+      <div id="qaListContainer" class="space-y-3">
+        <div class="text-center py-16 text-slate-400">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-sky-600"></i>
+          <p class="text-xs font-mono">Loading questions...</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL 1: Schedule Interview Modal -->
+<div id="scheduleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-calendar-plus text-xs"></i>
+        </div>
+        <h3 id="scheduleModalTitle" class="text-sm font-extrabold text-slate-900">Schedule Interview</h3>
+      </div>
+      <button onclick="closeScheduleModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="scheduleForm" onsubmit="submitSchedule(event)" class="space-y-3.5 text-xs">
+      <input type="hidden" id="schedId" value="">
+      
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Company Name *</label>
+        <input type="text" id="schedCompany" required placeholder="e.g. Amazon, Persistent, Cognizant" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Role</label>
+          <input type="text" id="schedRole" value="DevOps Engineer" placeholder="e.g. Lead DevOps Engineer" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Round Name</label>
+          <input type="text" id="schedRound" value="Technical Round 1" placeholder="e.g. L1 Technical / Client Round" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Date *</label>
+          <input type="date" id="schedDate" required class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Time</label>
+          <input type="time" id="schedTime" value="11:00" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Meeting Link (Optional)</label>
+        <input type="url" id="schedMeetingLink" placeholder="https://teams.microsoft.com or https://meet.google.com" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Preparation Notes / Focus Areas</label>
+        <textarea id="schedNotes" rows="2" placeholder="e.g. Focus on Kubernetes CNI, Terraform State Locking, Jenkins Shared Libraries..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Status</label>
+        <select id="schedStatus" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+          <option value="scheduled">Scheduled</option>
+          <option value="completed">Completed</option>
+          <option value="rescheduled">Rescheduled</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="pt-3 border-t border-sky-100 flex items-center justify-end space-x-2">
+        <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
+        <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-md shadow-sky-500/20">Save Schedule</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL 2: Add Single Q&A Modal -->
+<div id="addQuestionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-3xl max-w-xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-file-circle-plus text-xs"></i>
+        </div>
+        <h3 class="text-sm font-extrabold text-slate-900">Add Interview Question & Answer</h3>
+      </div>
+      <button onclick="closeAddQuestionModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="addQuestionForm" onsubmit="submitSingleQuestion(event)" class="space-y-3.5 text-xs">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Company *</label>
+          <input type="text" id="qCompany" required placeholder="e.g. Persistant Systems" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Round</label>
+          <input type="text" id="qRound" placeholder="e.g. L1 Technical" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Question *</label>
+        <textarea id="qText" rows="2" required placeholder="Enter the exact interview question asked..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Answer (Markdown Supported) *</label>
+        <textarea id="qAnswer" rows="6" required placeholder="Detailed answer with bullet points, commands, or code blocks..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-mono text-xs"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Categories (Select Relevant)</label>
+        <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-xl border border-sky-100">
+          {% for cat in categories %}
+          <label class="flex items-center space-x-1.5 text-[11px] text-slate-700 cursor-pointer">
+            <input type="checkbox" name="qCategories" value="{{ cat }}" class="rounded text-sky-600 focus:ring-sky-400">
+            <span>{{ cat }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-sky-100 flex items-center justify-end space-x-2">
+        <button type="button" onclick="closeAddQuestionModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
+        <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-md shadow-sky-500/20">Save Q&A</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL 3: Bulk Paste Questions Modal -->
+<div id="bulkUploadModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-paste text-xs"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900">Bulk Paste Interview Questions</h3>
+          <p class="text-[11px] text-slate-500">Paste questions and answers formatted in Q: ... / A: ... or Markdown.</p>
+        </div>
+      </div>
+      <button onclick="closeBulkUploadModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="bulkForm" onsubmit="submitBulkQuestions(event)" class="space-y-3.5 text-xs">
+      <div class="grid grid-cols-3 gap-3">
+        <div class="col-span-1">
+          <label class="block font-bold text-slate-700 mb-1">Company *</label>
+          <input type="text" id="bulkCompany" required placeholder="e.g. SLK Software" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+        <div class="col-span-1">
+          <label class="block font-bold text-slate-700 mb-1">Round</label>
+          <input type="text" id="bulkRound" placeholder="e.g. L1 Technical" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+        <div class="col-span-1">
+          <label class="block font-bold text-slate-700 mb-1">Date</label>
+          <input type="date" id="bulkDate" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Paste Questions & Answers *</label>
+        <textarea id="bulkText" rows="10" required placeholder="Example format:
+
+Q: What is the difference between Docker and VM?
+A: Docker shares the host OS kernel and uses cgroups/namespaces for lightweight container isolation, whereas VMs virtualize the entire hardware with a separate guest OS.
+Categories: Docker, Linux
+
+Q: How to handle OOMKilled in Kubernetes?
+A: Check memory requests and limits in pod spec, inspect container memory profiling, and increase limits.
+Categories: Kubernetes" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-mono text-xs"></textarea>
+      </div>
+
+      <div class="pt-3 border-t border-sky-100 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500">Supports automatic category detection & markdown formatting.</span>
+        <div class="flex items-center space-x-2">
+          <button type="button" onclick="closeBulkUploadModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-500/20">Import Questions</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL 4: Full Month Calendar View Modal -->
+<div id="fullCalendarModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-3xl max-w-4xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] flex flex-col">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-calendar-days text-xs"></i>
+        </div>
+        <h3 id="monthCalendarTitle" class="text-sm font-extrabold text-slate-900">Monthly Interview Calendar</h3>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="changeMonth(-1)" class="p-1.5 px-2.5 rounded-lg border border-sky-200 hover:bg-sky-50 text-xs text-slate-700"><i class="fa-solid fa-chevron-left"></i></button>
+        <button onclick="changeMonth(0)" class="px-2.5 py-1.5 rounded-lg border border-sky-200 hover:bg-sky-50 text-xs font-bold text-slate-700">This Month</button>
+        <button onclick="changeMonth(1)" class="p-1.5 px-2.5 rounded-lg border border-sky-200 hover:bg-sky-50 text-xs text-slate-700"><i class="fa-solid fa-chevron-right"></i></button>
+        <button onclick="closeFullCalendarModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center ml-2">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto">
+      <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-500 uppercase py-2 bg-slate-50 rounded-xl mb-2">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>
+      <div id="fullMonthGrid" class="grid grid-cols-7 gap-1.5 text-xs min-h-[350px]"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // State variables
+  let currentWeekOffset = 0;
+  let currentMonthOffset = 0;
+  let allSchedules = [];
+  let allQuestions = [];
+  let activeCategory = "All";
+  let searchDebounceTimer = null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initInterviewHub();
+  });
+
+  async function initInterviewHub() {
+    await Promise.all([
+      loadStats(),
+      loadSchedules(),
+      loadPendingFollowups(),
+      loadQuestions()
+    ]);
+  }
+
+  // --- STATS ---
+  async function loadStats() {
+    try {
+      const res = await fetch("/api/interviews/stats");
+      const data = await res.json();
+      document.getElementById("statTotalAttended").innerText = data.total_attended || 0;
+      document.getElementById("statTotalCompanies").innerText = data.total_companies || 0;
+      document.getElementById("statWeeklyActivity").innerText = `${data.weekly_interviews || 0} Interviews`;
+      document.getElementById("statWeeklyCompanies").innerText = `${data.weekly_companies || 0} companies this week`;
+      document.getElementById("statTotalQuestions").innerText = data.total_questions || 0;
+      document.getElementById("statUpcomingCount").innerText = `${data.upcoming_count || 0} upcoming scheduled`;
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+    }
+  }
+
+  // --- SCHEDULES & 1-WEEK CALENDAR ---
+  async function loadSchedules() {
+    try {
+      const res = await fetch("/api/interviews/schedules");
+      allSchedules = await res.json();
+      renderWeekCalendar();
+    } catch (err) {
+      console.error("Failed to load schedules:", err);
+    }
+  }
+
+  function getMonday(d) {
+    d = new Date(d);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+  }
+
+  function navigateWeek(direction) {
+    if (direction === 0) currentWeekOffset = 0;
+    else currentWeekOffset += direction;
+    renderWeekCalendar();
+  }
+
+  function renderWeekCalendar() {
+    const today = new Date();
+    const currMonday = getMonday(today);
+    currMonday.setDate(currMonday.getDate() + (currentWeekOffset * 7));
+
+    const sunday = new Date(currMonday);
+    sunday.setDate(sunday.getDate() + 6);
+
+    const options = { month: 'short', day: 'numeric', year: 'numeric' };
+    document.getElementById("weekRangeLabel").innerText = 
+      `${currMonday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sunday.toLocaleDateString('en-US', options)}`;
+
+    const grid = document.getElementById("weekDaysGrid");
+    grid.innerHTML = "";
+
+    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(currMonday);
+      dayDate.setDate(dayDate.getDate() + i);
+      const dateStr = dayDate.toISOString().split("T")[0];
+      const isToday = dateStr === today.toISOString().split("T")[0];
+
+      // Find schedules for this day
+      const daySchedules = allSchedules.filter(s => s.date === dateStr);
+
+      const dayCol = document.createElement("div");
+      dayCol.className = `p-3 flex flex-col min-h-[140px] transition-all ${isToday ? 'bg-sky-50/70 ring-1 ring-inset ring-sky-300' : 'hover:bg-slate-50/80'}`;
+
+      let schedulesHtml = "";
+      if (daySchedules.length > 0) {
+        schedulesHtml = daySchedules.map(s => {
+          const statusColors = {
+            "completed": "bg-emerald-100 text-emerald-800 border-emerald-200",
+            "scheduled": "bg-sky-100 text-sky-800 border-sky-200",
+            "rescheduled": "bg-amber-100 text-amber-800 border-amber-200",
+            "cancelled": "bg-rose-100 text-rose-800 border-rose-200"
+          };
+          const badgeClass = statusColors[s.status] || "bg-slate-100 text-slate-800";
+
+          return `
+            <div onclick="editSchedule('${s.id}')" class="p-2 rounded-xl bg-white border border-sky-100 shadow-xs hover:border-sky-300 hover:shadow-sm cursor-pointer transition-all mb-1.5 group">
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="font-bold text-[11px] text-slate-900 group-hover:text-sky-700 truncate">${escapeHtml(s.company)}</span>
+                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${badgeClass}">${s.status}</span>
+              </div>
+              <div class="text-[10px] text-slate-500 font-mono flex items-center justify-between">
+                <span><i class="fa-regular fa-clock mr-1 text-sky-600"></i>${s.time || '10:00'}</span>
+                <span class="truncate ml-1 text-slate-600">${escapeHtml(s.round || '')}</span>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } else {
+        schedulesHtml = `<div class="flex-1 flex items-center justify-center text-[10px] text-slate-300 font-mono">No interviews</div>`;
+      }
+
+      dayCol.innerHTML = `
+        <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-sky-100/60">
+          <span class="text-[11px] font-bold ${isToday ? 'text-sky-700 font-extrabold' : 'text-slate-600'}">${dayNames[i]}</span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-md ${isToday ? 'bg-sky-600 text-white font-bold' : 'text-slate-500 bg-white/80 border border-sky-100'}">${dayDate.getDate()}</span>
+        </div>
+        <div class="flex-1 flex flex-col justify-start">
+          ${schedulesHtml}
+        </div>
+      `;
+
+      grid.appendChild(dayCol);
+    }
+  }
+
+  // --- SMART PENDING FOLLOW-UPS MODAL & BANNER ---
+  async function loadPendingFollowups() {
+    try {
+      const res = await fetch("/api/interviews/pending-followups");
+      const pending = await res.json();
+      const container = document.getElementById("pendingFollowupsContainer");
+      
+      if (!pending || pending.length === 0) {
+        container.classList.add("hidden");
+        container.innerHTML = "";
+        return;
+      }
+
+      container.classList.remove("hidden");
+      container.innerHTML = pending.map(p => `
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-indigo-500/10 border-2 border-amber-300/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 animate-pulse-subtle">
+          <div class="flex items-start space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0 mt-0.5 shadow-md shadow-amber-500/30">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-extrabold text-sm text-slate-900">${escapeHtml(p.company)}</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-mono">${p.round || 'Technical Round'}</span>
+                <span class="text-xs text-slate-500 font-mono">(${p.date} at ${p.time || '10:00'})</span>
+              </div>
+              <p class="text-xs text-slate-600 mt-0.5">Your interview has concluded! Would you like to record the questions asked and upload your answers?</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 flex-wrap flex-shrink-0">
+            <button onclick="promptUploadForSchedule('${p.id}', '${escapeHtml(p.company)}', '${escapeHtml(p.round || '')}', '${p.date}')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-sky-600 hover:bg-sky-700 text-white shadow-sm transition-all flex items-center space-x-1">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Q&A</span>
+            </button>
+            <button onclick="handleFollowupAction('${p.id}', 'reschedule')" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-amber-50 text-amber-800 border border-amber-200 transition-all" title="Reschedule for a new date">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <span>Reschedule</span>
+            </button>
+            <button onclick="handleFollowupAction('${p.id}', 'cancel')" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 transition-all" title="No interview happened / Cancelled">
+              <i class="fa-solid fa-ban"></i>
+              <span>Cancelled</span>
+            </button>
+            <button onclick="handleFollowupAction('${p.id}', 'skip')" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-all" title="Skip reminder">
+              <span>Skip</span>
+            </button>
+          </div>
+        </div>
+      `).join("");
+    } catch (err) {
+      console.error("Failed to load follow-ups:", err);
+    }
+  }
+
+  async function handleFollowupAction(schedId, action) {
+    if (action === "reschedule") {
+      const newDate = prompt("Enter new interview date (YYYY-MM-DD):", new Date().toISOString().split("T")[0]);
+      if (!newDate) return;
+      const newTime = prompt("Enter new interview time (HH:MM):", "11:00") || "11:00";
+      await fetch("/api/interviews/dismiss-followup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schedule_id: schedId, action: "reschedule", new_date: newDate, new_time: newTime })
+      });
+    } else {
+      await fetch("/api/interviews/dismiss-followup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schedule_id: schedId, action: action })
+      });
+    }
+    initInterviewHub();
+  }
+
+  function promptUploadForSchedule(schedId, company, round, dateStr) {
+    document.getElementById("bulkCompany").value = company;
+    document.getElementById("bulkRound").value = round;
+    document.getElementById("bulkDate").value = dateStr;
+    openBulkUploadModal();
+  }
+
+  // --- QUESTIONS REPOSITORY & SEARCH ---
+  async function loadQuestions() {
+    try {
+      const q = document.getElementById("qaSearchInput").value.trim();
+      const cat = activeCategory;
+      const res = await fetch(`/api/interviews/questions?q=${encodeURIComponent(q)}&category=${encodeURIComponent(cat)}`);
+      allQuestions = await res.json();
+      renderQuestionsList();
+    } catch (err) {
+      console.error("Failed to load questions:", err);
+    }
+  }
+
+  function debounceSearch() {
+    clearTimeout(searchDebounceTimer);
+    const q = document.getElementById("qaSearchInput").value.trim();
+    document.getElementById("qaClearSearchBtn").classList.toggle("hidden", !q);
+    searchDebounceTimer = setTimeout(loadQuestions, 200);
+  }
+
+  function clearQaSearch() {
+    document.getElementById("qaSearchInput").value = "";
+    document.getElementById("qaClearSearchBtn").classList.add("hidden");
+    loadQuestions();
+  }
+
+  function filterCategoryPill(cat) {
+    activeCategory = cat;
+    document.querySelectorAll(".qa-cat-pill").forEach(p => {
+      if (p.dataset.cat === cat) {
+        p.className = "qa-cat-pill px-3 py-1 rounded-xl bg-sky-600 text-white font-bold transition-all whitespace-nowrap shadow-sm shadow-sky-500/20 active-qa-pill";
+      } else {
+        p.className = "qa-cat-pill px-3 py-1 rounded-xl bg-white/80 border border-sky-100 text-slate-600 hover:text-sky-700 hover:bg-sky-50 transition-all whitespace-nowrap shadow-xs";
+      }
+    });
+    loadQuestions();
+  }
+
+  function renderQuestionsList() {
+    const container = document.getElementById("qaListContainer");
+    if (!allQuestions || allQuestions.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-16 p-6 rounded-2xl glass-card border border-sky-100">
+          <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl mx-auto mb-3">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <h4 class="text-sm font-bold text-slate-800 mb-1">No interview questions found</h4>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto">Try changing your search terms or filter category, or click "Add Q&A" to record new questions.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Render questions with collapsible accordion cards
+    container.innerHTML = allQuestions.map((q, idx) => {
+      const catsHtml = (q.categories || []).map(c => `
+        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100/90 text-sky-800 border border-sky-200">${escapeHtml(c)}</span>
+      `).join("");
+
+      // Render markdown in answers
+      const renderedAnswer = marked.parse(q.answer || "");
+
+      return `
+        <details class="group glass-card rounded-2xl border border-sky-100/90 shadow-sm overflow-hidden transition-all duration-200">
+          <summary class="p-4 cursor-pointer flex items-center justify-between hover:bg-sky-50/50 transition-colors select-text">
+            <div class="flex items-start space-x-3 flex-1 pr-4">
+              <span class="text-xs font-mono font-bold text-sky-600 mt-0.5">#${idx + 1}</span>
+              <div class="space-y-1.5 flex-1">
+                <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                  <span class="font-extrabold text-xs text-slate-900 bg-white/90 px-2 py-0.5 rounded-md border border-slate-200 shadow-xs">${escapeHtml(q.company)}</span>
+                  ${q.round ? `<span class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">${escapeHtml(q.round)}</span>` : ''}
+                  <span class="text-[10px] font-mono text-slate-400">${q.date || ''}</span>
+                  ${catsHtml}
+                </div>
+                <h4 class="text-xs sm:text-sm font-bold text-slate-900 leading-snug">${escapeHtml(q.question)}</h4>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-xs text-sky-600 transition-transform duration-200 group-open:rotate-180 flex-shrink-0"></i>
+          </summary>
+
+          <div class="px-5 pb-5 pt-2 border-t border-sky-100/80 bg-white/60">
+            <div class="prose-custom text-xs sm:text-[13px] leading-relaxed select-text">
+              ${renderedAnswer}
+            </div>
+          </div>
+        </details>
+      `;
+    }).join("");
+  }
+
+  function toggleAllInterviewAccordions(openState) {
+    const accordions = document.querySelectorAll("#qaListContainer details");
+    accordions.forEach(d => { d.open = openState; });
+  }
+
+  // --- MODAL HANDLERS ---
+  function openScheduleModal() {
+    document.getElementById("schedId").value = "";
+    document.getElementById("schedCompany").value = "";
+    document.getElementById("schedRole").value = "DevOps Engineer";
+    document.getElementById("schedRound").value = "Technical Round 1";
+    document.getElementById("schedDate").value = new Date().toISOString().split("T")[0];
+    document.getElementById("schedTime").value = "11:00";
+    document.getElementById("schedMeetingLink").value = "";
+    document.getElementById("schedNotes").value = "";
+    document.getElementById("schedStatus").value = "scheduled";
+    document.getElementById("scheduleModalTitle").innerText = "Schedule Interview";
+    document.getElementById("scheduleModal").classList.remove("hidden");
+  }
+
+  function closeScheduleModal() {
+    document.getElementById("scheduleModal").classList.add("hidden");
+  }
+
+  function editSchedule(id) {
+    const s = allSchedules.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById("schedId").value = s.id;
+    document.getElementById("schedCompany").value = s.company || "";
+    document.getElementById("schedRole").value = s.role || "DevOps Engineer";
+    document.getElementById("schedRound").value = s.round || "";
+    document.getElementById("schedDate").value = s.date || "";
+    document.getElementById("schedTime").value = s.time || "10:00";
+    document.getElementById("schedMeetingLink").value = s.meeting_link || "";
+    document.getElementById("schedNotes").value = s.notes || "";
+    document.getElementById("schedStatus").value = s.status || "scheduled";
+    document.getElementById("scheduleModalTitle").innerText = "Edit Schedule";
+    document.getElementById("scheduleModal").classList.remove("hidden");
+  }
+
+  async function submitSchedule(e) {
+    e.preventDefault();
+    const id = document.getElementById("schedId").value;
+    const payload = {
+      company: document.getElementById("schedCompany").value,
+      role: document.getElementById("schedRole").value,
+      round: document.getElementById("schedRound").value,
+      date: document.getElementById("schedDate").value,
+      time: document.getElementById("schedTime").value,
+      meeting_link: document.getElementById("schedMeetingLink").value,
+      notes: document.getElementById("schedNotes").value,
+      status: document.getElementById("schedStatus").value
+    };
+
+    if (id) {
+      await fetch(`/api/interviews/schedules/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      await fetch("/api/interviews/schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    closeScheduleModal();
+    initInterviewHub();
+  }
+
+  function openAddQuestionModal() {
+    document.getElementById("addQuestionForm").reset();
+    document.getElementById("addQuestionModal").classList.remove("hidden");
+  }
+
+  function closeAddQuestionModal() {
+    document.getElementById("addQuestionModal").classList.add("hidden");
+  }
+
+  async function submitSingleQuestion(e) {
+    e.preventDefault();
+    const selectedCats = Array.from(document.querySelectorAll("input[name='qCategories']:checked")).map(c => c.value);
+    const payload = {
+      company: document.getElementById("qCompany").value,
+      round: document.getElementById("qRound").value,
+      date: new Date().toISOString().split("T")[0],
+      question: document.getElementById("qText").value,
+      answer: document.getElementById("qAnswer").value,
+      categories: selectedCats
+    };
+
+    await fetch("/api/interviews/questions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    closeAddQuestionModal();
+    initInterviewHub();
+  }
+
+  function openBulkUploadModal() {
+    document.getElementById("bulkUploadModal").classList.remove("hidden");
+  }
+
+  function closeBulkUploadModal() {
+    document.getElementById("bulkUploadModal").classList.add("hidden");
+  }
+
+  async function submitBulkQuestions(e) {
+    e.preventDefault();
+    const company = document.getElementById("bulkCompany").value.trim();
+    const round = document.getElementById("bulkRound").value.trim();
+    const dateStr = document.getElementById("bulkDate").value.trim() || new Date().toISOString().split("T")[0];
+    const rawText = document.getElementById("bulkText").value.trim();
+
+    // Parse bulk text into Q&A blocks
+    const blocks = rawText.split(/\n\s*(?:Q:|#|\d+\.)/i).filter(Boolean);
+    const parsedQuestions = [];
+
+    const availableCats = {{ categories | tojson }};
+
+    blocks.forEach(block => {
+      let qText = "";
+      let aText = "";
+      let cats = [];
+
+      if (/A:/i.test(block)) {
+        const parts = block.split(/A:/i);
+        qText = parts[0].replace(/^[:\s\-]+/, "").trim();
+        const aBlock = parts.slice(1).join("A:").trim();
+        
+        // Check for Categories:
+        if (/Categories:/i.test(aBlock)) {
+          const aParts = aBlock.split(/Categories:/i);
+          aText = aParts[0].trim();
+          cats = aParts[1].split(/[,;\n]/).map(c => c.trim()).filter(Boolean);
+        } else {
+          aText = aBlock;
+        }
+      } else {
+        qText = block.trim();
+      }
+
+      if (qText) {
+        // Auto-detect categories if empty
+        if (cats.length === 0) {
+          const fullText = (qText + " " + aText).toLowerCase();
+          availableCats.forEach(c => {
+            if (fullText.includes(c.toLowerCase())) cats.push(c);
+          });
+        }
+
+        parsedQuestions.push({
+          question: qText,
+          answer: aText || "Answer to be added.",
+          categories: cats
+        });
+      }
+    });
+
+    if (parsedQuestions.length === 0) {
+      alert("Could not parse any questions. Please check the format.");
+      return;
+    }
+
+    await fetch("/api/interviews/questions/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        company: company,
+        round: round,
+        date: dateStr,
+        questions: parsedQuestions
+      })
+    });
+
+    closeBulkUploadModal();
+    initInterviewHub();
+  }
+
+  // --- FULL MONTH CALENDAR MODAL ---
+  function openFullCalendarModal() {
+    currentMonthOffset = 0;
+    renderFullMonth();
+    document.getElementById("fullCalendarModal").classList.remove("hidden");
+  }
+
+  function closeFullCalendarModal() {
+    document.getElementById("fullCalendarModal").classList.add("hidden");
+  }
+
+  function changeMonth(dir) {
+    if (dir === 0) currentMonthOffset = 0;
+    else currentMonthOffset += dir;
+    renderFullMonth();
+  }
+
+  function renderFullMonth() {
+    const now = new Date();
+    const targetMonth = new Date(now.getFullYear(), now.getMonth() + currentMonthOffset, 1);
+    const monthName = targetMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+    document.getElementById("monthCalendarTitle").innerText = `Interview Calendar - ${monthName}`;
+
+    const firstDayIndex = (targetMonth.getDay() + 6) % 7; // Monday = 0
+    const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+
+    const grid = document.getElementById("fullMonthGrid");
+    grid.innerHTML = "";
+
+    // Empty slots before first day
+    for (let i = 0; i < firstDayIndex; i++) {
+      grid.innerHTML += `<div class="p-2 rounded-xl bg-slate-50/50 border border-transparent min-h-[70px]"></div>`;
+    }
+
+    // Days of month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${targetMonth.getFullYear()}-${String(targetMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const daySchedules = allSchedules.filter(s => s.date === dateStr);
+      const isToday = dateStr === now.toISOString().split("T")[0];
+
+      let badges = daySchedules.map(s => `
+        <div class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-100 text-sky-800 border border-sky-200 truncate mt-1" title="${escapeHtml(s.company)} (${s.status})">
+          ${escapeHtml(s.company)}
+        </div>
+      `).join("");
+
+      grid.innerHTML += `
+        <div class="p-2 rounded-xl border ${isToday ? 'bg-sky-50 border-sky-400 font-bold' : 'bg-white border-sky-100'} flex flex-col justify-start min-h-[70px]">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] ${isToday ? 'text-sky-700 font-bold' : 'text-slate-700'}">${day}</span>
+            ${daySchedules.length > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>` : ''}
+          </div>
+          <div class="flex-1">${badges}</div>
+        </div>
+      `;
+    }
+  }
+
+  function escapeHtml(text) {
+    if (!text) return "";
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+</script>
+{% endblock %}

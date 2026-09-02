@@ -25,6 +25,7 @@ from app.cidr_engine import (
     split_subnet, merge_subnets, validate_network,
     get_cloud_comparison, generate_terraform_hcl, get_generated_subnets, CLOUD_SPECS
 )
+from app.interview_hub import interview_manager, CATEGORIES
 
 # Background Auto-Sync Task
 async def auto_sync_worker():
@@ -88,6 +89,20 @@ async def settings_page(request: Request):
             "repos": git_manager.repos,
             "repo_statuses": git_manager.repo_statuses,
             "sync_interval": AUTO_SYNC_INTERVAL_MINUTES,
+            "last_sync": git_manager.last_sync_time,
+            "sync_status": git_manager.sync_status
+        }
+    )
+
+@app.get("/interviews", response_class=HTMLResponse)
+async def interviews_page(request: Request):
+    stats = interview_manager.get_stats()
+    return templates.TemplateResponse(
+        request=request,
+        name="interviews.html",
+        context={
+            "stats": stats,
+            "categories": CATEGORIES,
             "last_sync": git_manager.last_sync_time,
             "sync_status": git_manager.sync_status
         }
@@ -356,4 +371,113 @@ async def api_get_vpc_projects(username: str):
 @app.delete("/api/vpc/project/{project_id}")
 async def api_delete_vpc_project(project_id: int, username: str):
     delete_vpc_project(project_id, username)
-    return JSONResponse({"status": "deleted"})
+    return JSONResponse({"status": "deleted"})
+
+# --- INTERVIEW HUB APIS ---
+
+class ScheduleCreateRequest(BaseModel):
+    company: str
+    role: Optional[str] = "DevOps Engineer"
+    round: Optional[str] = "Technical Round"
+    date: str
+    time: Optional[str] = "10:00"
+    status: Optional[str] = "scheduled"
+    meeting_link: Optional[str] = ""
+    notes: Optional[str] = ""
+
+class ScheduleUpdateRequest(BaseModel):
+    company: Optional[str] = None
+    role: Optional[str] = None
+    round: Optional[str] = None
+    date: Optional[str] = None
+    time: Optional[str] = None
+    status: Optional[str] = None
+    meeting_link: Optional[str] = None
+    notes: Optional[str] = None
+    questions_uploaded: Optional[bool] = None
+
+class QuestionCreateRequest(BaseModel):
+    company: str
+    round: Optional[str] = ""
+    date: Optional[str] = ""
+    question: str
+    answer: str
+    categories: Optional[List[str]] = []
+
+class BulkQuestionItem(BaseModel):
+    question: str
+    answer: str
+    categories: Optional[List[str]] = []
+
+class BulkQuestionsRequest(BaseModel):
+    company: str
+    round: Optional[str] = ""
+    date: Optional[str] = ""
+    questions: List[BulkQuestionItem]
+
+class FollowupActionRequest(BaseModel):
+    schedule_id: str
+    action: str # "skip", "cancel", "reschedule"
+    new_date: Optional[str] = None
+    new_time: Optional[str] = None
+
+@app.get("/api/interviews/stats")
+async def api_interview_stats():
+    return JSONResponse(interview_manager.get_stats())
+
+@app.get("/api/interviews/schedules")
+async def api_get_schedules():
+    return JSONResponse(interview_manager.get_schedules())
+
+@app.post("/api/interviews/schedules")
+async def api_add_schedule(req: ScheduleCreateRequest):
+    item = interview_manager.add_schedule(req.dict())
+    return JSONResponse({"status": "success", "schedule": item})
+
+@app.put("/api/interviews/schedules/{sched_id}")
+async def api_update_schedule(sched_id: str, req: ScheduleUpdateRequest):
+    updated = interview_manager.update_schedule(sched_id, req.dict(exclude_unset=True))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    return JSONResponse({"status": "success", "schedule": updated})
+
+@app.delete("/api/interviews/schedules/{sched_id}")
+async def api_delete_schedule(sched_id: str):
+    success = interview_manager.delete_schedule(sched_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    return JSONResponse({"status": "deleted"})
+
+@app.get("/api/interviews/questions")
+async def api_get_questions(q: Optional[str] = "", category: Optional[str] = "", company: Optional[str] = ""):
+    questions = interview_manager.get_questions(query=q, category=category, company=company)
+    return JSONResponse(questions)
+
+@app.post("/api/interviews/questions")
+async def api_add_question(req: QuestionCreateRequest):
+    new_q = interview_manager.add_question(req.dict())
+    return JSONResponse({"status": "success", "question": new_q})
+
+@app.post("/api/interviews/questions/bulk")
+async def api_add_bulk_questions(req: BulkQuestionsRequest):
+    qa_list = [item.dict() for item in req.questions]
+    count = interview_manager.add_bulk_questions(req.company, req.round or "", req.date or "", qa_list)
+    return JSONResponse({"status": "success", "count": count})
+
+@app.get("/api/interviews/pending-followups")
+async def api_get_pending_followups():
+    return JSONResponse(interview_manager.get_pending_followups())
+
+@app.post("/api/interviews/dismiss-followup")
+async def api_dismiss_followup(req: FollowupActionRequest):
+    if req.action == "cancel":
+        interview_manager.update_schedule(req.schedule_id, {"status": "cancelled"})
+    elif req.action == "reschedule":
+        interview_manager.update_schedule(req.schedule_id, {
+            "status": "scheduled",
+            "date": req.new_date or date.today().isoformat(),
+            "time": req.new_time or "10:00"
+        })
+    elif req.action == "skip":
+        interview_manager.update_schedule(req.schedule_id, {"status": "dismissed"})
+    return JSONResponse({"status": "success", "action": req.action})

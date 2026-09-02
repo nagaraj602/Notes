@@ -199,6 +199,42 @@
       font-weight: 600;
     }
 
+    /* Clean Lists with Crisp Indentation */
+    .prose-custom ul {
+      list-style-type: disc !important;
+      padding-left: 1.75rem !important;
+      margin-top: 0.75rem !important;
+      margin-bottom: 0.75rem !important;
+    }
+    .prose-custom ol {
+      list-style-type: decimal !important;
+      padding-left: 1.75rem !important;
+      margin-top: 0.75rem !important;
+      margin-bottom: 0.75rem !important;
+    }
+    .prose-custom li {
+      margin-top: 0.4rem !important;
+      margin-bottom: 0.4rem !important;
+      line-height: 1.65 !important;
+    }
+    .prose-custom li > p {
+      margin-top: 0.25rem !important;
+      margin-bottom: 0.25rem !important;
+    }
+    .prose-custom details ol {
+      list-style-type: decimal !important;
+      padding-left: 1.75rem !important;
+      margin: 0.75rem 0 !important;
+    }
+    .prose-custom details ul {
+      list-style-type: disc !important;
+      padding-left: 1.75rem !important;
+      margin: 0.75rem 0 !important;
+    }
+    .prose-custom details li {
+      margin: 0.45rem 0 !important;
+    }
+
     /* Clean Compact Code Blocks */
     .prose-custom pre {
       background: #0f172a !important;
@@ -369,7 +405,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      user-select: none;
+      user-select: text;
       transition: background-color 0.2s ease, color 0.2s ease;
       list-style: none;
     }
@@ -669,14 +705,19 @@
         <span>Notes</span>
       </button>
 
+      <a href="/interviews" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-700 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="Nagaraj Interviews Tracker & Q&A">
+        <i class="fa-solid fa-bullseye text-amber-500"></i>
+        <span>Interviews</span>
+      </a>
+
       <a href="/cidr" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="Cloud CIDR & Subnet Visual Planner">
         <i class="fa-solid fa-network-wired text-sky-600"></i>
-        <span>CIDR Architect</span>
+        <span class="hidden md:inline">CIDR Architect</span>
       </a>
 
       <a href="/settings" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-slate-900 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="Settings">
         <i class="fa-solid fa-sliders text-slate-500"></i>
-        <span class="hidden md:inline">Settings</span>
+        <span class="hidden lg:inline">Settings</span>
       </a>
       
       <button onclick="triggerManualSync()" class="ml-1 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all shadow-md shadow-sky-500/20 hover:scale-[1.02] flex items-center space-x-1.5 active:scale-95">
