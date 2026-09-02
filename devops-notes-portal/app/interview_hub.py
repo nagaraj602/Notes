@@ -260,7 +260,7 @@ class InterviewManager:
             return True
         return False
 
-    def add_bulk_questions(self, company: str, round_name: str, interview_date: str, qa_items: List[Dict[str, Any]]) -> int:
+    def add_bulk_questions(self, company: str, round_name: str, interview_date: str, qa_items: List[Dict[str, Any]], experience: str = "", notes: str = "", difficulty: str = "") -> int:
         questions = self._read_json(self.questions_file)
         added_count = 0
         for item in qa_items:
@@ -280,20 +280,29 @@ class InterviewManager:
                 "question": q_text,
                 "answer": item.get("answer", "").strip(),
                 "categories": cats,
+                "experience": experience.strip(),
+                "notes": notes.strip(),
+                "difficulty": difficulty.strip(),
                 "created_at": datetime.utcnow().isoformat()
             }
             questions.append(new_q)
             added_count += 1
 
-        self._save_json(self.questions_file, questions)
+        self._save_json(self.questions_file, questions, f"Add {added_count} interview questions for {company}")
 
-        # Update schedule status
+        # Update schedule status and attach experience & notes
         schedules = self._read_json(self.schedules_file)
         for s in schedules:
-            if s.get("company", "").lower() == company.lower():
+            if s.get("company", "").lower() == company.lower() and (not round_name or s.get("round", "").lower() == round_name.lower() or not s.get("questions_uploaded")):
                 s["questions_uploaded"] = True
                 s["status"] = "completed"
-        self._save_json(self.schedules_file, schedules)
+                if experience:
+                    s["experience"] = experience.strip()
+                if notes:
+                    s["notes"] = notes.strip()
+                if difficulty:
+                    s["difficulty"] = difficulty.strip()
+        self._save_json(self.schedules_file, schedules, f"Mark interview schedule completed for {company}")
 
         return added_count
 
@@ -303,8 +312,13 @@ class InterviewManager:
         questions = self._read_json(self.questions_file)
 
         today = date.today()
+        today_str = today.isoformat()
         start_of_week = today - timedelta(days=today.weekday())
         end_of_week = start_of_week + timedelta(days=6)
+
+        # Today's interviews sorted chronologically
+        today_schedules = [s for s in schedules if s.get("date") == today_str]
+        today_schedules.sort(key=lambda x: x.get("start_time") or x.get("time", "00:00"))
 
         completed_schedules = [s for s in schedules if s.get("status") == "completed"]
         
@@ -339,6 +353,7 @@ class InterviewManager:
             "total_questions": len(questions),
             "categories": CATEGORIES,
             # Detailed objects for interactive card click modals
+            "today_list": today_schedules,
             "attended_list": completed_schedules,
             "companies_list": [{"company": k, "rounds": v} for k, v in companies_map.items()],
             "weekly_list": weekly_schedules,

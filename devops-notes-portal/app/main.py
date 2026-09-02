@@ -428,6 +428,9 @@ class BulkQuestionsRequest(BaseModel):
     company: str
     round: Optional[str] = ""
     date: Optional[str] = ""
+    experience: Optional[str] = ""
+    notes: Optional[str] = ""
+    difficulty: Optional[str] = ""
     questions: List[BulkQuestionItem]
 
 class FollowupActionRequest(BaseModel):
@@ -496,7 +499,15 @@ async def api_detect_categories(req: DetectCategoriesRequest):
 @app.post("/api/interviews/questions/bulk")
 async def api_add_bulk_questions(req: BulkQuestionsRequest):
     qa_list = [item.dict() for item in req.questions]
-    count = interview_manager.add_bulk_questions(req.company, req.round or "", req.date or "", qa_list)
+    count = interview_manager.add_bulk_questions(
+        company=req.company,
+        round_name=req.round or "",
+        interview_date=req.date or "",
+        qa_items=qa_list,
+        experience=req.experience or "",
+        notes=req.notes or "",
+        difficulty=req.difficulty or ""
+    )
     return JSONResponse({"status": "success", "count": count})
 
 @app.get("/api/interviews/pending-followups")
