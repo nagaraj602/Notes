@@ -1,18 +1,30 @@
 import os
+import json
 import asyncio
+from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
+from pydantic import BaseModel
 from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.config import (
-    REPO_URL, REPO_BRANCH, AUTO_SYNC_INTERVAL_MINUTES,
-    NOTES_DIR, GEMINI_API_KEY, PROMPT_CLASS_NOTES, PROMPT_QA
+    REPOS, AUTO_SYNC_INTERVAL_MINUTES,
+    NOTES_DIR
 )
 from app.git_sync import git_manager
 from app.markdown_engine import render_markdown
-from app.youtube_service import YouTubeService
+from app.database import (
+    init_db, get_or_create_user, save_calculation_history,
+    get_user_history, clear_user_history, save_vpc_project,
+    get_user_vpc_projects, delete_vpc_project
+)
+from app.cidr_engine import (
+    calculate_cidr_details, find_next_available_subnet,
+    split_subnet, merge_subnets, validate_network,
+    get_cloud_comparison, generate_terraform_hcl, get_generated_subnets, CLOUD_SPECS
+)
 
 # Background Auto-Sync Task
 async def auto_sync_worker():
@@ -25,13 +37,15 @@ async def auto_sync_worker():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Initialize SQLite Database
+    init_db()
     # Initial sync on container boot
     git_manager.sync()
     # Start periodic sync worker
     asyncio.create_task(auto_sync_worker())
     yield
 
-app = FastAPI(title="DevOps Knowledge Hub & AI Study Assistant", lifespan=lifespan)
+app = FastAPI(title="DevOps Knowledge Hub", lifespan=lifespan)
 
 # Templates & Static Files
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
@@ -41,34 +55,32 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    tree = git_manager.get_file_tree()
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "tree": tree,
-        "last_sync": git_manager.last_sync_time,
-        "sync_status": git_manager.sync_status
-    })
-
-@app.get("/youtube", response_class=HTMLResponse)
-async def youtube_page(request: Request):
-    return templates.TemplateResponse("youtube.html", {
-        "request": request,
-        "prompt_class_notes": PROMPT_CLASS_NOTES,
-        "prompt_qa": PROMPT_QA,
-        "has_api_key": bool(GEMINI_API_KEY)
-    })
+    repo_trees = git_manager.get_file_tree()
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "repo_trees": repo_trees,
+            "tree": repo_trees,
+            "repos": git_manager.repos,
+            "last_sync": git_manager.last_sync_time,
+            "sync_status": git_manager.sync_status
+        }
+    )
 
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request):
-    return templates.TemplateResponse("settings.html", {
-        "request": request,
-        "repo_url": REPO_URL,
-        "branch": REPO_BRANCH,
-        "sync_interval": AUTO_SYNC_INTERVAL_MINUTES,
-        "last_sync": git_manager.last_sync_time,
-        "sync_status": git_manager.sync_status,
-        "has_api_key": bool(GEMINI_API_KEY)
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="settings.html",
+        context={
+            "repos": git_manager.repos,
+            "repo_statuses": git_manager.repo_statuses,
+            "sync_interval": AUTO_SYNC_INTERVAL_MINUTES,
+            "last_sync": git_manager.last_sync_time,
+            "sync_status": git_manager.sync_status
+        }
+    )
 
 # --- API ENDPOINTS ---
 
@@ -81,17 +93,41 @@ async def trigger_sync():
     result = git_manager.sync()
     return JSONResponse(content=result)
 
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, FileResponse, RedirectResponse
+
+@app.get("/raw/{file_path:path}")
+async def get_raw_asset(file_path: str):
+    """Serves images, diagrams, and binary assets from the notes repositories."""
+    normalized = os.path.normpath(file_path).lstrip("/\\")
+    safe_path = os.path.abspath(os.path.join(NOTES_DIR, normalized))
+    if not safe_path.startswith(os.path.abspath(NOTES_DIR)):
+        raise HTTPException(status_code=403, detail="Access denied")
+    if not os.path.exists(safe_path) or not os.path.isfile(safe_path):
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return FileResponse(safe_path)
+
 @app.get("/api/tree")
 async def get_tree():
     return JSONResponse(content=git_manager.get_file_tree())
 
 @app.get("/api/file")
 async def get_file_content(path: str):
-    safe_path = os.path.abspath(os.path.join(NOTES_DIR, path))
+    normalized = os.path.normpath(path).lstrip("/\\").replace("\\", "/")
+    safe_path = os.path.abspath(os.path.join(NOTES_DIR, normalized))
+    
+    # If not found directly, search across repo folders
+    if not os.path.exists(safe_path) or not os.path.isfile(safe_path):
+        for repo_info in git_manager.repos:
+            candidate = os.path.abspath(os.path.join(NOTES_DIR, repo_info["folder"], normalized))
+            if os.path.exists(candidate) and os.path.isfile(candidate):
+                safe_path = candidate
+                normalized = os.path.relpath(candidate, NOTES_DIR).replace("\\", "/")
+                break
+
     if not safe_path.startswith(os.path.abspath(NOTES_DIR)):
         raise HTTPException(status_code=403, detail="Access denied")
     if not os.path.exists(safe_path) or not os.path.isfile(safe_path):
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, detail=f"File '{path}' not found")
 
     try:
         with open(safe_path, "r", encoding="utf-8", errors="ignore") as f:
@@ -101,11 +137,11 @@ async def get_file_content(path: str):
 
     ext = os.path.splitext(safe_path)[1].lower()
     is_markdown = ext in [".md", ".markdown"]
-    rendered_html = render_markdown(raw_content) if is_markdown else f"<pre><code>{raw_content}</code></pre>"
+    rendered_html = render_markdown(raw_content, file_rel_path=normalized) if is_markdown else f"<pre><code>{raw_content}</code></pre>"
 
     return JSONResponse({
-        "path": path,
-        "filename": os.path.basename(path),
+        "path": normalized,
+        "filename": os.path.basename(normalized),
         "raw": raw_content,
         "html": rendered_html,
         "is_markdown": is_markdown
@@ -118,49 +154,195 @@ async def search_notes(q: str = ""):
     results = git_manager.search_files(q.strip())
     return JSONResponse(results)
 
-@app.post("/api/youtube/generate")
-async def generate_youtube_notes(
-    url: str = Form(...),
-    mode: str = Form("class_notes"),
-    custom_prompt: str = Form(""),
-    api_key: str = Form("")
-):
-    try:
-        video_id = YouTubeService.extract_video_id(url)
-        transcript = YouTubeService.get_transcript(video_id)
-        ai_notes = YouTubeService.generate_ai_notes(
-            transcript=transcript,
-            mode=mode,
-            custom_prompt=custom_prompt,
-            api_key=api_key or GEMINI_API_KEY
-        )
-        rendered_html = render_markdown(ai_notes)
-        return JSONResponse({
-            "status": "success",
-            "video_id": video_id,
-            "raw_notes": ai_notes,
-            "html_notes": rendered_html,
-            "transcript_length": len(transcript)
-        })
-    except Exception as e:
-        return JSONResponse({"status": "error", "message": str(e)}, status_code=400)
-
 @app.post("/api/save-note")
 async def save_note(
     filename: str = Form(...),
     folder: str = Form(""),
     content: str = Form(...)
 ):
-    """Allows saving AI-generated notes directly into the notes directory."""
+    """Allows saving custom notes directly into the notes directory."""
     if not filename.endswith(".md"):
         filename += ".md"
     target_folder = os.path.abspath(os.path.join(NOTES_DIR, folder))
     if not target_folder.startswith(os.path.abspath(NOTES_DIR)):
         raise HTTPException(status_code=403, detail="Invalid folder path")
         
-    os.makedirs(target_folder, exist_ok=True)
-    file_path = os.path.join(target_folder, filename)
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(content)
-        
     return JSONResponse({"status": "success", "path": os.path.relpath(file_path, NOTES_DIR)})
+
+# ==============================================================================
+# CLOUD CIDR & NETWORK ARCHITECT ROUTES & API
+# ==============================================================================
+
+@app.get("/cidr", response_class=HTMLResponse)
+async def cidr_planner_page(request: Request):
+    """Renders the Production-Grade Stateful Cloud CIDR Visual Planner."""
+    return templates.TemplateResponse(
+        request=request,
+        name="cidr.html",
+        context={
+            "cloud_specs": CLOUD_SPECS,
+            "default_cloud": "aws"
+        }
+    )
+
+class CalculateRequest(BaseModel):
+    cidr: str
+    cloud_provider: str = "aws"
+    username: Optional[str] = "default"
+    save_history: bool = False
+
+class AutoSubnetRequest(BaseModel):
+    parent_cidr: str
+    existing_subnets: List[str] = []
+    target_prefix: int
+
+class SplitSubnetRequest(BaseModel):
+    cidr: str
+    target_prefix: Optional[int] = None
+
+class MergeSubnetRequest(BaseModel):
+    subnets: List[str]
+
+class ValidateRequest(BaseModel):
+    vpc_cidr: str
+    subnets: List[Dict[str, Any]] = []
+    cloud_provider: str = "aws"
+
+class SaveProjectRequest(BaseModel):
+    username: str
+    project_name: str
+    vpc_cidr: str
+    cloud_provider: str
+    subnets: List[Dict[str, Any]]
+
+class UserLoginRequest(BaseModel):
+    username: str
+
+@app.post("/api/cidr/calculate")
+async def api_calculate_cidr(req: CalculateRequest):
+    try:
+        details = calculate_cidr_details(req.cidr, req.cloud_provider)
+        if req.save_history and req.username:
+            save_calculation_history(
+                username=req.username,
+                cidr=details["cidr"],
+                cloud_provider=req.cloud_provider,
+                total_ips=details["total_ips"],
+                usable_ips=details["usable_ips"],
+                subnet_mask=details["netmask"]
+            )
+        return JSONResponse(details)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+class GenerateSubnetsRequest(BaseModel):
+    parent_cidr: str
+    target_prefix: int
+    cloud_provider: str = "aws"
+    limit: int = 100
+
+@app.post("/api/cidr/generate-subnets")
+async def api_generate_subnets(req: GenerateSubnetsRequest):
+    try:
+        data = get_generated_subnets(req.parent_cidr, req.target_prefix, req.cloud_provider, req.limit)
+        return JSONResponse(data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/cidr/auto-subnet")
+async def api_auto_subnet(req: AutoSubnetRequest):
+    try:
+        suggestion = find_next_available_subnet(req.parent_cidr, req.existing_subnets, req.target_prefix)
+        if not suggestion:
+            raise HTTPException(status_code=404, detail=f"No available /{req.target_prefix} subnet remaining in {req.parent_cidr}")
+        return JSONResponse(suggestion)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/cidr/split")
+async def api_split_subnet(req: SplitSubnetRequest):
+    try:
+        subnets = split_subnet(req.cidr, req.target_prefix)
+        return JSONResponse(subnets)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/cidr/merge")
+async def api_merge_subnets(req: MergeSubnetRequest):
+    try:
+        result = merge_subnets(req.subnets)
+        return JSONResponse(result)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/cidr/validate")
+async def api_validate_network(req: ValidateRequest):
+    try:
+        issues = validate_network(req.vpc_cidr, req.subnets, req.cloud_provider)
+        return JSONResponse({"valid": len([i for i in issues if i["level"] == "error"]) == 0, "issues": issues})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/cidr/comparison")
+async def api_cloud_comparison(cidr: str = "10.0.0.0/16"):
+    try:
+        comp = get_cloud_comparison(cidr)
+        return JSONResponse(comp)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/cidr/terraform")
+async def api_generate_terraform(req: SaveProjectRequest):
+    try:
+        hcl = generate_terraform_hcl(req.project_name, req.vpc_cidr, req.subnets, req.cloud_provider)
+        return PlainTextResponse(hcl)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# User & State Persistence APIs
+@app.post("/api/user/login")
+async def api_user_login(req: UserLoginRequest):
+    try:
+        user = get_or_create_user(req.username)
+        history = get_user_history(req.username)
+        projects = get_user_vpc_projects(req.username)
+        return JSONResponse({"user": user, "history": history, "projects": projects})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/user/history")
+async def api_get_history(username: str):
+    history = get_user_history(username)
+    return JSONResponse(history)
+
+@app.delete("/api/user/history")
+async def api_clear_history(username: str):
+    clear_user_history(username)
+    return JSONResponse({"status": "cleared"})
+
+@app.post("/api/vpc/project")
+async def api_save_vpc_project(req: SaveProjectRequest):
+    try:
+        subnets_json = json.dumps(req.subnets)
+        proj_id = save_vpc_project(req.username, req.project_name, req.vpc_cidr, req.cloud_provider, subnets_json)
+        return JSONResponse({"status": "saved", "project_id": proj_id})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/vpc/projects")
+async def api_get_vpc_projects(username: str):
+    projects = get_user_vpc_projects(username)
+    # Parse subnets_json
+    for p in projects:
+        try:
+            p["subnets"] = json.loads(p["subnets_json"])
+        except Exception:
+            p["subnets"] = []
+    return JSONResponse(projects)
+
+@app.delete("/api/vpc/project/{project_id}")
+async def api_delete_vpc_project(project_id: int, username: str):
+    delete_vpc_project(project_id, username)
+    return JSONResponse({"status": "deleted"})

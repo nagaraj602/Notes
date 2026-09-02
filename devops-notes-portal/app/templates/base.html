@@ -1,87 +1,600 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<html lang="en" class="h-full antialiased">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}DevOps Knowledge Portal{% endblock %}</title>
+  
+  <!-- Google Fonts: Modern Sans, Inter, JetBrains Mono, Merriweather, Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <!-- Tailwind CSS -->
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
   <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
   <!-- Prism Code Highlighting -->
-  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css)">
-  <script src="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js)"></script>
-  <script src="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js)"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', '"Fira Code"', 'Consolas', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    /* Custom Markdown Rendering Styles */
-    .prose-custom { max-width: 100%; color: #e2e8f0; }
-    .prose-custom h1 { font-size: 2rem; font-weight: 700; color: #38bdf8; margin-top: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
-    .prose-custom h2 { font-size: 1.5rem; font-weight: 600; color: #818cf8; margin-top: 1.25rem; margin-bottom: 0.75rem; }
-    .prose-custom h3 { font-size: 1.25rem; font-weight: 600; color: #a78bfa; margin-top: 1rem; margin-bottom: 0.5rem; }
-    .prose-custom p { line-height: 1.75; margin-bottom: 1rem; }
-    .prose-custom ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
-    .prose-custom ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
-    .prose-custom li { margin-bottom: 0.25rem; }
-    .prose-custom code { background-color: #1e293b; color: #f43f5e; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; font-family: monospace; }
-    .prose-custom pre { background-color: #0f172a !important; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin-bottom: 1.25rem; position: relative; }
-    .prose-custom pre code { background-color: transparent !important; color: #e2e8f0; padding: 0; }
-    .prose-custom table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
-    .prose-custom th, .prose-custom td { border: 1px solid #334155; padding: 0.75rem; text-align: left; }
-    .prose-custom th { background-color: #1e293b; color: #38bdf8; font-weight: 600; }
-    .prose-custom tr:nth-child(even) { background-color: #0f172a; }
-    .prose-custom blockquote { border-left: 4px solid #38bdf8; padding-left: 1rem; margin-left: 0; color: #94a3b8; font-style: italic; }
+    /* White-Bluish Frosted Glassmorphism Palette & Dynamic Typography */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #eef5ff 0%, #e0edfe 40%, #e8f0fe 70%, #f0f7ff 100%);
+      --bg-glass-nav: rgba(255, 255, 255, 0.85);
+      --bg-glass-panel: rgba(255, 255, 255, 0.76);
+      --bg-glass-card: rgba(255, 255, 255, 0.90);
+      --bg-glass-hover: rgba(224, 242, 254, 0.75);
+      --bg-code: #0f172a;
+      --border-glass: rgba(255, 255, 255, 0.9);
+      --border-subtle: rgba(186, 230, 253, 0.7);
+      --text-main: #0f172a;
+      --text-sub: #334155;
+      --text-muted: #64748b;
+      --accent-blue: #0284c7;
+      --accent-indigo: #4f46e5;
+      --accent-pill: rgba(224, 242, 254, 0.95);
+      --shadow-glass: 0 10px 30px 0 rgba(30, 64, 175, 0.07);
+
+      /* Typography Variables */
+      --note-font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --note-font-size: 16px;
+      --note-font-weight: 500;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.5); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+
+    /* Glass Panels */
+    .glass-nav {
+      background: var(--bg-glass-nav);
+      backdrop-filter: blur(24px) saturate(190%);
+      border-bottom: 1px solid var(--border-glass);
+      box-shadow: 0 4px 20px 0 rgba(30, 64, 175, 0.05);
+    }
+
+    .glass-panel {
+      background: var(--bg-glass-panel);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-right: 1px solid var(--border-glass);
+      box-shadow: var(--shadow-glass);
+    }
+
+    .glass-card {
+      background: var(--bg-glass-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      box-shadow: 0 8px 24px 0 rgba(30, 64, 175, 0.06);
+    }
+
+    /* Markdown Typography on White-Bluish Glass */
+    .prose-custom {
+      max-width: 100%;
+      color: #1e293b;
+      font-family: var(--note-font-family) !important;
+      font-size: var(--note-font-size) !important;
+      font-weight: var(--note-font-weight) !important;
+      line-height: 1.85;
+    }
+    .prose-custom h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+      margin-top: 1.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid rgba(186, 230, 253, 0.8);
+      display: flex;
+      align-items: center;
+    }
+    .prose-custom h2 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #0284c7;
+      margin-top: 2rem;
+      margin-bottom: 0.85rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid rgba(186, 230, 253, 0.5);
+      display: flex;
+      align-items: center;
+    }
+    .prose-custom h2::before {
+      content: "#";
+      color: #4f46e5;
+      font-size: 1.25rem;
+      margin-right: 0.5rem;
+      font-family: 'Fira Code', monospace;
+    }
+    .prose-custom h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #4338ca;
+      margin-top: 1.5rem;
+      margin-bottom: 0.65rem;
+    }
+    .prose-custom h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .prose-custom p { margin-bottom: 1.25rem; color: #334155; }
+    .prose-custom strong { color: #0f172a; font-weight: 700; }
+    .prose-custom ul { list-style-type: none; margin-left: 0.25rem; margin-bottom: 1.3rem; }
+    .prose-custom ul > li { position: relative; padding-left: 1.5rem; margin-bottom: 0.45rem; line-height: 1.75; color: #334155; }
+    .prose-custom ul > li::before {
+      content: "✦";
+      position: absolute;
+      left: 0.25rem;
+      color: #0284c7;
+      font-size: 0.85em;
+      line-height: 2;
+    }
+    .prose-custom ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1.3rem; color: #334155; }
+    .prose-custom ol > li { margin-bottom: 0.45rem; padding-left: 0.25rem; }
+    
+    /* Inline Code */
+    .prose-custom code:not(pre code) {
+      background: rgba(224, 242, 254, 0.9);
+      color: #0369a1;
+      border: 1px solid rgba(186, 230, 253, 0.9);
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.875em;
+      font-family: 'Fira Code', monospace;
+      font-weight: 600;
+    }
+
+    /* Clean Compact Code Blocks */
+    .prose-custom pre {
+      background: #0f172a !important;
+      border: 1px solid rgba(51, 65, 85, 0.7);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-top: 1rem;
+      margin-bottom: 1.25rem;
+      position: relative;
+      box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.15);
+    }
+    .prose-custom pre code {
+      background-color: transparent !important;
+      color: #f8fafc;
+      padding: 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    /* Tables */
+    .prose-custom table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 1.75rem 0;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 1px solid rgba(186, 230, 253, 0.8);
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    }
+    .prose-custom th, .prose-custom td {
+      padding: 0.9rem 1.2rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(186, 230, 253, 0.5);
+    }
+    .prose-custom th {
+      background: #f0f9ff;
+      color: #0284c7;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .prose-custom tr:nth-child(even) { background: rgba(240, 249, 255, 0.4); }
+    .prose-custom tr:hover { background: rgba(224, 242, 254, 0.5); }
+    
+    /* Blockquotes */
+    .prose-custom blockquote {
+      border-left: 4px solid #0284c7;
+      background: rgba(224, 242, 254, 0.4);
+      padding: 0.85rem 1.25rem;
+      border-radius: 0.5rem;
+      margin: 1.5rem 0;
+      color: #1e293b;
+      font-style: italic;
+    }
+
+    /* Interactive Zoomable Images */
+    .prose-custom img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 0.875rem;
+      border: 1px solid rgba(186, 230, 253, 0.8);
+      box-shadow: 0 8px 24px rgba(14, 165, 233, 0.1);
+      margin: 1.5rem auto;
+      display: block;
+      cursor: zoom-in;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      background: #ffffff;
+    }
+    .prose-custom img:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(14, 165, 233, 0.22);
+      filter: brightness(1.02);
+    }
+
+    /* Modern Cyber-Cyan & Electric Indigo Search Highlight Styles */
+    mark.search-highlight {
+      background: rgba(14, 165, 233, 0.18) !important;
+      color: #0369a1 !important;
+      border-bottom: 2px solid #0284c7 !important;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(2, 132, 199, 0.1);
+      transition: all 0.2s ease;
+    }
+    mark.search-highlight.active-match {
+      background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%) !important;
+      color: #ffffff !important;
+      border-radius: 6px;
+      border-bottom: none !important;
+      padding: 2px 8px;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.95);
+      display: inline-block;
+      transform: scale(1.05);
+      animation: pulseHighlight 1.5s infinite;
+    }
+    @keyframes pulseHighlight {
+      0%, 100% { box-shadow: 0 4px 14px rgba(79, 70, 229, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.95); }
+      50% { box-shadow: 0 6px 20px rgba(2, 132, 199, 0.6), 0 0 0 3px rgba(56, 189, 248, 0.9); }
+    }
+
+    /* Collapsible & Resizable Sidebar */
+    #mainSidebar {
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+      min-width: 220px;
+      max-width: 800px;
+    }
+    #mainSidebar.is-resizing {
+      transition: none !important;
+    }
+    #mainSidebar.collapsed {
+      width: 0 !important;
+      min-width: 0 !important;
+      max-width: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      overflow: hidden !important;
+    }
+
+    /* ==========================================================================
+       Print Optimization Stylesheet (Full Multi-Page Document Print)
+       ========================================================================== */
+    @media print {
+      /* Hide all UI navigation, sidebars, buttons, toolbars, popups, ambient lights */
+      header,
+      aside,
+      nav,
+      #mainSidebar,
+      #sidebarResizer,
+      #noteHeader,
+      #searchMatchToolbar,
+      #toastContainer,
+      #typographyMenu,
+      .fixed,
+      button,
+      .copy-code-btn,
+      .code-copy-btn,
+      .cat-pill {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      /* Unconstrain body and containers for full multi-page flow */
+      html, body {
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt !important;
+      }
+
+      main, section, #noteViewerContainer, #noteViewer {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+
+      /* Typography & Page Breaks */
+      .prose-custom {
+        font-size: 11pt !important;
+        line-height: 1.65 !important;
+        color: #111827 !important;
+      }
+
+      .prose-custom h1 {
+        font-size: 20pt !important;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        color: #0f172a !important;
+        border-bottom: 2pt solid #0284c7 !important;
+        margin-top: 15pt !important;
+        margin-bottom: 10pt !important;
+      }
+
+      .prose-custom h2 {
+        font-size: 15pt !important;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        color: #0369a1 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+        margin-top: 16pt !important;
+        margin-bottom: 8pt !important;
+      }
+
+      .prose-custom h3 {
+        font-size: 13pt !important;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        color: #1e1b4b !important;
+        margin-top: 12pt !important;
+      }
+
+      .prose-custom p, .prose-custom li {
+        color: #1f2937 !important;
+        orphans: 3;
+        widows: 3;
+      }
+
+      .prose-custom pre {
+        background: #f8fafc !important;
+        border: 1pt solid #cbd5e1 !important;
+        color: #0f172a !important;
+        page-break-inside: avoid;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        box-shadow: none !important;
+      }
+
+      .prose-custom pre code {
+        color: #0f172a !important;
+      }
+
+      .prose-custom table {
+        page-break-inside: avoid;
+        border-collapse: collapse !important;
+        width: 100% !important;
+        margin: 12pt 0 !important;
+      }
+
+      .prose-custom th {
+        background: #f1f5f9 !important;
+        border: 1pt solid #cbd5e1 !important;
+        padding: 6pt 8pt !important;
+        color: #0f172a !important;
+      }
+
+      .prose-custom td {
+        border: 1pt solid #cbd5e1 !important;
+        padding: 6pt 8pt !important;
+        color: #334155 !important;
+      }
+
+      .prose-custom img {
+        max-width: 100% !important;
+        page-break-inside: avoid;
+      }
+
+      .prose-custom blockquote {
+        border-left: 3pt solid #0284c7 !important;
+        background: #f8fafc !important;
+        color: #1e293b !important;
+        page-break-inside: avoid;
+      }
+    }
   </style>
 </head>
-<body class="h-full flex flex-col">
-  <!-- Navbar -->
-  <header class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-    <div class="flex items-center space-x-4">
-      <a href="/" class="flex items-center space-x-3 text-cyan-400 font-bold text-xl hover:text-cyan-300">
-        <i class="fa-solid fa-cubes-stacked text-2xl"></i>
-        <span>DevOps Hub</span>
+<body class="h-full flex flex-col font-sans overflow-hidden select-text relative">
+
+  <!-- Ambient Frosted Light Glowing Spheres -->
+  <div class="fixed top-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full bg-blue-300/30 filter blur-[120px] pointer-events-none"></div>
+  <div class="fixed bottom-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-cyan-200/40 filter blur-[120px] pointer-events-none"></div>
+  <div class="fixed top-[35%] right-[25%] w-[450px] h-[450px] rounded-full bg-indigo-200/30 filter blur-[100px] pointer-events-none"></div>
+
+  <!-- Top Navbar (White Bluish Glass) -->
+  <header class="glass-nav px-5 py-3 flex items-center justify-between sticky top-0 z-50">
+    <!-- Brand Logo & Sidebar Toggle -->
+    <div class="flex items-center space-x-3 sm:space-x-4">
+      <button id="navSidebarToggle" onclick="toggleSidebar()" class="p-2 rounded-xl bg-white/80 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-sky-100 transition-all flex items-center justify-center shadow-sm" title="Toggle Sidebar (Ctrl+B)">
+        <i class="fa-solid fa-bars-staggered text-sm"></i>
+      </button>
+
+      <a href="/" class="flex items-center space-x-2.5 group">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-md bg-gradient-to-tr from-sky-500 to-indigo-600 group-hover:scale-105 transition-all duration-200 shadow-sky-500/20">
+          <i class="fa-solid fa-cube text-white text-sm font-bold"></i>
+        </div>
+        <div class="leading-tight">
+          <span class="font-extrabold text-base tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors">DevOps Hub</span>
+          <span class="block text-[10px] uppercase font-mono tracking-wider font-semibold text-sky-600">Knowledge Portal</span>
+        </div>
       </a>
-      <span class="text-xs bg-cyan-950 text-cyan-400 px-2.5 py-1 rounded-full border border-cyan-800">
-        <i class="fa-solid fa-code-branch mr-1"></i> Auto-Sync: Active
-      </span>
+      
+      <!-- Live Sync Status Pill -->
+      <div class="hidden md:flex items-center space-x-2 px-3 py-1 rounded-full bg-white/80 border border-sky-100 text-xs shadow-sm">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="font-semibold text-[11px] text-slate-700">Auto-Sync Active</span>
+      </div>
     </div>
     
-    <!-- Navigation Links -->
+    <!-- Navigation Actions -->
     <nav class="flex items-center space-x-2">
-      <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 text-slate-200">
-        <i class="fa-solid fa-book-bookmark mr-1.5 text-cyan-400"></i> Notes Explorer
+      <button onclick="focusRepo('training-materials')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="ArtisanTek Training Materials">
+        <i class="fa-solid fa-graduation-cap text-sky-600"></i>
+        <span class="hidden sm:inline">Training Materials</span>
+      </button>
+
+      <button onclick="focusRepo('devops-notes')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-indigo-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="DevOps Notes">
+        <i class="fa-solid fa-book-bookmark text-indigo-600"></i>
+        <span>Notes</span>
+      </button>
+
+      <a href="/cidr" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="Cloud CIDR & Subnet Visual Planner">
+        <i class="fa-solid fa-network-wired text-sky-600"></i>
+        <span>CIDR Architect</span>
       </a>
-      <a href="/youtube" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 text-slate-200">
-        <i class="fa-brands fa-youtube mr-1.5 text-red-400"></i> YouTube AI Notes & QA
+
+      <a href="/settings" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-slate-900 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="Settings">
+        <i class="fa-solid fa-sliders text-slate-500"></i>
+        <span class="hidden md:inline">Settings</span>
       </a>
-      <a href="/settings" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 text-slate-200">
-        <i class="fa-solid fa-sliders mr-1.5 text-indigo-400"></i> Sync & Settings
-      </a>
-      <button onclick="triggerManualSync()" class="ml-2 px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md text-sm font-semibold transition flex items-center shadow">
-        <i id="sync-icon" class="fa-solid fa-rotate mr-1.5"></i> Sync Repo
+      
+      <button onclick="triggerManualSync()" class="ml-1 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all shadow-md shadow-sky-500/20 hover:scale-[1.02] flex items-center space-x-1.5 active:scale-95">
+        <i id="sync-icon" class="fa-solid fa-rotate text-xs"></i>
+        <span>Sync All</span>
       </button>
     </nav>
   </header>
 
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-hidden flex">
+  <main class="flex-1 overflow-hidden flex relative z-10">
     {% block content %}{% endblock %}
   </main>
 
   <script>
+    function focusRepo(repoId) {
+      if (window.location.pathname !== '/') {
+        window.location.href = '/?repo=' + repoId;
+        return;
+      }
+      const repoElem = document.querySelector(`.repo-section[data-repo='${repoId}']`);
+      if (repoElem) {
+        repoElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Expand first folder inside this repo if collapsed
+        const firstFolder = repoElem.querySelector(".folder-group .folder-children.hidden");
+        if (firstFolder) {
+          const header = firstFolder.previousElementSibling;
+          if (header) header.click();
+        }
+      }
+    }
+    function showToast(message, type = 'info') {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      const colors = {
+        success: 'border-emerald-300 bg-emerald-50/95 text-emerald-900 shadow-emerald-500/10',
+        error: 'border-red-300 bg-red-50/95 text-red-900 shadow-red-500/10',
+        info: 'border-sky-300 bg-white/95 text-sky-950 shadow-sky-500/10'
+      };
+      const icons = {
+        success: 'fa-circle-check text-emerald-600',
+        error: 'fa-circle-xmark text-red-600',
+        info: 'fa-circle-info text-sky-600'
+      };
+      toast.className = `flex items-center space-x-3 px-4 py-3 rounded-2xl border shadow-xl backdrop-blur-xl text-xs font-medium transform transition-all duration-300 pointer-events-auto ${colors[type] || colors.info}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icons[type] || icons.info} text-base"></i>
+        <span class="font-semibold">${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
     async function triggerManualSync() {
       const icon = document.getElementById("sync-icon");
       icon.classList.add("fa-spin");
       try {
         const res = await fetch("/api/sync", { method: "POST" });
         const data = await res.json();
-        alert("Sync Completed: " + data.message);
-        window.location.reload();
+        showToast(data.message || "Git repository synced successfully!", "success");
+        setTimeout(() => window.location.reload(), 1000);
       } catch (err) {
-        alert("Sync failed: " + err);
+        showToast("Sync failed: " + err, "error");
       } finally {
         icon.classList.remove("fa-spin");
       }
     }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("mainSidebar");
+      if (!sidebar) return;
+      sidebar.classList.toggle("collapsed");
+      const isCollapsed = sidebar.classList.contains("collapsed");
+      localStorage.setItem("devops_sidebar_collapsed", isCollapsed ? "true" : "false");
+    }
+
+    // Keyboard shortcut Ctrl+B for sidebar
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    });
+
+    // Restore sidebar state
+    window.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem("devops_sidebar_collapsed") === "true") {
+        const sidebar = document.getElementById("mainSidebar");
+        if (sidebar) sidebar.classList.add("collapsed");
+      }
+    });
   </script>
   {% block scripts %}{% endblock %}
 </body>

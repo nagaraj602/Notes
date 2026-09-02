@@ -1,49 +1,113 @@
 {% extends "base.html" %}
-{% block title %}Sync & Configuration - DevOps Hub{% endblock %}
+{% block title %}Sync & Configuration - DevOps Knowledge Hub{% endblock %}
 
 {% block content %}
-<div class="flex-1 overflow-y-auto p-10 bg-slate-900">
-  <div class="max-w-3xl mx-auto space-y-6">
-    <h1 class="text-2xl font-bold text-cyan-400 mb-6 flex items-center">
-      <i class="fa-solid fa-sliders mr-3"></i> System Configuration & Sync
-    </h1>
-
-    <!-- Git Sync Card -->
-    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow">
-      <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center">
-        <i class="fa-brands fa-github text-cyan-400 mr-2"></i> Git Repository Synchronization
-      </h2>
-      <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-        <div>
-          <span class="text-slate-400 block text-xs uppercase">Repository URL</span>
-          <span class="font-mono text-cyan-300 break-all">{{ repo_url }}</span>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-xs uppercase">Branch</span>
-          <span class="font-mono text-slate-200">{{ branch }}</span>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-xs uppercase">Auto-Sync Interval</span>
-          <span class="font-mono text-slate-200">Every {{ sync_interval }} minutes</span>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-xs uppercase">Last Sync Timestamp</span>
-          <span class="font-mono text-emerald-400">{{ last_sync or 'Pending' }}</span>
-        </div>
+<div class="flex-1 overflow-y-auto p-6 md:p-12 relative">
+  <div class="max-w-4xl mx-auto space-y-8">
+    <!-- Header Title -->
+    <div class="flex items-center justify-between border-b border-sky-100/80 pb-6">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight flex items-center space-x-3 text-slate-900">
+          <span class="p-2.5 rounded-2xl bg-white/90 border border-sky-100 text-sky-600 shadow-sm">
+            <i class="fa-solid fa-sliders text-lg"></i>
+          </span>
+          <span>System & Multi-Repo Sync Settings</span>
+        </h1>
+        <p class="text-xs mt-1 font-mono text-slate-500">Automated synchronization status and cluster configuration for all repositories</p>
       </div>
-      <button onclick="triggerManualSync()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-semibold text-sm">
-        <i class="fa-solid fa-rotate mr-2"></i> Trigger Manual Sync Now
+      
+      <button onclick="triggerManualSync()" class="px-4 py-2.5 rounded-xl font-bold text-xs text-white shadow-lg shadow-sky-500/25 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all hover:scale-[1.02] active:scale-95 flex items-center space-x-2">
+        <i class="fa-solid fa-rotate text-xs"></i>
+        <span>Sync All Repos</span>
       </button>
     </div>
 
-    <!-- Gemini AI Key Card -->
-    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow">
-      <h2 class="text-lg font-bold text-slate-200 mb-2 flex items-center">
-        <i class="fa-solid fa-key text-amber-400 mr-2"></i> Google Gemini AI Key
-      </h2>
-      <p class="text-xs text-slate-400 mb-4">You can set the <code>GEMINI_API_KEY</code> environment variable in your Kubernetes deployment or provide it per session in the YouTube tool.</p>
-      <div class="p-3 bg-slate-900 border border-slate-700 rounded text-xs font-mono text-slate-300">
-        Status: {% if has_api_key %}<span class="text-emerald-400 font-bold">Configured via Environment</span>{% else %}<span class="text-amber-400 font-bold">Not set globally (provide in UI)</span>{% endif %}
+    <!-- Telemetry Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="glass-card p-5 rounded-2xl">
+        <div class="flex items-center justify-between mb-2 text-slate-500">
+          <span class="text-xs font-bold uppercase tracking-wider">Sync Status</span>
+          <i class="fa-solid fa-circle-nodes text-sky-600"></i>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          <span class="text-lg font-bold font-mono capitalize text-slate-900">{{ sync_status or 'Active' }}</span>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl">
+        <div class="flex items-center justify-between mb-2 text-slate-500">
+          <span class="text-xs font-bold uppercase tracking-wider">Sync Frequency</span>
+          <i class="fa-regular fa-clock text-indigo-600"></i>
+        </div>
+        <div class="text-lg font-bold font-mono text-slate-900">Every {{ sync_interval }} min</div>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl">
+        <div class="flex items-center justify-between mb-2 text-slate-500">
+          <span class="text-xs font-bold uppercase tracking-wider">Connected Repos</span>
+          <i class="fa-solid fa-code-branch text-emerald-600"></i>
+        </div>
+        <div class="text-lg font-bold font-mono text-emerald-600">{{ repos | length }} Active</div>
+      </div>
+    </div>
+
+    <!-- Synchronized Repositories List -->
+    <div class="space-y-4">
+      <div class="text-xs font-bold uppercase tracking-wider text-slate-500 px-1">Synchronized Git Repositories</div>
+      
+      {% for repo in repos %}
+      <div class="glass-card p-6 rounded-3xl space-y-4 shadow-sm hover:border-sky-300 transition-all">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-white/90 border border-sky-100 text-sky-600 shadow-sm">
+              <i class="fa-brands fa-github"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-slate-900">{{ repo.name }}</h2>
+              <div class="flex items-center space-x-2 text-[11px] font-mono text-slate-500">
+                <span>Branch: <strong class="text-sky-700">{{ repo.branch }}</strong></span>
+                <span>•</span>
+                <span>Folder: <code class="text-indigo-600 bg-indigo-50 px-1 py-0.5 rounded">{{ repo.folder }}</code></span>
+              </div>
+            </div>
+          </div>
+          <a href="{{ repo.url | replace('.git', '') }}" target="_blank" class="px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all flex items-center space-x-1.5 border border-sky-100 bg-white/80 hover:bg-sky-50 text-slate-700 shadow-sm">
+            <span>Open GitHub</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-sky-600"></i>
+          </a>
+        </div>
+
+        <div class="p-3.5 rounded-2xl border border-sky-100 bg-white/80 font-mono text-xs space-y-1 shadow-sm">
+          <div class="uppercase text-[10px] tracking-wider font-bold text-slate-400">Clone URL</div>
+          <div class="break-all select-all font-bold text-sky-700">{{ repo.url }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Sync Pipeline Architecture -->
+    <div class="glass-card p-6 md:p-8 rounded-3xl space-y-4">
+      <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Cluster Sync Pipeline Architecture</div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div class="p-4 rounded-2xl border border-sky-100 bg-white/80 text-center space-y-1.5 shadow-sm">
+          <i class="fa-brands fa-github text-2xl text-sky-600"></i>
+          <div class="font-bold text-slate-800">GitHub Remote Repos</div>
+          <div class="text-[10px] text-slate-500">nagaraj602 & artisantek</div>
+        </div>
+        <div class="p-4 rounded-2xl border border-sky-100 bg-white/80 text-center space-y-1.5 shadow-sm">
+          <i class="fa-solid fa-arrows-rotate text-2xl text-indigo-600"></i>
+          <div class="font-bold text-slate-800">FastAPI Sync Worker</div>
+          <div class="text-[10px] text-slate-500">Auto-pull every 5m & on-demand</div>
+        </div>
+        <div class="p-4 rounded-2xl border border-sky-100 bg-white/80 text-center space-y-1.5 shadow-sm">
+          <i class="fa-solid fa-hard-drive text-2xl text-emerald-600"></i>
+          <div class="font-bold text-slate-800">Kubernetes PVC</div>
+          <div class="text-[10px] text-slate-500">Persistent cluster volume</div>
+        </div>
       </div>
     </div>
   </div>

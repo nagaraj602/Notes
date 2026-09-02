@@ -9,19 +9,10 @@ metadata:
   name: devops-hub-config
   namespace: devops-hub
 data:
-  REPO_URL: "[https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git)"
+  REPO_URL: "https://github.com/nagaraj602/Notes.git"
   REPO_BRANCH: "main"
   AUTO_SYNC_INTERVAL_MINUTES: "5"
   NOTES_DIR: "/app/data/notes"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: devops-hub-secret
-  namespace: devops-hub
-type: Opaque
-stringData:
-  GEMINI_API_KEY: "" # Put your Gemini API Key here (or leave blank to supply via web UI)
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -54,7 +45,7 @@ spec:
     spec:
       containers:
         - name: devops-hub
-          image: devops-hub:latest
+          image: devops-hub:v4.8.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -62,8 +53,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: devops-hub-config
-            - secretRef:
-                name: devops-hub-secret
           volumeMounts:
             - name: notes-storage
               mountPath: /app/data/notes
@@ -72,20 +61,24 @@ spec:
               cpu: "100m"
               memory: "128Mi"
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "1000m"
+              memory: "1Gi"
           readinessProbe:
             httpGet:
               path: /api/health
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /api/health
               port: 8000
-            initialDelaySeconds: 15
+            initialDelaySeconds: 20
             periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 5
       volumes:
         - name: notes-storage
           persistentVolumeClaim:
@@ -97,7 +90,7 @@ metadata:
   name: devops-hub-service
   namespace: devops-hub
 spec:
-  type: NodePort # Docker Desktop routes NodePort directly to localhost
+  type: LoadBalancer # Docker Desktop routes LoadBalancer directly to localhost:8000 (and NodePort 30080)
   selector:
     app: devops-hub
   ports:

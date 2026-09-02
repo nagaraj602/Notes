@@ -1,23 +1,35 @@
 import os
+import json
 
-REPO_URL = os.getenv("REPO_URL", "[https://github.com/nagaraj602/Notes.git](https://github.com/nagaraj602/Notes.git)")
-REPO_BRANCH = os.getenv("REPO_BRANCH", "main")
+DEFAULT_REPOS = [
+    {
+        "id": "training-materials",
+        "name": "ArtisanTek Training Materials",
+        "short_name": "Training Materials",
+        "icon": "fa-graduation-cap",
+        "url": "https://github.com/artisantek/training-materials.git",
+        "branch": "master",
+        "folder": "training-materials"
+    },
+    {
+        "id": "devops-notes",
+        "name": "DevOps Notes (nagaraj602)",
+        "short_name": "DevOps Notes",
+        "icon": "fa-book-bookmark",
+        "url": "https://github.com/nagaraj602/Notes.git",
+        "branch": "main",
+        "folder": "devops-notes"
+    }
+]
+
+REPOS_JSON = os.getenv("REPOS_JSON", "")
+if REPOS_JSON:
+    try:
+        REPOS = json.loads(REPOS_JSON)
+    except Exception:
+        REPOS = DEFAULT_REPOS
+else:
+    REPOS = DEFAULT_REPOS
+
 AUTO_SYNC_INTERVAL_MINUTES = int(os.getenv("AUTO_SYNC_INTERVAL_MINUTES", "5"))
-NOTES_DIR = os.getenv("NOTES_DIR", "/app/data/notes") 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-
-# Default prompt templates as requested
-PROMPT_CLASS_NOTES = (
-    "I have this transcript. Make it proper as it is looking like class teaching. "
-    "It should be in correct thing. Not look like teaching or coversation. "
-    "Don't assume anything. Don't add your own concpt. You should give what is there in transcript. "
-    "Don't miss anything, don't shorten any explanation from transcript, "
-    "Including each and every steps, file names, code etc."
-) 
-
-PROMPT_QA = (
-    "I have the Qa transcript. Extract all question asked by instructor and if there are any "
-    "suggestion/answer given by the instructor, include that. "
-    "Don't miss any questions, even the sub questions to it. "
-    "I repeat, don't miss any questions."
-)
+NOTES_DIR = os.getenv("NOTES_DIR", "/app/data/notes")

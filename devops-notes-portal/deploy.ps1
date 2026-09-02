@@ -12,7 +12,7 @@ New-Item -ItemType Directory -Force -Path "k8s" | Out-Null
 
 # 2. Build Docker image locally
 Write-Host "`n[1/3] Building multi-stage Docker image..." -ForegroundColor Yellow
-docker build -t devops-hub:latest .
+docker build -t devops-hub:v4.8.0 -t devops-hub:latest .
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Docker build failed. Please verify Docker Desktop is running." -ForegroundColor Red
@@ -29,5 +29,5 @@ kubectl rollout status deployment/devops-hub-deployment -n devops-hub --timeout=
 
 Write-Host "`n========================================================" -ForegroundColor Green
 Write-Host " Deployment Successful! " -ForegroundColor Green
-Write-Host " Access your website at: http://localhost:30080" -ForegroundColor Green
+Write-Host " Access your website at: http://localhost:8000" -ForegroundColor Green
 Write-Host "========================================================" -ForegroundColor Green
