@@ -73,12 +73,19 @@ flowchart TD
 
 ### 2.2 Interview Schedule & Q&A Hub (`/interviews`)
 * **Today's Live Schedule Banner**: Prominently highlights interviews happening today with real-time status badges (`🔴 HAPPENING NOW`, `⏳ Upcoming Today`, `🏁 Concluded`).
-* **Interactive Metric Cards**: Clickable cards for *Total Attended*, *Total Companies*, *This Week's Activity*, and *Questions Bank* with detailed popup modals.
-* **Interactive 1-Week Calendar Strip & Month View**: Displays Company Name, Round Name, and Start–End Time ranges (`10:00 – 11:00`).
-* **Company-Bound Q&A Upload**: Dropdown is strictly populated with scheduled companies and their scheduled rounds (no random generic round names).
+* **Dedicated Metric Cards**: 5 dedicated interactive cards for *Total Attended*, *Total Companies*, *This Week's Activity*, *Upcoming Scheduled*, and *Questions Bank* with detailed summary modals.
+* **Hierarchical Company & Round Grouping**: Questions are grouped under dedicated Company banners and Round sub-cards, eliminating redundant repetitions on individual question cards.
+* **View Mode Switcher**: 1-click toggle between **`🏢 By Company & Round`** (hierarchical structure) and **`📋 Flat List`** (topic-based question list).
+* **3-Level Collapsible Hierarchy (Default Collapsed)**: Company banners, Round sections, and Question cards are all independently collapsible with animated chevrons, starting in a clean, collapsed state by default.
+* **Smart Search & Filter**:
+  * **Search by Company Name or Keywords**: Real-time search across companies, rounds, question titles, and markdown answers.
+  * **Auto-Expand on Search**: Matching company and round sections automatically expand during search for instant visibility.
+  * **Company Filter Dropdown**: Dedicated dropdown to quickly isolate questions by company alongside the 17 category topic pills.
+* **Company & Round Deletion**: Full management options to delete an entire company (and all associated rounds/Q&A) or delete a specific round with instant confirmation prompts.
+* **Interactive Calendar Strip & Month View**: Displays Company Name, Round Name, and Start–End Time ranges (`10:00 – 11:00`).
 * **Interview Experience & Feedback**: Record interview difficulty (`Easy`, `Moderate`, `Hard`, `Challenging`), focus areas, and overall feedback.
 * **Multi-Category Auto-Detection**: Auto-detects and tags questions across 17 categories (`Linux`, `Shell script`, `jenkins`, `Github`, `Build tools`, `Docker`, `AWS`, `Kubernetes`, `terraform`, `Ansible`, `jira`, `scrum`, `Agile`, `Monitoring tools`, `python`, `Azure`, `AI tool`).
-* **Inline Question & Category Editor**: Edit questions, answers, and assign/unassign multiple categories with 1 click.
+* **Inline Question & Category Editor**: Edit questions, answers, difficulty, and assign/unassign multiple categories with 1 click.
 
 ### 2.3 Repository-Backed Session Database & URL Persistence
 * **Zero Local-Device Dependency**: Session state is persisted directly into [`Nagaraj_interviews/session_state.json`](file:///D:/Devops%20training%202026/ArtisanTek%20DevOps%20Jan%202026/12.%20Ai%20coding%20agents/Notes/Nagaraj_interviews/session_state.json) inside your GitHub repository.
@@ -92,12 +99,12 @@ flowchart TD
 ### 3.1 Pull & Run with Docker
 The pre-built multi-arch image is hosted on Docker Hub:
 ```bash
-docker pull nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:latest
+docker pull nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0
 ```
 
 Run container locally:
 ```bash
-docker run -d -p 8000:8000 --name devops-hub nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:latest
+docker run -d -p 8000:8000 --name devops-hub nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0
 ```
 Access at: **`http://localhost:8000`**
 
@@ -279,14 +286,21 @@ devops-notes-portal/
 | `GET /api/tree` | `GET` | Returns file tree structure of synced repositories |
 | `GET /api/file?path={path}` | `GET` | Fetches parsed HTML & raw Markdown of a note |
 | `GET /api/search?q={query}` | `GET` | Full-text search across all notes |
-| `GET /api/interviews/stats` | `GET` | Retrieves interview statistics, today's list & records |
+| `GET /api/interviews/stats` | `GET` | Retrieves interview statistics, today's list & company records |
 | `GET /api/interviews/schedules`| `GET` | Returns all interview schedules |
 | `POST /api/interviews/schedules`| `POST` | Creates a new interview schedule with start & end time |
 | `PUT /api/interviews/schedules/{id}`| `PUT` | Updates an interview schedule |
+| `DELETE /api/interviews/schedules/{id}`| `DELETE` | Deletes an interview schedule |
+| `DELETE /api/interviews/company?company={name}`| `DELETE` | Permanently deletes a company and all associated rounds & questions |
+| `DELETE /api/interviews/company/round?company={name}&round={name}`| `DELETE` | Deletes a specific round and its questions for a company |
+| `GET /api/interviews/rounds`| `GET` | Retrieves all available interview rounds (default + custom) |
+| `POST /api/interviews/rounds`| `POST` | Creates a new custom interview round |
+| `DELETE /api/interviews/rounds/{id}`| `DELETE` | Deletes a custom interview round |
 | `POST /api/interviews/questions/bulk`| `POST` | Imports Q&A batch with difficulty & experience notes |
-| `GET /api/interviews/questions`| `GET` | Searches & filters question bank by category/keyword |
+| `GET /api/interviews/questions`| `GET` | Searches & filters question bank by company, category, or keyword |
+| `POST /api/interviews/questions`| `POST` | Adds a single interview question |
 | `PUT /api/interviews/questions/{id}`| `PUT` | Edits question text, answers, and category assignments |
-| `DELETE /api/interviews/questions/{id}`| `DELETE` | Deletes a question |
+| `DELETE /api/interviews/questions/{id}`| `DELETE` | Deletes a single question |
 | `GET /api/session/state` | `GET` | Reads session state from Notes repository database |
 | `POST /api/session/state` | `POST` | Saves session state to Notes repo and syncs with Git |
 | `POST /api/sync` | `POST` | Manually triggers immediate Git sync with remote repos |
