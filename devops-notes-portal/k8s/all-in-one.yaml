@@ -45,7 +45,7 @@ spec:
     spec:
       containers:
         - name: devops-hub
-          image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v5.0.0
+          image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v5.2.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000

@@ -381,6 +381,8 @@ class ScheduleCreateRequest(BaseModel):
     round: Optional[str] = "Technical Round"
     date: str
     time: Optional[str] = "10:00"
+    start_time: Optional[str] = "10:00"
+    end_time: Optional[str] = "11:00"
     status: Optional[str] = "scheduled"
     meeting_link: Optional[str] = ""
     notes: Optional[str] = ""
@@ -391,6 +393,8 @@ class ScheduleUpdateRequest(BaseModel):
     round: Optional[str] = None
     date: Optional[str] = None
     time: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
     status: Optional[str] = None
     meeting_link: Optional[str] = None
     notes: Optional[str] = None
@@ -403,6 +407,17 @@ class QuestionCreateRequest(BaseModel):
     question: str
     answer: str
     categories: Optional[List[str]] = []
+
+class QuestionUpdateRequest(BaseModel):
+    company: Optional[str] = None
+    round: Optional[str] = None
+    date: Optional[str] = None
+    question: Optional[str] = None
+    answer: Optional[str] = None
+    categories: Optional[List[str]] = None
+
+class DetectCategoriesRequest(BaseModel):
+    text: str
 
 class BulkQuestionItem(BaseModel):
     question: str
@@ -457,6 +472,26 @@ async def api_get_questions(q: Optional[str] = "", category: Optional[str] = "",
 async def api_add_question(req: QuestionCreateRequest):
     new_q = interview_manager.add_question(req.dict())
     return JSONResponse({"status": "success", "question": new_q})
+
+@app.put("/api/interviews/questions/{q_id}")
+async def api_update_question(q_id: str, req: QuestionUpdateRequest):
+    updated = interview_manager.update_question(q_id, req.dict(exclude_unset=True))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return JSONResponse({"status": "success", "question": updated})
+
+@app.delete("/api/interviews/questions/{q_id}")
+async def api_delete_question(q_id: str):
+    success = interview_manager.delete_question(q_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return JSONResponse({"status": "deleted"})
+
+@app.post("/api/interviews/autodetect-categories")
+async def api_detect_categories(req: DetectCategoriesRequest):
+    from app.interview_hub import detect_categories
+    cats = detect_categories(req.text)
+    return JSONResponse({"categories": cats})
 
 @app.post("/api/interviews/questions/bulk")
 async def api_add_bulk_questions(req: BulkQuestionsRequest):
