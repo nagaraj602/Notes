@@ -12,7 +12,7 @@ New-Item -ItemType Directory -Force -Path "k8s" | Out-Null
 
 # 2. Build Docker image locally
 Write-Host "`n[1/4] Building multi-stage Docker image..." -ForegroundColor Yellow
-docker build -t devops-hub:v5.0.0 -t devops-hub:latest -t nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v5.0.0 -t nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:latest .
+docker build -t devops-hub:v6.5.0 -t devops-hub:latest -t nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0 -t nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:latest .
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Docker build failed. Please verify Docker Desktop is running." -ForegroundColor Red
