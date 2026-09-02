@@ -90,12 +90,36 @@ class InterviewManager:
         except Exception:
             return []
 
-    def _save_json(self, filepath: str, data: List[Dict[str, Any]]):
+    def _save_json(self, filepath: str, data: List[Dict[str, Any]], commit_msg: str = "Update Nagaraj interviews tracker"):
         try:
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
+            self._auto_git_sync(commit_msg)
         except Exception as e:
             print(f"Error saving to {filepath}: {e}")
+
+    def _auto_git_sync(self, commit_msg: str = "Update Nagaraj interviews tracker"):
+        try:
+            repo_dir = os.path.dirname(self.storage_dir)
+            if not os.path.exists(os.path.join(repo_dir, ".git")):
+                base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+                if os.path.exists(os.path.join(base_dir, ".git")):
+                    repo_dir = base_dir
+                else:
+                    return
+
+            import git
+            repo = git.Repo(repo_dir)
+            repo.git.add("Nagaraj_interviews")
+            if repo.is_dirty(untracked_files=True):
+                repo.index.commit(commit_msg)
+                try:
+                    origin = repo.remotes.origin
+                    origin.push()
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
     # --- SCHEDULES API ---
     def get_schedules(self) -> List[Dict[str, Any]]:
