@@ -37,9 +37,11 @@ CATEGORY_KEYWORDS = {
     "AI tool": [r"\bai\b", r"\bllm\b", r"\bcopilot\b", r"\bchatgpt\b", r"\bgemini\b", r"\bclaude\b", r"\bollama\b", r"\bprompt\b"]
 }
 
-def detect_categories(text: str) -> List[str]:
+def detect_categories(text: str, default_cat: str = "") -> List[str]:
     """Auto-detects relevant categories based on question and answer keywords."""
     detected = []
+    if default_cat and default_cat in CATEGORIES and default_cat not in detected:
+        detected.append(default_cat)
     text_lower = text.lower()
     for cat, patterns in CATEGORY_KEYWORDS.items():
         for pattern in patterns:
@@ -49,14 +51,71 @@ def detect_categories(text: str) -> List[str]:
                 break
     return detected
 
+def is_noise_or_chatter(line: str) -> bool:
+    l = line.strip().lower()
+    if not l:
+        return True
+    if any(l.startswith(p) for p in [
+        "hi @", "class was there", "krishna cancelled", "i took leave on",
+        "vincent -", "nithin -", "chethan -", "nagaraj -", "kumar-", "kumar -"
+    ]):
+        return True
+    if re.match(r'^\d{1,2}-[a-z]{3}-\d{4}', l): # date like 16-Feb-2026
+        return True
+    return False
+
+def is_category_header(line: str) -> str:
+    l = line.strip()
+    # Matches [Linux]: or [Linux] or [Shell Script]: or [Git]: or [AWS]:
+    m = re.match(r'^\[\s*([a-zA-Z\s\-_/]+)\s*\]\s*:?$', l)
+    if m:
+        cat_raw = m.group(1).strip()
+        for cat in CATEGORIES:
+            if cat.lower() == cat_raw.lower() or cat_raw.lower() in cat.lower():
+                return cat
+        return cat_raw
+    if l.lower().startswith("interview questions"):
+        return "General"
+    return ""
+
+def is_question_line(line: str) -> bool:
+    l = line.strip()
+    if not l or len(l) < 3:
+        return False
+    # Explicit prefix
+    if re.match(r'^(?:Question\s*\d*|Q\d*|\d+[\.\)])\s*[:\.\-]?\s+', l, re.IGNORECASE):
+        return True
+    # Ends with question mark
+    if l.endswith("?"):
+        return True
+    # Starts with common question / command prompt patterns (and not in code)
+    q_starts = [
+        "what is", "what are", "what does", "what do", "how do", "how to", "how can", "how does", "how is",
+        "why do", "why is", "why should", "why does", "explain ", "difference between", "differentiate ",
+        "command to", "command used", "commands to", "list the", "list all", "which command", "which is",
+        "write a script", "write a shell", "write a ci/cd", "create a ", "suppose you", "considering ",
+        "say you", "your linux", "your team", "your company", "you have", "you deployed", "you deploy",
+        "when you", "if you", "if a ", "in what", "can you", "have you", "is it", "where do", "who and",
+        "give me the cmd", "give me the comparison"
+    ]
+    l_lower = l.lower()
+    if any(l_lower.startswith(qs) for qs in q_starts) and len(l.split()) >= 3 and not l.startswith("→") and not l.startswith("👉") and not l.startswith("#"):
+        return True
+    return False
+
 def parse_interview_qa_text(raw_text: str) -> List[Dict[str, Any]]:
     """
-    Intelligently parses bulk interview text into structured Question & Answer items.
-    Handles headings, 'Question N:', sub-questions, 'Instructor's Answer/Suggestion:', etc.
+    Universally parses bulk interview text across all formats:
+    - Explicit questions ('Question 1:', 'Q:', '1.')
+    - Section & category headers ('[Linux]:', '[Jenkins]', 'Kubernetes Troubleshooting...')
+    - Implicit questions ('What is LVM', 'How do you divide learning vs practice?')
+    - Answers with multi-line code, ASCII diagrams, and bullet points ('Ans:', 'Answer:', 'Instructor Suggestion:')
+    - Sub-questions & follow-ups ('Sub-question: ...')
+    - Cleans out non-technical chatter, leaves, and attendance logs.
     """
-    lines = raw_text.strip().split("\n")
+    lines = raw_text.split("\n")
     items = []
-    current_topic = ""
+    current_cat = ""
     current_q = None
     current_subquestions = []
     current_answers = []
@@ -64,26 +123,33 @@ def parse_interview_qa_text(raw_text: str) -> List[Dict[str, Any]]:
     mode = "none" # "q", "subq", "ans", "action"
 
     def flush_current():
-        nonlocal current_q, current_subquestions, current_answers, current_actions, current_topic, mode
+        nonlocal current_q, current_subquestions, current_answers, current_actions, current_cat, mode
         if current_q:
-            # Build answer markdown
+            q_clean = current_q.strip().strip('"').strip("'").strip()
+            # If question has embedded Ans:
+            if " Ans:" in q_clean or " ans:" in q_clean:
+                parts = re.split(r'\s+ans:\s*', q_clean, flags=re.IGNORECASE)
+                q_clean = parts[0].strip()
+                if len(parts) > 1:
+                    current_answers.insert(0, parts[1].strip())
+
             ans_parts = []
             if current_subquestions:
                 sub_md = "**Follow-up / Sub-questions:**\n" + "\n".join([f"- {sq}" for sq in current_subquestions])
                 ans_parts.append(sub_md)
             if current_answers:
-                ans_parts.append("**Answer / Instructor Suggestion:**\n" + "\n".join(current_answers))
+                ans_parts.append("**Answer / Solution:**\n" + "\n".join(current_answers))
             if current_actions:
                 ans_parts.append("**Action Items / Takeaways:**\n" + "\n".join(current_actions))
             
             final_answer = "\n\n".join(ans_parts).strip() if ans_parts else "To be reviewed / prepared."
             
-            # Auto detect categories from topic + question + subquestions + answer
-            full_text = f"{current_topic} {current_q} {' '.join(current_subquestions)} {final_answer}"
-            cats = detect_categories(full_text)
+            # Detect categories from question, answers and active section category
+            full_text = f"{current_cat} {q_clean} {' '.join(current_subquestions)} {final_answer}"
+            cats = detect_categories(full_text, default_cat=current_cat)
             
             items.append({
-                "question": current_q,
+                "question": q_clean,
                 "answer": final_answer,
                 "categories": cats
             })
@@ -93,7 +159,7 @@ def parse_interview_qa_text(raw_text: str) -> List[Dict[str, Any]]:
             current_actions = []
             mode = "none"
 
-    q_pattern = re.compile(r'^(?:Question\s*\d+|Q\d+|Q|\d+)\s*[:\.\-]\s*(.*)$', re.IGNORECASE)
+    q_pattern = re.compile(r'^(?:Question\s*\d*|Q\d*|\d+[\.\)])\s*[:\.\-]\s*(.*)$', re.IGNORECASE)
     sub_pattern = re.compile(r'^(?:Sub-question|Sub\s*Question|Follow-up|Follow\s*up)\s*[:\.\-]\s*(.*)$', re.IGNORECASE)
     ans_pattern = re.compile(r'^(?:Instructor[’\']?s?\s*Answer(?:/Suggestion)?|Instructor[’\']?s?\s*Suggestion|Instructor[’\']?s?\s*Answer|Answer|Ans|A)\s*[:\.\-]?\s*(.*)$', re.IGNORECASE)
     action_pattern = re.compile(r'^(?:Action\s*Item|Takeaway|Assignment|Instructor[’\']?s?\s*Final\s*Assignment.*)\s*[:\.\-]?\s*(.*)$', re.IGNORECASE)
@@ -101,50 +167,61 @@ def parse_interview_qa_text(raw_text: str) -> List[Dict[str, Any]]:
     for line in lines:
         stripped = line.strip()
         if not stripped:
+            if mode in ["ans", "action"]:
+                # Preserve blank lines inside multiline code/answers
+                current_answers.append("")
             continue
 
+        # 1. Skip non-technical chatter / attendance
+        if is_noise_or_chatter(stripped):
+            continue
+
+        # 2. Check for category header (e.g. "[Linux]:", "[Jenkins]")
+        header_cat = is_category_header(stripped)
+        if header_cat:
+            flush_current()
+            current_cat = header_cat
+            continue
+
+        # 3. Check for student marker (e.g. "Nithin:", "Kumar:", "Nagaraj:")
+        if re.match(r'^[A-Z][a-z]+\s*:\s*$', stripped):
+            continue
+
+        # 4. Check explicit regex matches
         q_match = q_pattern.match(stripped)
         sub_match = sub_pattern.match(stripped)
         ans_match = ans_pattern.match(stripped)
         action_match = action_pattern.match(stripped)
 
-        # Check if line is a domain section header (e.g. "Kubernetes Troubleshooting", "Docker Images & Security")
-        is_section_header = (
-            not stripped.startswith('"') 
-            and not stripped.startswith("'") 
-            and not stripped.startswith("-") 
-            and not stripped.startswith("*")
-            and not re.match(r'^\d+\.', stripped)
-            and not (q_match or sub_match or ans_match or action_match)
-            and any(k.lower() in stripped.lower() for k in ["kubernetes", "docker", "aws", "jenkins", "ci/cd", "helm", "monitoring", "environments", "linux", "terraform", "ansible", "security", "infrastructure"])
-            and len(stripped.split()) <= 8
-        )
-
         if q_match:
             flush_current()
-            q_text = q_match.group(1).strip().strip('"').strip("'").strip()
-            current_q = q_text
+            current_q = q_match.group(1).strip()
             mode = "q"
-        elif is_section_header:
-            flush_current()
-            current_topic = stripped
-        elif sub_match and current_q:
-            sq_text = sub_match.group(1).strip().strip('"').strip("'").strip()
-            current_subquestions.append(sq_text)
-            mode = "subq"
         elif ans_match and current_q:
             mode = "ans"
             a_text = ans_match.group(1).strip()
             if a_text:
                 current_answers.append(a_text)
+        elif sub_match and current_q:
+            mode = "subq"
+            sq_text = sub_match.group(1).strip().strip('"').strip("'").strip()
+            current_subquestions.append(sq_text)
         elif action_match and current_q:
             mode = "action"
             act_text = action_match.group(1).strip()
             if act_text:
                 current_actions.append(act_text)
+        elif is_question_line(stripped):
+            # Consecutive or new implicit question
+            flush_current()
+            current_q = stripped
+            mode = "q"
         else:
             if not current_q:
-                current_topic = stripped
+                # Might be a heading or first question
+                if is_question_line(stripped):
+                    current_q = stripped
+                    mode = "q"
             elif mode == "action":
                 current_actions.append(stripped)
             elif mode == "ans":
@@ -152,7 +229,16 @@ def parse_interview_qa_text(raw_text: str) -> List[Dict[str, Any]]:
             elif mode == "subq":
                 current_subquestions.append(stripped)
             elif mode == "q":
-                current_q += " " + stripped
+                # Check if it has embedded Ans:
+                if " Ans:" in stripped or " ans:" in stripped or stripped.startswith("Ans:"):
+                    parts = re.split(r'\s*Ans:\s*', stripped, flags=re.IGNORECASE)
+                    if parts[0]:
+                        current_q += " " + parts[0]
+                    mode = "ans"
+                    if len(parts) > 1 and parts[1]:
+                        current_answers.append(parts[1])
+                else:
+                    current_q += " " + stripped
 
     flush_current()
     return items
