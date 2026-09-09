@@ -1,0 +1,28 @@
+services:
+  devops-hub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.6.1
+    container_name: devops-hub
+    restart: unless-stopped
+    ports:
+      - "80:8000"
+    environment:
+      - REPO_URL=https://github.com/nagaraj602/Notes.git
+      - REPO_BRANCH=main
+      - AUTO_SYNC_INTERVAL_MINUTES=5
+      - NOTES_DIR=/app/data/notes
+      - PORT=8000
+    volumes:
+      - notes_data:/app/data/notes
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  notes_data:
+    name: devops_hub_notes_data
