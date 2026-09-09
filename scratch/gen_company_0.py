@@ -87,14 +87,14 @@ Both integrations were implemented using standard Jenkins declarative pipeline s
          steps {
              script {
                  def server = Artifactory.server('artifactory-prod')
-                 def uploadSpec = """{
+                 def uploadSpec = '''{
                      "files": [
                          {
                              "pattern": "target/*.jar",
                              "target": "libs-release-local/com/company/payment-service/${BUILD_NUMBER}/"
                          }
                      ]
-                 }"""
+                 }'''
                  def buildInfo = server.upload(uploadSpec)
                  server.publishBuildInfo(buildInfo)
              }
