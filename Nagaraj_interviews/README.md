@@ -8,11 +8,11 @@
 
 | Metric | Count | Description |
 | :--- | :--- | :--- |
-| **Total Schedules** | `3` | Total interview events logged |
-| **Total Companies** | `3` | Distinct organizations tracked |
+| **Total Schedules** | `4` | Total interview events logged |
+| **Total Companies** | `4` | Distinct organizations tracked |
 | **Total Questions Banked** | `17` | Real questions with follow-ups & solutions |
 | **Completed Interviews** | `1` | Successfully concluded rounds |
-| **Upcoming / Scheduled** | `2` | Upcoming interview rounds |
+| **Upcoming / Scheduled** | `3` | Upcoming interview rounds |
 
 ---
 
@@ -20,6 +20,7 @@
 
 | Date | Time (IST) | Company | Role | Round | Status | Difficulty | Notes / Link |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 2026-09-18 | 11:00 - 12:00 | [Microsoft](./Microsoft.md) | Principal Cloud Solution Architect | Technical System Design | ⏳ Scheduled | Moderate | [Meeting Link](https://teams.microsoft.com/l/meetup-join/msft-test) • Enterprise Azure landing zone architecture, Bicep vs Terraform, AKS Advanced Networking (Azure CNI Overlay), and GitOps with Flux. |
 | 2026-09-15 | 16:30 - 17:30 | [Datadog](./Datadog.md) | Lead Infrastructure Engineer | Kubernetes Deep-Dive | ⏳ Scheduled | Moderate | [Meeting Link](https://zoom.us/j/datadog-round) • Deep dive into eBPF observability, Prometheus metric explosion handling, and Istio service mesh. |
 | 2026-09-12 | 14:00 - 15:00 | [Cloudflare](./Cloudflare.md) | Senior DevOps & SRE Engineer | System Architecture Round | ⏳ Scheduled | Moderate | [Meeting Link](https://meet.google.com/xyz-cloudflare) • Discussion on global edge routing, Kubernetes multi-cluster failover, and ArgoCD zero-downtime rollouts. |
 | 2026-09-01 | 10:00 - 11:00 | [Hitish QA 1-Sep-2026](./Hitish QA 1-Sep-2026.md) | DevOps Engineer | Technical Round 1 | ✅ Completed | Moderate | - |
@@ -33,4 +34,5 @@ Detailed schedules, notes, job descriptions, and interviewer question banks are 
 - 🏢 **[Cloudflare](./Cloudflare.md)** — 1 interview round(s) scheduled
 - 🏢 **[Datadog](./Datadog.md)** — 1 interview round(s) scheduled
 - 🏢 **[Hitish QA 1-Sep-2026](./Hitish QA 1-Sep-2026.md)** — 17 questions logged (`Technical Round 1` (17 Qs)) • 1 schedule(s)
+- 🏢 **[Microsoft](./Microsoft.md)** — 1 interview round(s) scheduled
 

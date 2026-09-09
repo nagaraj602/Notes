@@ -54,5 +54,25 @@
     "notes": "Deep dive into eBPF observability, Prometheus metric explosion handling, and Istio service mesh.",
     "questions_uploaded": false,
     "created_at": "2026-09-09T19:40:59.667665"
+  },
+  {
+    "id": "sched-b7d509cf",
+    "company": "Microsoft",
+    "role": "Principal Cloud Solution Architect",
+    "round": "Technical System Design",
+    "date": "2026-09-18",
+    "time": "11:00",
+    "start_time": "11:00",
+    "end_time": "12:00",
+    "status": "scheduled",
+    "meeting_link": "https://teams.microsoft.com/l/meetup-join/msft-test",
+    "about_company": "",
+    "role_info": "",
+    "job_description": "Architecting resilient enterprise cloud platforms on Azure and hybrid Kubernetes clusters.",
+    "salary_ctc": "55 LPA",
+    "monthly_salary": "",
+    "notes": "Enterprise Azure landing zone architecture, Bicep vs Terraform, AKS Advanced Networking (Azure CNI Overlay), and GitOps with Flux.",
+    "questions_uploaded": false,
+    "created_at": "2026-09-09T19:43:24.442504"
   }
 ]
