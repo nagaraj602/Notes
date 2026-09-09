@@ -9,8 +9,8 @@
 | Metric | Count | Description |
 | :--- | :--- | :--- |
 | **Total Schedules** | `0` | Total interview events logged |
-| **Total Companies** | `1` | Distinct organizations tracked |
-| **Total Questions Banked** | `17` | Real questions with follow-ups & solutions |
+| **Total Companies** | `0` | Distinct organizations tracked |
+| **Total Questions Banked** | `0` | Real questions with follow-ups & solutions |
 | **Completed Interviews** | `0` | Successfully concluded rounds |
 | **Upcoming / Scheduled** | `0` | Upcoming interview rounds |
 
@@ -26,5 +26,5 @@
 
 Detailed schedules, notes, job descriptions, and interviewer question banks are maintained in dedicated Markdown documents:
 
-- 🏢 **[Hitish QA 1-Sep-2026](./Hitish QA 1-Sep-2026.md)** — 17 questions logged (`Technical Round 1` (17 Qs)) • 0 schedule(s)
+*No interview companies recorded yet.*
 
