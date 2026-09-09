@@ -882,12 +882,11 @@ class InterviewManager:
         else:
             token_files = [
                 "/app/data/notes/.git_token",
-                os.path.join(repo_dir, ".git_token"),
-                os.path.join(self.storage_dir, ".git_token")
+                os.path.join(repo_dir, ".git_token")
             ]
             for tf in token_files:
                 if os.path.exists(tf):
-                    source = f"Saved Token File ({os.path.basename(tf)})"
+                    source = f"Persistent Token File ({os.path.basename(tf)})"
                     break
             if source == "None" and os.path.exists(os.path.expanduser("~/.git-credentials")):
                 source = "Host Credentials (~/.git-credentials)"
@@ -911,9 +910,9 @@ class InterviewManager:
         if not clean_token:
             raise ValueError("Token cannot be empty")
         
+        # Never store token inside Nagaraj_interviews/ to avoid committing secrets to git!
         target_paths = [
-            "/app/data/notes/.git_token",
-            os.path.join(self.storage_dir, ".git_token")
+            "/app/data/notes/.git_token"
         ]
         repo_dir = os.path.dirname(self.storage_dir)
         if os.path.exists(os.path.join(repo_dir, ".git")):
@@ -931,13 +930,20 @@ class InterviewManager:
             except Exception as e:
                 logger.warning(f"Could not save token to {p}: {e}")
 
+        # Ensure any errant token in storage_dir is wiped
+        errant = os.path.join(self.storage_dir, ".git_token")
+        if os.path.exists(errant):
+            try:
+                os.remove(errant)
+            except Exception:
+                pass
+
         # Now test git push immediately
         return self.test_git_push()
 
     def delete_github_token(self) -> bool:
         target_paths = [
-            "/app/data/notes/.git_token",
-            os.path.join(self.storage_dir, ".git_token")
+            "/app/data/notes/.git_token"
         ]
         repo_dir = os.path.dirname(self.storage_dir)
         if os.path.exists(repo_dir):
