@@ -1,1 +1,65 @@
-[]
+[
+  {
+    "id": "round-hr",
+    "name": "HR Round",
+    "stage": "Screening",
+    "description": "Initial HR screening, background check, role discussion, compensation and notice period.",
+    "is_default": true
+  },
+  {
+    "id": "round-tech-1",
+    "name": "Technical Round 1",
+    "stage": "Core Technical",
+    "description": "Core DevOps skills: Linux fundamentals, Bash/Python scripting, Git, CI/CD pipelines, Docker.",
+    "is_default": true
+  },
+  {
+    "id": "round-tech-2",
+    "name": "Technical Round 2",
+    "stage": "Deep Technical",
+    "description": "Advanced technical: Kubernetes administration & troubleshooting, Terraform IaC, Cloud architecture.",
+    "is_default": true
+  },
+  {
+    "id": "round-sys-design",
+    "name": "System Design Round",
+    "stage": "Architecture",
+    "description": "High-availability, disaster recovery, cloud networking, multi-region failover, scaling and security.",
+    "is_default": true
+  },
+  {
+    "id": "round-manager",
+    "name": "Managerial Round",
+    "stage": "Leadership & Scenarios",
+    "description": "Scenario handling, production outage RCA, project management, cross-team collaboration and Agile/Scrum.",
+    "is_default": true
+  },
+  {
+    "id": "round-bar-raiser",
+    "name": "Bar Raiser Round",
+    "stage": "Evaluation",
+    "description": "Cross-functional engineering excellence, decision-making under ambiguity, and architectural evaluation.",
+    "is_default": true
+  },
+  {
+    "id": "round-director",
+    "name": "Director Round",
+    "stage": "Executive",
+    "description": "Strategic engineering vision, organizational impact, leadership values, and high-level fit.",
+    "is_default": true
+  },
+  {
+    "id": "round-cultural",
+    "name": "Cultural Fit Round",
+    "stage": "Culture",
+    "description": "Company principles, workplace culture, collaboration, work-life balance, and conflict resolution.",
+    "is_default": true
+  },
+  {
+    "id": "round-offer",
+    "name": "Offer Negotiation",
+    "stage": "Closing",
+    "description": "Final offer breakdown, compensation negotiation, benefits, start date, and onboarding formalities.",
+    "is_default": true
+  }
+]
