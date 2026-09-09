@@ -839,6 +839,7 @@ class InterviewManager:
                 p_code, p_out, p_err = self._run_git_cli(repo_dir, ["push", push_target, f"{branch}:{branch}"])
                 if p_code == 0:
                     logger.info(f"Successfully pushed interviews update to GitHub ({origin_url})!")
+                    self._run_git_cli(repo_dir, ["fetch", "origin"])
                     self.last_push_status = {
                         "status": "success",
                         "time": datetime.utcnow().isoformat(),
