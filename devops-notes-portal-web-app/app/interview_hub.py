@@ -7,8 +7,11 @@ import os
 import json
 import uuid
 import re
+import logging
 from datetime import datetime, date, timedelta
 from typing import List, Dict, Any, Optional
+
+logger = logging.getLogger("InterviewHub")
 
 CATEGORIES = [
     "Linux", "Shell script", "jenkins", "Github", "Build tools",
@@ -261,6 +264,7 @@ class InterviewManager:
         self.schedules_file = os.path.join(self.storage_dir, "schedules.json")
         self.questions_file = os.path.join(self.storage_dir, "questions.json")
         self.rounds_file = os.path.join(self.storage_dir, "rounds.json")
+        self.last_push_status = {"status": "none", "time": "", "message": ""}
         self._init_files()
 
     def _resolve_storage_dir(self) -> str:
@@ -288,6 +292,7 @@ class InterviewManager:
         if not os.path.exists(self.rounds_file):
             self._save_json(self.rounds_file, [])
         self._reconcile_schedules_from_questions()
+        self._generate_markdown_docs()
 
     def _reconcile_schedules_from_questions(self):
         """
@@ -470,9 +475,315 @@ class InterviewManager:
         try:
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
+            self._generate_markdown_docs()
             self._auto_git_sync(commit_msg)
         except Exception as e:
-            print(f"Error saving to {filepath}: {e}")
+            logger.error(f"Error saving to {filepath}: {e}")
+
+    def _generate_markdown_docs(self):
+        """
+        Generates human-readable Markdown files directly in 'Nagaraj_interviews/':
+        1. README.md - High-level summary dashboard, interview schedules table & question bank index
+        2. <Company>.md - Individual company interview records with full Q&A, follow-ups, and feedback
+        """
+        try:
+            schedules = self._read_json(self.schedules_file)
+            questions = self._read_json(self.questions_file)
+
+            schedules.sort(key=lambda s: f"{s.get('date', '')} {s.get('start_time') or s.get('time', '')}", reverse=True)
+
+            # Group questions by company and round
+            comp_questions = {}
+            for q in questions:
+                comp = (q.get("company") or "").strip() or "General"
+                rnd = (q.get("round") or "Technical Round 1").strip() or "Technical Round 1"
+                if comp not in comp_questions:
+                    comp_questions[comp] = {}
+                if rnd not in comp_questions[comp]:
+                    comp_questions[comp][rnd] = []
+                comp_questions[comp][rnd].append(q)
+
+            # Collect all distinct companies across schedules and questions
+            all_companies_map = {}
+            for s in schedules:
+                c = (s.get("company") or "").strip()
+                if c:
+                    all_companies_map[c.lower()] = c
+            for c in comp_questions.keys():
+                if c and c.lower() not in all_companies_map:
+                    all_companies_map[c.lower()] = c
+
+            all_companies = sorted(list(all_companies_map.values()), key=lambda x: x.lower())
+
+            # 1. Generate README.md
+            readme_lines = [
+                "# 🎯 Nagaraj DevOps Interview Hub & Schedules",
+                "",
+                "> **Automated GitHub Persistence:** This folder tracks live interview schedules, technical rounds, candidate experiences, and real interview question banks. All changes made in the DevOps Knowledge Portal are automatically updated and committed here in human-readable format.",
+                "",
+                "---",
+                "",
+                "## 📊 Summary Statistics",
+                "",
+                "| Metric | Count | Description |",
+                "| :--- | :--- | :--- |",
+                f"| **Total Schedules** | `{len(schedules)}` | Total interview events logged |",
+                f"| **Total Companies** | `{len(all_companies)}` | Distinct organizations tracked |",
+                f"| **Total Questions Banked** | `{len(questions)}` | Real questions with follow-ups & solutions |",
+                f"| **Completed Interviews** | `{len([s for s in schedules if (s.get('status') or '').lower() == 'completed'])}` | Successfully concluded rounds |",
+                f"| **Upcoming / Scheduled** | `{len([s for s in schedules if (s.get('status') or '').lower() == 'scheduled'])}` | Upcoming interview rounds |",
+                "",
+                "---",
+                "",
+                "## 📅 Interview Schedules & Tracker",
+                ""
+            ]
+
+            if not schedules:
+                readme_lines.append("*No interview schedules recorded yet.*")
+            else:
+                readme_lines.extend([
+                    "| Date | Time (IST) | Company | Role | Round | Status | Difficulty | Notes / Link |",
+                    "| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |"
+                ])
+                for s in schedules:
+                    dt = s.get("date", "N/A")
+                    t_start = s.get("start_time") or s.get("time", "10:00")
+                    t_end = s.get("end_time", "")
+                    t_str = f"{t_start} - {t_end}" if t_end else t_start
+                    comp = s.get("company", "N/A")
+                    role = s.get("role", "DevOps Engineer")
+                    rnd = s.get("round", "Technical Round")
+                    status = (s.get("status") or "scheduled").capitalize()
+                    diff = s.get("difficulty", "Moderate")
+                    notes = (s.get("notes") or "").replace("\n", " ").strip()
+                    link = (s.get("meeting_link") or "").strip()
+                    extra = []
+                    if link:
+                        extra.append(f"[Meeting Link]({link})")
+                    if notes:
+                        extra.append(notes)
+                    extra_str = " • ".join(extra) if extra else "-"
+                    
+                    if status.lower() == "completed":
+                        status_str = "✅ Completed"
+                    elif status.lower() == "scheduled":
+                        status_str = "⏳ Scheduled"
+                    elif status.lower() == "cancelled":
+                        status_str = "❌ Cancelled"
+                    else:
+                        status_str = status
+
+                    safe_fname = re.sub(r'[\\/*?:"<>|]', '_', comp) + ".md"
+                    comp_display = f"[{comp}](./{safe_fname})"
+
+                    readme_lines.append(f"| {dt} | {t_str} | {comp_display} | {role} | {rnd} | {status_str} | {diff} | {extra_str} |")
+
+            readme_lines.extend([
+                "",
+                "---",
+                "",
+                "## 🏢 Question Banks & Interview Details by Company",
+                "",
+                "Detailed schedules, notes, job descriptions, and interviewer question banks are maintained in dedicated Markdown documents:",
+                ""
+            ])
+
+            if not all_companies:
+                readme_lines.append("*No interview companies recorded yet.*")
+            else:
+                for comp in all_companies:
+                    safe_fname = re.sub(r'[\\/*?:"<>|]', '_', comp) + ".md"
+                    rounds = comp_questions.get(comp, {})
+                    total_comp_q = sum(len(qs) for qs in rounds.values())
+                    comp_scheds = [s for s in schedules if (s.get("company") or "").strip().lower() == comp.lower()]
+                    sched_count = len(comp_scheds)
+                    
+                    if rounds:
+                        rounds_str = ", ".join([f"`{r}` ({len(qs)} Qs)" for r, qs in rounds.items()])
+                        readme_lines.append(f"- 🏢 **[{comp}](./{safe_fname})** — {total_comp_q} questions logged ({rounds_str}) • {sched_count} schedule(s)")
+                    else:
+                        readme_lines.append(f"- 🏢 **[{comp}](./{safe_fname})** — {sched_count} interview round(s) scheduled")
+
+            readme_lines.append("")
+            readme_path = os.path.join(self.storage_dir, "README.md")
+            with open(readme_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(readme_lines) + "\n")
+
+            # 2. Generate Individual Company Markdown Files
+            active_company_files = set()
+            for comp in all_companies:
+                safe_fname = re.sub(r'[\\/*?:"<>|]', '_', comp) + ".md"
+                active_company_files.add(safe_fname)
+                comp_file = os.path.join(self.storage_dir, safe_fname)
+                
+                comp_scheds = [s for s in schedules if (s.get("company") or "").strip().lower() == comp.lower()]
+                rounds = comp_questions.get(comp, {})
+
+                lines = [
+                    f"# 🏢 {comp} - Interview Experience & Question Bank",
+                    "",
+                    "> Real DevOps interview questions, technical follow-up questions, and production-tested solutions recorded from actual interview rounds.",
+                    "",
+                    "---",
+                    "",
+                    "## 📋 Interview Schedules & Metadata",
+                    ""
+                ]
+
+                if comp_scheds:
+                    lines.extend([
+                        "| Round | Date | Time (IST) | Status | Difficulty | Role | Meeting Link |",
+                        "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |"
+                    ])
+                    for cs in comp_scheds:
+                        c_rnd = cs.get("round", "Technical Round")
+                        c_dt = cs.get("date", "N/A")
+                        c_start = cs.get("start_time") or cs.get("time", "10:00")
+                        c_end = cs.get("end_time", "")
+                        c_t = f"{c_start} - {c_end}" if c_end else c_start
+                        c_st = (cs.get("status") or "scheduled").capitalize()
+                        c_diff = cs.get("difficulty", "Moderate")
+                        c_role = cs.get("role", "DevOps Engineer")
+                        c_link = cs.get("meeting_link", "")
+                        c_link_str = f"[Link]({c_link})" if c_link else "-"
+                        lines.append(f"| {c_rnd} | {c_dt} | {c_t} | {c_st} | {c_diff} | {c_role} | {c_link_str} |")
+
+                    lines.append("")
+
+                    # Check for compensation or notes across schedules
+                    ctc_list = [cs.get("salary_ctc") for cs in comp_scheds if cs.get("salary_ctc")]
+                    if ctc_list:
+                        lines.extend([
+                            f"- **Compensation / CTC:** {', '.join(set(ctc_list))}",
+                            ""
+                        ])
+
+                    jds = [cs.get("job_description") for cs in comp_scheds if cs.get("job_description")]
+                    if jds:
+                        lines.extend([
+                            "### 📄 Job Description / Role Requirements",
+                            f"```\n{jds[0]}\n```",
+                            ""
+                        ])
+
+                    notes_list = [cs.get("notes") for cs in comp_scheds if cs.get("notes")]
+                    if notes_list:
+                        lines.extend([
+                            "### 📝 Candidate Notes & Interview Observations",
+                            "\n\n".join(notes_list),
+                            ""
+                        ])
+                else:
+                    lines.extend([
+                        f"- **Company:** {comp}",
+                        ""
+                    ])
+
+                lines.extend([
+                    "---",
+                    "",
+                    "## ❓ Technical Questions & Answers",
+                    ""
+                ])
+
+                if not rounds:
+                    lines.append("*No technical questions recorded yet for this company. Questions can be added via the DevOps Knowledge Portal Interview Hub.*")
+                    lines.append("")
+                else:
+                    q_counter = 1
+                    for rnd_name, q_list in rounds.items():
+                        lines.append(f"### 🎯 Round: {rnd_name}")
+                        lines.append("")
+
+                        for q in q_list:
+                            q_text = (q.get("question") or "").strip()
+                            ans_text = (q.get("answer") or "").strip()
+                            cats = q.get("categories", [])
+                            diff = q.get("difficulty", "Moderate")
+                            
+                            cats_str = " ".join([f"`{c}`" for c in cats]) if cats else "`General`"
+
+                            lines.append(f"#### Q{q_counter}: {q_text}")
+                            lines.append(f"**Tags:** {cats_str} | **Difficulty:** `{diff}`")
+                            lines.append("")
+
+                            if ans_text:
+                                lines.append("<details open>")
+                                lines.append("<summary><strong>💡 Answer / Solution & Takeaways</strong></summary>")
+                                lines.append("")
+                                lines.append(ans_text)
+                                lines.append("")
+                                lines.append("</details>")
+                            else:
+                                lines.append("*Answer not recorded.*")
+
+                            lines.append("")
+                            lines.append("---")
+                            lines.append("")
+                            q_counter += 1
+
+                with open(comp_file, "w", encoding="utf-8") as f:
+                    f.write("\n".join(lines) + "\n")
+
+            # Clean up obsolete company markdown files if any company was deleted
+            for item in os.listdir(self.storage_dir):
+                if item.endswith(".md") and item != "README.md":
+                    if item not in active_company_files:
+                        try:
+                            os.remove(os.path.join(self.storage_dir, item))
+                        except Exception:
+                            pass
+        except Exception as e:
+            logger.error(f"Error generating human-readable markdown docs: {e}")
+
+    def _get_github_token(self, repo_dir: str) -> str:
+        for env_var in ["GITHUB_TOKEN", "GH_TOKEN", "GIT_PUSH_TOKEN", "GIT_TOKEN"]:
+            val = os.getenv(env_var, "").strip()
+            if val:
+                return val
+        token_files = [
+            os.path.join(repo_dir, ".git_token"),
+            os.path.join(self.storage_dir, ".git_token"),
+            os.path.join(os.path.dirname(self.storage_dir), ".git_token"),
+            "/app/data/notes/.git_token"
+        ]
+        for tf in token_files:
+            if os.path.exists(tf):
+                try:
+                    with open(tf, "r", encoding="utf-8") as f:
+                        tok = f.read().strip()
+                        if tok:
+                            return tok
+                except Exception:
+                    pass
+        # Fallback: check ~/.git-credentials on host
+        git_cred_file = os.path.expanduser("~/.git-credentials")
+        if os.path.exists(git_cred_file):
+            try:
+                with open(git_cred_file, "r", encoding="utf-8") as f:
+                    txt = f.read()
+                m = re.search(r'https?://[^:]+:([^@]+)@github\.com', txt)
+                if m:
+                    return m.group(1).strip()
+            except Exception:
+                pass
+        return ""
+
+    def _run_git_cli(self, repo_dir: str, args: List[str]):
+        import subprocess
+        try:
+            res = subprocess.run(
+                ["git", "-C", repo_dir] + args,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace"
+            )
+            return res.returncode, res.stdout.strip(), res.stderr.strip()
+        except Exception as e:
+            return -1, "", str(e)
 
     def _auto_git_sync(self, commit_msg: str = "Update Nagaraj interviews tracker"):
         try:
@@ -482,20 +793,182 @@ class InterviewManager:
                 if os.path.exists(os.path.join(base_dir, ".git")):
                     repo_dir = base_dir
                 else:
+                    logger.warning(f"No .git directory found at {repo_dir} or {base_dir}")
                     return
 
-            import git
-            repo = git.Repo(repo_dir)
-            repo.git.add("Nagaraj_interviews")
-            if repo.is_dirty(untracked_files=True):
-                repo.index.commit(commit_msg)
+            # Ensure git author and committer are configured
+            self._run_git_cli(repo_dir, ["config", "user.name", "nagaraj602"])
+            self._run_git_cli(repo_dir, ["config", "user.email", "nagarajkamath602@outlook.com"])
+
+            rel_storage = os.path.relpath(self.storage_dir, repo_dir).replace("\\", "/")
+            self._run_git_cli(repo_dir, ["add", rel_storage])
+
+            # Check if there are changes to commit
+            ret_code, status_out, _ = self._run_git_cli(repo_dir, ["status", "--porcelain", rel_storage])
+            committed_now = False
+            if status_out:
+                c_ret, c_out, c_err = self._run_git_cli(repo_dir, ["commit", "-m", commit_msg])
+                if c_ret == 0:
+                    logger.info(f"Committed changes in {rel_storage}: '{commit_msg}'")
+                    committed_now = True
+                else:
+                    logger.warning(f"Git commit returned code {c_ret}: {c_err}")
+
+            # Get current active branch
+            _, branch, _ = self._run_git_cli(repo_dir, ["rev-parse", "--abbrev-ref", "HEAD"])
+            if not branch:
+                branch = "main"
+
+            # Check if there are unpushed commits
+            _, ahead_log, _ = self._run_git_cli(repo_dir, ["log", f"origin/{branch}..{branch}", "--oneline"])
+            needs_push = committed_now or bool(ahead_log.strip())
+
+            if needs_push:
+                token = self._get_github_token(repo_dir)
+                _, origin_url, _ = self._run_git_cli(repo_dir, ["config", "--get", "remote.origin.url"])
+
+                push_target = "origin"
+                if token and "github.com" in origin_url:
+                    clean_url = re.sub(r'https?://(?:[^@]+@)?github\.com/', 'https://github.com/', origin_url)
+                    push_target = clean_url.replace("https://github.com/", f"https://{token}@github.com/")
+
+                # Rebase pull before push
+                self._run_git_cli(repo_dir, ["pull", push_target, branch, "--rebase"])
+
+                # Push to remote
+                p_code, p_out, p_err = self._run_git_cli(repo_dir, ["push", push_target, f"{branch}:{branch}"])
+                if p_code == 0:
+                    logger.info(f"Successfully pushed interviews update to GitHub ({origin_url})!")
+                    self.last_push_status = {
+                        "status": "success",
+                        "time": datetime.utcnow().isoformat(),
+                        "message": f"Successfully pushed: {commit_msg}"
+                    }
+                else:
+                    err_msg = p_err or p_out or "Push failed"
+                    logger.error(f"Failed to push to GitHub: {err_msg}")
+                    self.last_push_status = {
+                        "status": "error",
+                        "time": datetime.utcnow().isoformat(),
+                        "message": err_msg
+                    }
+            else:
+                self.last_push_status = {
+                    "status": "success",
+                    "time": datetime.utcnow().isoformat(),
+                    "message": "Repository up to date with remote."
+                }
+        except Exception as e:
+            logger.error(f"Auto git sync failed: {e}")
+            self.last_push_status = {
+                "status": "error",
+                "time": datetime.utcnow().isoformat(),
+                "message": str(e)
+            }
+
+    def get_token_status(self) -> Dict[str, Any]:
+        repo_dir = os.path.dirname(self.storage_dir)
+        if not os.path.exists(os.path.join(repo_dir, ".git")):
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            if os.path.exists(os.path.join(base_dir, ".git")):
+                repo_dir = base_dir
+
+        token = self._get_github_token(repo_dir)
+        source = "None"
+        if os.getenv("GITHUB_TOKEN"):
+            source = "Environment Variable (GITHUB_TOKEN)"
+        elif os.getenv("GH_TOKEN") or os.getenv("GIT_PUSH_TOKEN") or os.getenv("GIT_TOKEN"):
+            source = "Environment Variable"
+        else:
+            token_files = [
+                "/app/data/notes/.git_token",
+                os.path.join(repo_dir, ".git_token"),
+                os.path.join(self.storage_dir, ".git_token")
+            ]
+            for tf in token_files:
+                if os.path.exists(tf):
+                    source = f"Saved Token File ({os.path.basename(tf)})"
+                    break
+            if source == "None" and os.path.exists(os.path.expanduser("~/.git-credentials")):
+                source = "Host Credentials (~/.git-credentials)"
+
+        masked = ""
+        if token:
+            if len(token) > 8:
+                masked = f"{token[:4]}...{token[-4:]}"
+            else:
+                masked = "****"
+
+        return {
+            "has_token": bool(token),
+            "token_masked": masked,
+            "source": source,
+            "last_push": getattr(self, "last_push_status", None)
+        }
+
+    def save_github_token(self, token: str) -> Dict[str, Any]:
+        clean_token = token.strip()
+        if not clean_token:
+            raise ValueError("Token cannot be empty")
+        
+        target_paths = [
+            "/app/data/notes/.git_token",
+            os.path.join(self.storage_dir, ".git_token")
+        ]
+        repo_dir = os.path.dirname(self.storage_dir)
+        if os.path.exists(os.path.join(repo_dir, ".git")):
+            target_paths.append(os.path.join(repo_dir, ".git_token"))
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        if os.path.exists(os.path.join(base_dir, ".git")):
+            target_paths.append(os.path.join(base_dir, ".git_token"))
+
+        for p in target_paths:
+            try:
+                parent = os.path.dirname(p)
+                if os.path.exists(parent):
+                    with open(p, "w", encoding="utf-8") as f:
+                        f.write(clean_token)
+            except Exception as e:
+                logger.warning(f"Could not save token to {p}: {e}")
+
+        # Now test git push immediately
+        return self.test_git_push()
+
+    def delete_github_token(self) -> bool:
+        target_paths = [
+            "/app/data/notes/.git_token",
+            os.path.join(self.storage_dir, ".git_token")
+        ]
+        repo_dir = os.path.dirname(self.storage_dir)
+        if os.path.exists(repo_dir):
+            target_paths.append(os.path.join(repo_dir, ".git_token"))
+        deleted = False
+        for p in target_paths:
+            if os.path.exists(p):
                 try:
-                    origin = repo.remotes.origin
-                    origin.push()
+                    os.remove(p)
+                    deleted = True
                 except Exception:
                     pass
-        except Exception:
-            pass
+        return deleted
+
+    def test_git_push(self) -> Dict[str, Any]:
+        self._generate_markdown_docs()
+        self._auto_git_sync(commit_msg="Test sync & verify human-readable Nagaraj interviews tracker")
+        status = getattr(self, "last_push_status", None)
+        if status and status.get("status") == "success":
+            return {
+                "status": "success",
+                "message": "Git sync & push succeeded! Markdown files and schedules are synced to GitHub.",
+                "details": status
+            }
+        else:
+            err = status.get("message") if status else "Unknown error during push"
+            return {
+                "status": "error",
+                "message": f"Git push failed: {err}",
+                "details": status
+            }
 
     # --- SCHEDULES API ---
     def get_schedules(self) -> List[Dict[str, Any]]:

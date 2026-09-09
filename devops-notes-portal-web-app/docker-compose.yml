@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.6.1
+    image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.6.2
     container_name: devops-hub
     restart: unless-stopped
     ports:
@@ -14,6 +14,7 @@ services:
       - AUTO_SYNC_INTERVAL_MINUTES=5
       - NOTES_DIR=/app/data/notes
       - PORT=8000
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
     volumes:
       - notes_data:/app/data/notes
     healthcheck:

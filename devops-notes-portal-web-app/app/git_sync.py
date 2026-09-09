@@ -25,6 +25,8 @@ class GitSyncManager:
         # Clean up any legacy loose files/folders that don't match the current repo folders
         try:
             for item in os.listdir(self.target_dir):
+                if item.startswith("."):
+                    continue  # Protect dotfiles such as .git_token
                 item_path = os.path.join(self.target_dir, item)
                 if item not in valid_folders:
                     logger.info(f"Removing legacy/stale item at root: {item_path}")
@@ -59,8 +61,19 @@ class GitSyncManager:
                 else:
                     logger.info(f"Pulling {repo_name} ({branch})...")
                     repo = git.Repo(dest_dir)
+
+                    # Ensure git author is configured
+                    with repo.config_writer() as cw:
+                        if not cw.has_option("user", "name") or not cw.get_value("user", "name"):
+                            cw.set_value("user", "name", "nagaraj602")
+                        if not cw.has_option("user", "email") or not cw.get_value("user", "email"):
+                            cw.set_value("user", "email", "nagarajkamath602@outlook.com")
+
                     origin = repo.remotes.origin
-                    origin.pull(branch)
+                    try:
+                        repo.git.pull("origin", branch, "--rebase")
+                    except Exception:
+                        origin.pull(branch)
                     status_msg = f"Updated {repo_name} ({branch})"
                     
                 self.repo_statuses[repo_name] = {
@@ -73,7 +86,20 @@ class GitSyncManager:
                 messages.append(status_msg)
             except Exception as e:
                 logger.error(f"Sync failed for {repo_name}: {str(e)}")
-                # If pull failed due to branch mismatch or dirty tree, try fresh clone
+                # Never wipe out devops-notes repository to prevent losing unpushed interview schedules or user edits!
+                if folder_name == "devops-notes":
+                    all_success = False
+                    self.repo_statuses[repo_name] = {
+                        "status": "warning",
+                        "url": repo_url,
+                        "branch": branch,
+                        "folder": folder_name,
+                        "message": f"Sync warning (local data preserved): {str(e)}"
+                    }
+                    messages.append(f"{repo_name} warning: {str(e)}")
+                    continue
+
+                # For external read-only repos (e.g. training-materials), retry fresh clone
                 try:
                     logger.info(f"Retrying fresh clone for {repo_name}...")
                     shutil.rmtree(dest_dir, ignore_errors=True)

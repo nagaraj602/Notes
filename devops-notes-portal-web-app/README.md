@@ -238,12 +238,35 @@ Deploy keys are tied **strictly to your `Notes` repository** and have zero acces
 ---
 
 ### 4.2 Method B: Fine-Grained Personal Access Token (PAT)
-1. Go to `https://github.com/settings/tokens?type=beta`
+1. Go to `https://github.com/settings/tokens?type=beta` (or classic tokens with `repo` scope)
 2. Click **Generate new token**.
 3. **Repository access**: Select *Only select repositories* -> `nagaraj602/Notes`.
 4. **Permissions**: Under *Repository permissions*, set `Contents` to **Read and Write**.
-5. Set an expiration (e.g. 90 days).
-6. Set the token in your Kubernetes configuration or environment.
+5. Set an expiration (e.g. 90 days or custom).
+
+---
+
+### 4.3 Method C: Direct In-Portal UI Configuration (Easiest)
+You can configure and test your GitHub push credentials directly from the web browser:
+1. Open the portal and navigate to **Settings** (`/settings`).
+2. Scroll to the **GitHub Push Credentials & Personal Access Token (PAT)** card.
+3. Paste your GitHub token into the input field.
+4. Click **Save & Test Push**.
+5. The portal will automatically write the token to the persistent volume (`/app/data/notes/.git_token`), compile the human-readable Markdown docs, execute a test Git commit and push, and report live success status.
+
+---
+
+### 4.4 Automated Human-Readable GitHub Persistence (`Nagaraj_interviews/`)
+Whenever you add or update interview schedules, notes, or technical questions in the portal, the app generates and syncs human-readable Markdown directly into the GitHub repository:
+* **`Nagaraj_interviews/README.md`**: High-level dashboard containing:
+  * Summary metrics table (Total Schedules, Tracked Companies, Banked Questions, Completed Rounds).
+  * Comprehensive Interview Schedules & Tracker table with Date, Time (IST), Company Link, Role, Round, Status, Difficulty, and Meeting Links.
+  * Direct clickable index to all company interview files.
+* **`Nagaraj_interviews/<Company>.md`**: Dedicated document per company containing:
+  * Company interview schedules and status breakdown.
+  * Compensation / CTC and Job Description requirements.
+  * Candidate experience notes and takeaways.
+  * All technical questions & answers grouped by round with tags, difficulty, and collapsible solutions.
 
 ---
 

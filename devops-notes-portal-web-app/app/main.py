@@ -636,4 +636,31 @@ async def api_get_session_state():
 @app.post("/api/session/state")
 async def api_update_session_state(req: SessionStateUpdateRequest):
     data = session_manager.update_state(req.dict(exclude_unset=True))
-    return JSONResponse({"status": "success", "state": data})
+    return JSONResponse({"status": "success", "state": data})
+
+# --- GITHUB TOKEN & GIT PUSH SETTINGS APIS ---
+class SaveGitTokenRequest(BaseModel):
+    token: str
+
+@app.get("/api/settings/git-token")
+async def api_get_git_token_status():
+    status = interview_manager.get_token_status()
+    return JSONResponse(status)
+
+@app.post("/api/settings/git-token")
+async def api_save_git_token(req: SaveGitTokenRequest):
+    try:
+        res = interview_manager.save_github_token(req.token)
+        return JSONResponse(res)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/settings/git-token")
+async def api_delete_git_token():
+    deleted = interview_manager.delete_github_token()
+    return JSONResponse({"status": "deleted" if deleted else "not_found"})
+
+@app.post("/api/settings/git-push-test")
+async def api_test_git_push():
+    res = interview_manager.test_git_push()
+    return JSONResponse(res)

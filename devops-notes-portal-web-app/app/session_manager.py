@@ -67,7 +67,8 @@ class SessionManager:
         try:
             with open(self.state_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            self._auto_git_sync()
+            # Session state is persisted to disk on PVC; do not pollute Git with commits on every mouse scroll/click
+            # self._auto_git_sync()
         except Exception as e:
             print(f"Error saving session state: {e}")
 

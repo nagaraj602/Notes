@@ -89,6 +89,109 @@
       {% endfor %}
     </div>
 
+    <!-- GitHub Push & PAT Authentication Card -->
+    <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6 shadow-sm border border-sky-100 hover:border-sky-300 transition-all">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center space-x-3.5">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20">
+            <i class="fa-brands fa-github"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900">GitHub Push Credentials & Personal Access Token (PAT)</h2>
+            <p class="text-xs text-slate-500">Enables automated git push to <code class="text-sky-700 bg-sky-50 px-1 py-0.5 rounded font-mono font-bold">nagaraj602/Notes</code> when interview schedules, notes, or technical Q&A are added.</p>
+          </div>
+        </div>
+        <div id="tokenBadge" class="px-3 py-1 rounded-full text-xs font-mono font-bold flex items-center space-x-1.5 bg-slate-100 text-slate-600">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span>Checking...</span>
+        </div>
+      </div>
+
+      <!-- Live Status & Token Preview -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 rounded-2xl border border-sky-100 bg-white/80 space-y-2 shadow-sm">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Token Source & Configuration</div>
+          <div id="tokenSourceDisplay" class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+            <i class="fa-solid fa-server text-sky-600"></i>
+            <span>Loading...</span>
+          </div>
+          <div class="text-xs text-slate-500 font-mono">
+            Masked Token: <span id="tokenMaskedDisplay" class="font-bold text-indigo-700">----</span>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl border border-sky-100 bg-white/80 space-y-2 shadow-sm">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Last Git Push Status</div>
+          <div id="lastPushStatusDisplay" class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+            <i class="fa-solid fa-circle-info text-slate-400"></i>
+            <span>Not pushed yet in this session</span>
+          </div>
+          <div id="lastPushTimeDisplay" class="text-xs text-slate-500 font-mono">
+            Timestamp: <span>N/A</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Token Input & Action Buttons -->
+      <div class="space-y-3 pt-2 border-t border-sky-100/70">
+        <label for="githubTokenInput" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+          Update GitHub Personal Access Token (PAT)
+        </label>
+        <div class="flex items-center space-x-2">
+          <div class="relative flex-1">
+            <input 
+              type="password" 
+              id="githubTokenInput" 
+              placeholder="Paste GitHub Token here (e.g. ghp_xxxxxxxxxxxxxxxxxxxx or gho_...)" 
+              class="w-full px-4 py-2.5 rounded-xl border border-sky-200 bg-white/90 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 pr-10 shadow-sm"
+            />
+            <button 
+              type="button" 
+              onclick="toggleTokenVisibility()" 
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              title="Toggle Visibility"
+            >
+              <i id="tokenEyeIcon" class="fa-regular fa-eye text-xs"></i>
+            </button>
+          </div>
+          
+          <button 
+            id="btnSaveToken"
+            onclick="saveGitHubToken()" 
+            class="px-4 py-2.5 rounded-xl font-bold text-xs text-white shadow-md shadow-sky-500/20 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all hover:scale-[1.02] active:scale-95 flex items-center space-x-1.5"
+          >
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Save & Test Push</span>
+          </button>
+
+          <button 
+            id="btnTestPush"
+            onclick="testGitPush()" 
+            class="px-3.5 py-2.5 rounded-xl font-bold text-xs text-slate-700 border border-sky-200 bg-white/90 hover:bg-sky-50 transition-all hover:scale-[1.02] active:scale-95 flex items-center space-x-1.5 shadow-sm"
+            title="Test push with current credentials"
+          >
+            <i class="fa-solid fa-rotate text-sky-600"></i>
+            <span>Test Push</span>
+          </button>
+
+          <button 
+            id="btnDeleteToken"
+            onclick="deleteGitHubToken()" 
+            class="px-3.5 py-2.5 rounded-xl font-bold text-xs text-rose-600 border border-rose-200 bg-rose-50/60 hover:bg-rose-100 transition-all active:scale-95 flex items-center space-x-1.5"
+            title="Remove stored token"
+          >
+            <i class="fa-regular fa-trash-can"></i>
+            <span>Clear</span>
+          </button>
+        </div>
+        <div id="pushFeedbackBox" class="hidden p-3 rounded-xl text-xs font-mono"></div>
+        <p class="text-[11px] text-slate-500">
+          <i class="fa-solid fa-circle-question text-sky-500 mr-1"></i>
+          <strong>Permissions Note:</strong> Your GitHub Personal Access Token needs the <code>repo</code> scope so that commits and human-readable Markdown docs in <code>Nagaraj_interviews/</code> can be pushed directly to GitHub.
+        </p>
+      </div>
+    </div>
+
     <!-- Sync Pipeline Architecture -->
     <div class="glass-card p-6 md:p-8 rounded-3xl space-y-4">
       <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Cluster Sync Pipeline Architecture</div>
@@ -112,4 +215,143 @@
     </div>
   </div>
 </div>
+
+<script>
+  let tokenVisible = false;
+
+  function toggleTokenVisibility() {
+    const input = document.getElementById("githubTokenInput");
+    const icon = document.getElementById("tokenEyeIcon");
+    tokenVisible = !tokenVisible;
+    input.type = tokenVisible ? "text" : "password";
+    icon.className = tokenVisible ? "fa-regular fa-eye-slash text-xs" : "fa-regular fa-eye text-xs";
+  }
+
+  async function loadTokenStatus() {
+    try {
+      const res = await fetch("/api/settings/git-token");
+      if (!res.ok) return;
+      const data = await res.json();
+
+      const badge = document.getElementById("tokenBadge");
+      const sourceDisplay = document.getElementById("tokenSourceDisplay");
+      const maskedDisplay = document.getElementById("tokenMaskedDisplay");
+      const pushStatusDisplay = document.getElementById("lastPushStatusDisplay");
+      const pushTimeDisplay = document.getElementById("lastPushTimeDisplay");
+
+      if (data.has_token) {
+        badge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold flex items-center space-x-1.5 bg-emerald-100 text-emerald-700 border border-emerald-200";
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Token Active & Configured</span>';
+        sourceDisplay.innerHTML = `<i class="fa-solid fa-shield-check text-emerald-600"></i><span>${data.source}</span>`;
+        maskedDisplay.innerText = data.token_masked || "Configured";
+      } else {
+        badge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold flex items-center space-x-1.5 bg-amber-100 text-amber-700 border border-amber-200";
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Push Disabled (No Token)</span>';
+        sourceDisplay.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500"></i><span>No Token Found</span>`;
+        maskedDisplay.innerText = "Not Configured";
+      }
+
+      if (data.last_push && data.last_push.time) {
+        if (data.last_push.status === "success") {
+          pushStatusDisplay.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i><span class="text-emerald-700">${data.last_push.message || 'Push Successful'}</span>`;
+        } else {
+          pushStatusDisplay.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600"></i><span class="text-rose-700 truncate">${data.last_push.message || 'Push Error'}</span>`;
+        }
+        pushTimeDisplay.innerHTML = `Timestamp: <span class="font-bold text-slate-700">${new Date(data.last_push.time).toLocaleString()}</span>`;
+      }
+    } catch (e) {
+      console.error("Error loading token status:", e);
+    }
+  }
+
+  async function saveGitHubToken() {
+    const input = document.getElementById("githubTokenInput");
+    const token = input.value.trim();
+    if (!token) {
+      showToast("Please enter a valid GitHub token", "error");
+      return;
+    }
+
+    const btn = document.getElementById("btnSaveToken");
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Saving & Testing...</span>';
+
+    const feedback = document.getElementById("pushFeedbackBox");
+    feedback.className = "hidden";
+
+    try {
+      const res = await fetch("/api/settings/git-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+      });
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        input.value = "";
+        showToast("GitHub token saved & push verified successfully!", "success");
+        feedback.className = "p-3 rounded-xl text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+        feedback.innerHTML = `<strong>✅ Success:</strong> ${data.message}`;
+      } else {
+        showToast("Push test failed: " + (data.message || data.detail || "Error"), "error");
+        feedback.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200 block";
+        feedback.innerHTML = `<strong>❌ Git Push Error:</strong> ${data.message || data.detail || 'Failed to authenticate with GitHub'}`;
+      }
+      loadTokenStatus();
+    } catch (err) {
+      showToast("Failed to save token: " + err, "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  }
+
+  async function testGitPush() {
+    const btn = document.getElementById("btnTestPush");
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Testing...</span>';
+
+    const feedback = document.getElementById("pushFeedbackBox");
+    feedback.className = "hidden";
+
+    try {
+      const res = await fetch("/api/settings/git-push-test", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        showToast("Git push verified! Changes are live on GitHub.", "success");
+        feedback.className = "p-3 rounded-xl text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+        feedback.innerHTML = `<strong>✅ Push Verified:</strong> ${data.message}`;
+      } else {
+        showToast("Git push failed: " + (data.message || "Error"), "error");
+        feedback.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200 block";
+        feedback.innerHTML = `<strong>❌ Git Push Failed:</strong> ${data.message}`;
+      }
+      loadTokenStatus();
+    } catch (err) {
+      showToast("Test push failed: " + err, "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  }
+
+  async function deleteGitHubToken() {
+    if (!confirm("Are you sure you want to remove the stored GitHub token? Git push will be disabled until a new token is configured.")) {
+      return;
+    }
+    try {
+      const res = await fetch("/api/settings/git-token", { method: "DELETE" });
+      const data = await res.json();
+      showToast("Token removed", "info");
+      loadTokenStatus();
+    } catch (err) {
+      showToast("Error removing token: " + err, "error");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadTokenStatus();
+  });
+</script>
 {% endblock %}

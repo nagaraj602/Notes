@@ -13,6 +13,7 @@ data:
   REPO_BRANCH: "main"
   AUTO_SYNC_INTERVAL_MINUTES: "5"
   NOTES_DIR: "/app/data/notes"
+  GITHUB_TOKEN: ""
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -45,7 +46,7 @@ spec:
     spec:
       containers:
         - name: devops-hub
-          image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.6.1
+          image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.6.2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
