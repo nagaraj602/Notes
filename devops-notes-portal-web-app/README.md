@@ -9,8 +9,9 @@ A modern, production-grade DevOps knowledge portal, interactive notes reader, an
 - [1. Overview & Architecture](#1-overview--architecture)
 - [2. Key Features](#2-key-features)
   - [2.1 Notes Explorer & Search](#21-notes-explorer--search)
-  - [2.2 Interview Schedule & Q&A Hub (`/interviews`)](#22-interview-schedule--qa-hub-interviews)
-  - [2.3 Repository-Backed Session Database & URL Persistence](#23-repository-backed-session-database--url-persistence)
+  - [2.2 Nagaraj Interview Schedule & Q&A Hub (`/interviews`)](#22-nagaraj-interview-schedule--qa-hub-interviews)
+  - [2.3 Old IQ Questions Bank (`/old-iq-questions`)](#23-old-iq-questions-bank-old-iq-questions)
+  - [2.4 Repository-Backed Session Database & URL Persistence](#24-repository-backed-session-database--url-persistence)
 - [3. Deployment Guide (Kubernetes & K3s)](#3-deployment-guide-kubernetes--k3s)
   - [3.1 Standard Kubernetes Deployment (Docker Desktop, Minikube, Kind)](#31-standard-kubernetes-deployment-docker-desktop-minikube-kind)
   - [3.2 K3s Lightweight Kubernetes Deployment (Any Linux Server / VM)](#32-k3s-lightweight-kubernetes-deployment-any-linux-server--vm)
@@ -65,7 +66,7 @@ flowchart TD
 * **Typography Controller**: Change reader font family (`Sans`, `Inter`, `Mono`, `Serif`), font size, and font weight on the fly.
 * **Accordion Question Collapsing**: Technical interview question notes format with collapsible dropdown answers and 1-click **Expand All / Collapse All**.
 
-### 2.2 Interview Schedule & Q&A Hub (`/interviews`)
+#### 2.2 Nagaraj Interview Schedule & Q&A Hub (`/interviews`)
 * **Today's Live Schedule Banner**: Prominently highlights interviews happening today with real-time status badges (`🔴 HAPPENING NOW`, `⏳ Upcoming Today`, `🏁 Concluded`).
 * **Dedicated Metric Cards**: 5 dedicated interactive cards for *Total Attended*, *Total Companies*, *This Week's Activity*, *Upcoming Scheduled*, and *Questions Bank* with detailed summary modals.
 * **Hierarchical Company & Round Grouping**: Questions are grouped under dedicated Company banners and Round sub-cards, eliminating redundant repetitions on individual question cards.
@@ -81,8 +82,22 @@ flowchart TD
 * **Multi-Category Auto-Detection**: Auto-detects and tags questions across 17 categories (`Linux`, `Shell script`, `jenkins`, `Github`, `Build tools`, `Docker`, `AWS`, `Kubernetes`, `terraform`, `Ansible`, `jira`, `scrum`, `Agile`, `Monitoring tools`, `python`, `Azure`, `AI tool`).
 * **Inline Question & Category Editor**: Edit questions, answers, difficulty, and assign/unassign multiple categories with 1 click.
 
-### 2.3 Repository-Backed Session Database & URL Persistence
-* **Zero Local-Device Dependency**: Session state is persisted directly into [`Nagaraj_interviews/session_state.json`](file:///D:/Devops%20training%202026/ArtisanTek%20DevOps%20Jan%202026/12.%20Ai%20coding%20agents/Notes/Nagaraj_interviews/session_state.json) inside your GitHub repository.
+### 2.3 Old IQ Questions Bank (`/old-iq-questions`)
+* **Dedicated Navigation Menu**: Independent top navigation item **"Old IQ Questions"** linking directly to `/old-iq-questions`.
+* **Zero Interference with `Nagaraj_interviews`**: Exclusively parses markdown files from the `Interview Questions/` repository directory (`0. Basic general interview questions.md`, `0_1. General questions part 2.md`, `1. 23-Aug-2026 from whatsapp.md`, and `2. 9-Sep-2026 from discord.md`).
+* **Hierarchical Collapsible View**:
+  * **Company Level**: Collapsible glassmorphism cards with company logo emojis (`🏢`), round count badges, and question counters.
+  * **Round Level**: Nested collapsible sections with round badges (e.g., `Level 1`, `Level 2`, `HackerRank Assessment`, `Manager`) and timestamps.
+  * **Category Grouping**: Grouped cleanly under categorized badges (`CI/CD`, `Docker`, `Kubernetes`, `AWS / Cloud`, `Terraform / IaC`, `Linux`, `Security`, etc.).
+  * **Question & Answer Accordion**: Questions display collapsible answers by default (`● Question` ➔ expand to reveal senior-level production answer).
+* **Instant Client-Side Search**: Sub-millisecond filtering across question text, answer body, company name, and categories.
+* **Category Filter Pills**: 1-click filter pills displaying question count per category (e.g., `Kubernetes (340)`, `CI/CD (280)`, `AWS / Cloud (310)`).
+* **Company Quick Selector**: Dropdown to instantly jump to any of the 50+ companies.
+* **1-Click Expand / Collapse All**: Globally expand or collapse all companies, rounds, and answers with a single click.
+* **Prism.js Syntax Highlighting**: Production-grade YAML, Bash, Python, HCL, Groovy, and JSON code snippets rendered with copy buttons.
+
+### 2.4 Repository-Backed Session Database & URL Persistence
+* **Zero Local-Device Dependency**: Session state is persisted directly into `Nagaraj_interviews/session_state.json` inside your GitHub repository.
 * **URL Sync (`pushState`)**: Browser address bar updates dynamically (e.g. `/?file=devops-notes/Interview%20Questions/1.%2023-Aug-2026.md`).
 * **Reload & Share**: Refreshing (`F5`) or sharing URLs opens the exact note and auto-expands all parent folders in the sidebar.
 
@@ -239,16 +254,18 @@ devops-notes-portal-web-app/
 ├── app/
 │   ├── config.py                 # Multi-repository configuration
 │   ├── git_sync.py               # Background Git sync engine
-│   ├── interview_hub.py          # Schedules, Q&A, and auto-categorization
+│   ├── interview_hub.py          # Schedules, Q&A, and auto-categorization (Nagaraj Interviews)
+│   ├── old_iq_manager.py         # Dedicated parser & engine for 'Interview Questions/' folder
 │   ├── session_manager.py        # Notes-repo backed session database
 │   ├── markdown_engine.py        # Markdown parser with code highlighting
 │   ├── main.py                   # FastAPI backend endpoints
 │   └── templates/
-│       ├── base.html             # Main layout, nav header, theme, search bar
+│       ├── base.html             # Main layout, nav header with Nagaraj Interview & Old IQ Questions
 │       ├── index.html            # Notes tree, viewer, mermaid & typography controls
-│       └── interviews.html       # Interview tracker, today's schedule, Q&A uploader
+│       ├── interviews.html       # Nagaraj interview tracker, today's schedule, Q&A uploader
+│       └── old_iq.html           # Dedicated Old IQ questions viewer (Company ➔ Round ➔ Category ➔ Q&A)
 ├── k8s/
-│   └── all-in-one.yaml           # Complete Kubernetes manifests
+│   └── all-in-one.yaml           # Complete Kubernetes manifests (v6.6.0)
 ├── Dockerfile                    # Multi-stage optimized Docker build
 ├── requirements.txt              # Python package dependencies
 ├── deploy.ps1                    # 1-Click build, push & deploy script
@@ -264,6 +281,9 @@ devops-notes-portal-web-app/
 | `GET /api/tree` | `GET` | Returns file tree structure of synced repositories |
 | `GET /api/file?path={path}` | `GET` | Fetches parsed HTML & raw Markdown of a note |
 | `GET /api/search?q={query}` | `GET` | Full-text search across all notes |
+| `GET /old-iq-questions` | `GET` | Dedicated UI page for Old IQ Questions bank |
+| `GET /api/old-iq/data` | `GET` | Retrieves parsed companies, rounds, and questions from `Interview Questions/` |
+| `GET /api/old-iq/stats` | `GET` | Retrieves aggregate metrics (total companies, rounds, questions, categories) |
 | `GET /api/interviews/stats` | `GET` | Retrieves interview statistics, today's list & company records |
 | `GET /api/interviews/schedules`| `GET` | Returns all interview schedules |
 | `POST /api/interviews/schedules`| `POST` | Creates a new interview schedule with start & end time |
