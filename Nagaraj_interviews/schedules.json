@@ -14,5 +14,25 @@
     "notes": "",
     "difficulty": "Moderate",
     "created_at": "2026-09-02T12:51:29.674916"
+  },
+  {
+    "id": "sched-28a31a16",
+    "company": "Cloudflare",
+    "role": "Senior DevOps & SRE Engineer",
+    "round": "System Architecture Round",
+    "date": "2026-09-12",
+    "time": "14:00",
+    "start_time": "14:00",
+    "end_time": "15:00",
+    "status": "scheduled",
+    "meeting_link": "https://meet.google.com/xyz-cloudflare",
+    "about_company": "",
+    "role_info": "",
+    "job_description": "Seeking an experienced DevOps Engineer to design multi-cloud infrastructure, Terraform modules, and automated CI/CD pipelines.",
+    "salary_ctc": "45 LPA",
+    "monthly_salary": "",
+    "notes": "Discussion on global edge routing, Kubernetes multi-cluster failover, and ArgoCD zero-downtime rollouts.",
+    "questions_uploaded": false,
+    "created_at": "2026-09-09T19:40:54.587759"
   }
 ]
