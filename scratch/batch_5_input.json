@@ -1,0 +1,1047 @@
+[
+  {
+    "company": "Cyient",
+    "rounds": [
+      {
+        "company": "Cyient",
+        "round": "Level 1",
+        "date": "16-08-2026 02:31 AM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Can you explain one of your CI/CD pipelines end-to-end, from code commit to production deployment?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How did you integrate SonarQube and Artifactory with Jenkins in your CI/CD pipeline?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the lifecycle of a Docker container?",
+            "category": "DOCKER"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what a multi-stage Dockerfile is and why it's used?",
+            "category": "DOCKER"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you troubleshoot a CrashLoopBackOff error in Kubernetes?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the difference between a ClusterIP service and a NodePort service in Kubernetes?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you briefly explain the difference between ConfigMaps and Secrets in Kubernetes?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the Terraform workflow from 'terraform init' to 'terraform apply'?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you roll back changes made through Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what a Terraform remote backend is and how it works?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what an Ansible inventory is and how it's used?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain how auto scaling works in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you differentiate between an IAM role and an IAM user in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "How many monitoring tools do you have experience with?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How does Prometheus collect metrics from Kubernetes nodes and pods?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what a canary deployment strategy is?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "Where are you originally from?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you introduce yourself and give an overview of your professional background?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "How many years of professional experience do you have?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "What was your previous company?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Mphasis",
+    "rounds": [
+      {
+        "company": "Mphasis",
+        "round": "Level 1",
+        "date": "17-08-2026 03:49 PM",
+        "items": [
+          {
+            "prefix": "↳",
+            "text": "*You mentioned that you work more with shell scripting rather than Python — is that correct?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the role of the inventory file in Ansible?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What are the different types of inventory files in Ansible?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "How does variable precedence work in Ansible?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*In Ansible's variable precedence hierarchy, which source has the highest precedence?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "When would you use handlers in Ansible?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "How does Ansible ensure secure communication between the control node and target hosts?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*You mentioned Ansible can also use HTTPS for secure communication — for which specific operating system is that used?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "What are Ansible facts and how are they used?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you handle errors or exceptions in Ansible playbooks?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you manage or control the order of execution for tasks in an Ansible playbook?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Why do we use ad hoc commands in Ansible when playbooks are generally the preferred approach?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you need to update a web application running on 50 servers without causing any downtime for users — how would you approach this using Ansible?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you introduce yourself, describe your day-to-day work in your current organization, and share the achievements from your previous organization or projects?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Are you working with Python?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you resolve package dependencies in Python?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you write to or read from a file in Python?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you handle exceptions in Python?",
+            "category": "OTHER"
+          }
+        ]
+      },
+      {
+        "company": "Mphasis",
+        "round": "Level 2",
+        "date": "",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "How would you rate your proficiency and experience with Linux?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How do you copy a file from one server to another server using Linux commands?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How do you create a 0-byte (empty) file in Linux?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How do you create a file in Linux with the default file permissions?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "How many years of experience do you have working with Ansible?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Have you done any automation work using Ansible?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you highlight a specific use case or sample automation you implemented using Ansible or Python?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*For that automation example using Ansible or Python, what was the problem statement or issue you were solving, and what kind of automation did you implement to address it?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*In the example where an Ansible playbook was triggered from Jenkins, what kind of playbook did you write, and have you written any Ansible playbooks completely from scratch?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What specific types of Ansible playbooks have you written?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Can you demonstrate how you write an Ansible playbook from scratch, for example by typing a sample playbook in an editor?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "What monitoring or observability tools are you familiar with, and how have you used them?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "Are you familiar with SRE (Site Reliability Engineering), and can you explain what it is?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Have you implemented any SRE best practices in your current role?*",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you please introduce yourself?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "What is your current CTC (compensation)?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Which company are you currently working for?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Are you currently serving your notice period, have you already left the company, or are you still actively working there?*",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Do you currently have any other job offer in hand?*",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What is your salary expectation for this role?*",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "LTM",
+    "rounds": [
+      {
+        "company": "LTM",
+        "round": "Level 1",
+        "date": "",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "How comfortable are you working with the Windows operating system?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "If a Python script runs successfully when executed manually but fails when run through Jenkins, how would you debug and troubleshoot the issue?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "If you had 200 Windows servers and needed to automate daily log cleanup on all of them, how would you approach it?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*In that log cleanup automation scenario, how would you schedule the Ansible playbook to run automatically?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Since crontab doesn't work on Windows, how would you schedule the log cleanup task specifically on Windows servers?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "What AWS services have you worked on?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you worked with AWS Security Groups and Network ACLs (NACLs)?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Can you create explicit deny rules in an AWS Security Group?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "If you have an application hosted on an EC2 instance that is inaccessible, how would you troubleshoot the issue?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Can you walk through your step-by-step troubleshooting process for this inaccessible application scenario?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you take backups of your infrastructure on AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*You mentioned EBS volumes being attached — what did you mean by that, and what are they attached to?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How do you take backups of your EBS volumes specifically?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "In your enterprise environment, is all your infrastructure deployed in a public subnet or a private subnet?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "If you received 10,000 alert emails generated from AWS overnight, what would be your steps when you come in the next morning to handle this situation?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "Is your application connected to an on-premises Active Directory (AD)?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "●",
+            "text": "What is your understanding of the job description you applied for, and what do you think the role requires?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you please introduce yourself, including your professional background and experience?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How many years of total professional experience do you have?*",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Of your total experience, how many years specifically have you worked with AWS?*",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you done infrastructure automation using Python and PowerShell?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What is the difference between Python and PowerShell as scripting languages?*",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you handle exceptions in Python?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you know what IIS (Internet Information Services) is?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "How much experience do you have working with SQL?",
+            "category": "OTHER"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Feuji",
+    "rounds": [
+      {
+        "company": "Feuji",
+        "round": "Level 1",
+        "date": "",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Can you explain the CI/CD setup you have worked with?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you deployed any monitoring systems and worked with microservices running in an EKS cluster?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "*As part of this CI/CD setup, did you deploy applications to an EKS cluster?*",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If, after a deployment, a user is unable to access the application, how would you troubleshoot the issue?*",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How did you configure monitoring systems such as the ELK stack and Grafana for your microservices?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What kind of dashboards did you create in Grafana?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "What is SLI (Service Level Indicator) and SLO (Service Level Objective)?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Given a payment microservice, how would you define SLIs and SLOs for it, and how would you implement monitoring for them using Grafana?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*In the context of dashboards, do you know what the 'golden signals' are in monitoring?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Suppose you need to collect and monitor logs from millions of real users in real time — how would you design and implement such a real-time monitoring system?*",
+            "category": "MONITORING"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Bounteous",
+    "rounds": [
+      {
+        "company": "Bounteous",
+        "round": "Level 1",
+        "date": "18-08-2026 07:49 PM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Can you explain how a Jenkins CI/CD pipeline works?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain how you automate infrastructure provisioning and management?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "If you have provisioned your infrastructure on AWS using infrastructure-as-code and someone makes manual changes via the AWS console, how would you handle this situation?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what modules are (in the context of infrastructure-as-code tools like Terraform)?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the difference between VPC peering and AWS Transit Gateway?",
+            "category": "NETWORKING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*In what scenarios would you choose to use VPC peering versus Transit Gateway?*",
+            "category": "NETWORKING"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the different S3 storage classes in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you connect different AWS accounts when services in those accounts need to communicate with each other?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you automate taking backups of data in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What disaster recovery strategies should be followed in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the difference between AWS SNS and SQS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you introduce yourself and give an overview of your professional background?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Apty",
+    "rounds": [
+      {
+        "company": "Apty",
+        "round": "Level 1",
+        "date": "",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Why did you choose EKS over alternatives like Lambda or plain EC2 for running your microservices, and what scale or operational needs drove that decision?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How did you handle scaling inside your EKS cluster — did you use the Horizontal Pod Autoscaler or another mechanism, and roughly how many pods did you scale up or down to under load?*",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "How did you structure your AWS VPC for this platform, including the design of public versus private subnets, routing, and security groups? What did you build and why?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Given that your load balancer sits in the public subnet, how did you secure traffic flowing from the load balancer to your private application subnets? Can you explain how you used security groups versus NACLs, and why you chose that approach?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What was the biggest outage you faced on this financial reporting platform?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Regarding the 503 error outage you mentioned, how did you identify the root cause of the issue in production?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What specific fix did you deploy to resolve the 503 error outage?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Can you walk me through exactly what happened during the 503 error incident — how you detected the errors and what changes you made to bring the system back to a stable state?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Regarding the endpoints that weren't updated during the 503 outage, what exactly did you fix — was it a configuration issue, a deployment step, or something related to service registration?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How did you ensure the same 503 outage issue wouldn't happen again in future deployments?*",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "Which real-world system that you have owned end-to-end would you like to use as the anchor system for this technical discussion?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Which is the most significant system where you owned both the architecture and the operations end-to-end, so we can use it as our anchor system for this discussion?*",
+            "category": "SYSTEM DESIGN"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Bounteous",
+    "rounds": [
+      {
+        "company": "Bounteous",
+        "round": "Level 2",
+        "date": "19-08-2026 06:12 PM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Where do you store the Terraform state file, and how do you handle a situation where the state file becomes corrupted?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the difference between Security Groups and Network ACLs (NACLs) in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the difference between Service Control Policies (SCPs) and IAM policies in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you configure cross-account access in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "If an external vendor needs access to a specific AWS resource, how would you provide that access?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what KMS keys are in AWS and how they are used?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you take backups of resources in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the difference between SNS and SQS in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is a latency-based routing policy in Amazon Route53?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What are VPC endpoints in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is AWS DataSync?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the difference between a public subnet and a private subnet in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is AWS Control Tower?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is a lifecycle policy in Amazon S3?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What are AWS Step Functions?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "How can you replicate data to a different region in Amazon S3?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the AWS service that allows you to view all the resources you have created in your account?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What are resource-based policies in AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain AWS CloudWatch and AWS CloudTrail, and how they differ?",
+            "category": "MONITORING"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Mindteck",
+    "rounds": [
+      {
+        "company": "Mindteck",
+        "round": "Level 1",
+        "date": "20-08-2026 11:34 PM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Have you worked with virtualization technologies such as virtual machines (VMs)?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If a Hyper-V-hosted VM (among 20-25 VMs) running a database is experiencing high I/O latency, but its resource utilization metrics (CPU, memory) appear normal, how would you troubleshoot and confirm what is actually causing the issue?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have hands-on experience with Linux administration, including memory management?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How would you extend an LVM (Logical Volume Manager) partition in Linux? Can you walk through the commands or steps involved in the process?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "How would you design an end-to-end CI/CD pipeline for an application, covering how you would maintain security and credentials, and how you would handle rollback in case of an error or failure in the production pipeline?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If a Trivy image scanning stage in your CI/CD pipeline starts taking much longer than expected (e.g., 30 minutes to an hour instead of the expected benchmark), and the team complains about this delay, how would you optimize the Trivy scanning stage?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If your pipeline passes the build stage successfully but starts failing when pushing the Docker image to the ECR (or any container) registry, what are the possible reasons for this failure and how would you troubleshoot it?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*When troubleshooting the failure to push images to the registry, would you also check anything related to network connectivity, and if so, what steps would you take?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have hands-on experience working with Docker?",
+            "category": "DOCKER"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If a Docker container is unable to connect to an external database and you receive a connection timeout error, how would you troubleshoot this issue and what components would you check to fix it?*",
+            "category": "DOCKER"
+          },
+          {
+            "prefix": "●",
+            "text": "If an EKS cluster is shared by 3-4 teams and a security audit reveals that most team members have cluster-admin privileges (violating least-privilege principles), how would you redesign access control for the cluster to follow security best practices?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "*When designing RBAC roles for an EKS cluster, do you configure roles on a team basis or user basis (e.g., for admins vs. regular team members)? How would you differentiate the access level and role configuration between a team member and an administrator?*",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you worked with Kubernetes?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If, after deploying a production pod, you check its status and see a CrashLoopBackOff error, what could be the possible reasons for this, and how would you troubleshoot it?*",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have experience working with Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If someone manually changes production infrastructure that is managed by Terraform, causing the Terraform state file to become out of sync with the actual infrastructure and resulting in breaking changes, how would you handle this incident and what measures would you implement to prevent it from happening in the future?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Can you explain how drift detection actually works in Terraform?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you mostly work with AWS cloud services?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Do you have experience designing services using AWS EC2?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "If you needed to design a highly available, globally accessible architecture for an engineering team with clients in multiple locations—using EC2 for compute and RDS for the database—how would you approach the design? What specific components would you use to achieve high availability across multiple zones?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If some of your applications have read-heavy workloads with frequent read operations, would you configure anything specific to handle this, and if so, what?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If an application behind an Application Load Balancer (ALB) suddenly starts experiencing a 504 gateway timeout, how would you troubleshoot and resolve this issue?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the difference between an AWS Service Control Policy (SCP) and an IAM policy?",
+            "category": "CLOUD"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "virtusa",
+    "rounds": [
+      {
+        "company": "virtusa",
+        "round": "Level 1",
+        "date": "22-08-2026 11:05 AM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Have you worked with Linux servers in your role?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "On a Linux server, how would you check the machine's IP address?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "If you wanted to verify from an EC2 server whether it can reach google.com, how would you check that?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "*If you only have the hostname of a website, how would you check connectivity to it from the Linux server?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you used the telnet command on Linux?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What is the full command syntax for checking open ports/processes (e.g., using netstat/telnet) on Linux?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "If a Docker process on a Linux server is hung, how would you search for and locate that process?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How would you locate the specific Process ID (PID) of that hung Docker process?*",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you describe the complete end-to-end CI/CD pipeline flow used in your organization?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "If your deployment pipeline starts failing right after a code merge, how would you debug the issue?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Have you mainly used Jenkins as your CI/CD tool?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Do you not use GitHub Actions in your organization for CI/CD?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*How many deployment environments do you have in your CI/CD pipeline?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Is your Jenkins pipeline written using the declarative syntax, or configured through the Jenkins UI?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What advantages do you see in using the declarative pipeline approach in Jenkins?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Is this declarative Jenkins pipeline code version-controlled and managed through GitHub?*",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "If your Jenkins setup currently supports 2-3 developers deploying code smoothly, but 50 new developers suddenly join and also start deploying, how would you scale Jenkins to handle this increased load?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you used Pulumi as an IaC tool, or have you mainly used Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "If AWS infrastructure was already set up manually and your manager asked you to bring it entirely under Terraform management, how would you approach managing it via Terraform from scratch?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What is the Terraform command used to import an existing resource into Terraform state?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "*After running Terraform import, how would you verify whether the resource was successfully imported into the Terraform state file?*",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "If you're building AWS infrastructure from scratch using Terraform and the 'terraform apply' fails partway through, how would you debug and resolve the issue?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you share your screen so we can review some of your Terraform code?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "In your AWS environment, did you create IAM users manually, or was SSO configured for user access?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "*Which team was responsible for granting IAM access/administrator privileges in your AWS account?*",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Before your current stint at Sonata, which other organizations did you work for?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "*What were your job roles/titles at those previous organizations?*",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  }
+]

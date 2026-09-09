@@ -26,6 +26,7 @@ from app.cidr_engine import (
     get_cloud_comparison, generate_terraform_hcl, get_generated_subnets, CLOUD_SPECS
 )
 from app.interview_hub import interview_manager, CATEGORIES
+from app.old_iq_manager import old_iq_manager
 
 # Background Auto-Sync Task
 async def auto_sync_worker():
@@ -107,6 +108,31 @@ async def interviews_page(request: Request):
             "sync_status": git_manager.sync_status
         }
     )
+
+@app.get("/old-iq-questions", response_class=HTMLResponse)
+async def old_iq_page(request: Request):
+    data = old_iq_manager.get_data()
+    return templates.TemplateResponse(
+        request=request,
+        name="old_iq.html",
+        context={
+            "data": data,
+            "stats": data.get("stats", {}),
+            "categories": data.get("all_categories", []),
+            "companies": data.get("companies", []),
+            "last_sync": git_manager.last_sync_time,
+            "sync_status": git_manager.sync_status
+        }
+    )
+
+@app.get("/api/old-iq/data")
+async def get_old_iq_data(refresh: bool = False):
+    return old_iq_manager.get_data(force_refresh=refresh)
+
+@app.get("/api/old-iq/stats")
+async def get_old_iq_stats():
+    data = old_iq_manager.get_data()
+    return data.get("stats", {})
 
 # --- API ENDPOINTS ---
 

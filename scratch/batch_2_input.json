@@ -1,0 +1,1364 @@
+[
+  {
+    "company": "Curatal",
+    "rounds": [
+      {
+        "company": "Curatal",
+        "round": "Level 1",
+        "date": "",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "In Linux, how do you search for a specific word inside a file?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "If a Linux file system becomes full, what steps would you follow to identify the root cause?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you view all running processes on a Linux system?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "If a user encounters a 'permission denied' error on Linux, what would you check to troubleshoot it?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "How would you schedule a script to run every day at 1 AM on Linux?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the purpose and use of the Linux command 'ss \\-tulmp'?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "Which scripting languages have you worked with?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "Can you write a simple shell script that adds the numbers from 1 to 100?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "Can you explain the logic behind the shell script you just wrote to sum numbers from 1 to 100?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "If an application is not responding, how would you troubleshoot and handle this situation, particularly in a Kubernetes environment?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Which monitoring tools have you worked with?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "How would you set up a Grafana dashboard?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "How would you set up alerting in Grafana?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you have any knowledge about annotations in the context of Prometheus/Grafana monitoring?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "Can you explain what templates are used for in Grafana's Alert Manager?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "How would you manage a situation where two P1 (highest priority) production issues occur simultaneously?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you give me a brief introduction about yourself and your professional background?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "How many total years of professional experience do you have?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you worked with any programming languages?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "If given the opportunity, how much time would you take to learn new technologies?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "What is your current location or the location you are looking for?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "What is your current notice period?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "Have you already resigned/submitted your resignation from your current job?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "In your current role, which databases have you worked on?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "↳",
+            "text": "What is the difference between a primary key and a unique key in a database?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "↳",
+            "text": "What is indexing in the context of databases?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "↳",
+            "text": "What is the difference between the DELETE, DROP, and TRUNCATE commands in SQL?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you know what ITIL (IT Infrastructure Library / IT service management framework) is?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you have any knowledge of ITIL processes such as change management and problem management?",
+            "category": "OTHER"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Protiviti",
+    "rounds": [
+      {
+        "company": "Protiviti",
+        "round": "Level 1",
+        "date": "05-08-2026 08:19 PM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Do you have experience working with Kubernetes?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "What kinds of issues have you troubleshooted in Kubernetes?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you have two Kubernetes nodes and one node needs to be taken down for maintenance. How would you migrate all the pods running on that node to the other working node?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Before or after cordoning a node, how do you drain the target node to gracefully evict the existing pods running on it, and what command would you use?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you describe the Kubernetes architecture, specifically what services/components run on the master (control plane) node versus the worker node?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose a customer is on AWS with a midsize environment of around 400-500 VMs, along with RDS, S3, and other AWS services, all of which were deployed manually. They now want to automate everything using Terraform and a CI/CD tool like Jenkins or GitLab, converting the manually deployed infrastructure into automated infrastructure-as-code. How would you approach automating this entire environment?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Given that you would need to write Terraform code and import every existing resource individually (VPCs, subnets, IPs, disks, S3 buckets, etc.), wouldn't this be a very time-consuming and hectic task? How would you address that?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Since the VPCs, subnets, and other resources already exist because they were deployed manually, is there a better way to import this existing manually-deployed environment into Terraform state?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "When using Terraform import to bring existing manually-created resources under Terraform management, do you have to import each resource one by one?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Where do you store the Terraform state files?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "How is the Terraform state file locked to prevent concurrent modifications?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Isn't DynamoDB for Terraform state locking deprecated now, with Terraform using native S3 state locking instead?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "What is the purpose of the tfvars file in Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "If you have three environments (prod, dev, QA) each with its own tfvars file (prod.tfvars, dev.tfvars, qa.tfvars), how would you configure Terraform so that running 'terraform apply' automatically picks up the correct tfvars file for the target environment (e.g., prod.tfvars) without explicitly specifying it on the command line?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Is your experience primarily on AWS, or do you also have experience with Azure?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Apart from Kubernetes, have you managed AWS infrastructure directly, such as server patching?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you performed any cloud cost assessments, such as a FinOps assessment?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "If a customer asked you to perform a cost assessment to review whether their EC2 instances are right-sized and to check if they are overspending on cloud, what would be your approach to performing this assessment?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "In the context of cost optimization for S3 storage, how would you identify which data needs to be moved to a different storage tier?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "What S3 lifecycle policy would you apply to move infrequently used data to lower-cost storage tiers?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "In terms of cost optimization, how would you optimize the VMs (EC2 instances) in this environment?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "If AWS's recommendation tool identified around 50 EC2 instances that could be right-sized due to less than 20% CPU and memory utilization, what would be your next step? Would you right-size them immediately?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Given the AWS right-sizing recommendations for those 50 underutilized EC2 instances, what would you recommend to the customer?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you give a brief introduction about yourself and what you are currently doing in your role?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "LTTS",
+    "rounds": [
+      {
+        "company": "LTTS",
+        "round": "Level 1",
+        "date": "05-08-2026 08:49 PM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "How do you set up and configure monitoring for a hybrid environment that connects on-premises infrastructure to an Azure data center?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose your application shows a latency of 5 (seconds), but CPU and memory metrics look normal. How would you perform root cause analysis (RCA) to identify the source of this latency issue?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you scale Azure Monitor to handle large environments?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "In the context of Azure Monitor, what is an action rule?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "In the case of a VM CPU spike, how would you monitor and configure alerts for high CPU usage?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you are facing a storage cost issue where log ingestion and metric retention costs have skyrocketed. What steps would you take to address this?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have any knowledge of the OpenTelemetry (OTel) framework?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you have configured monitoring tools like Kibana or Grafana such that different teams can view the data, but only the SRE team can edit it. How would you configure this access control setup?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you introduce yourself and give an overview of your background and experience?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Mrisoftware",
+    "rounds": [
+      {
+        "company": "Mrisoftware",
+        "round": "Interview",
+        "date": "",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "What CI/CD platforms have you used?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "How do you set up a pipeline in Jenkins? Can you walk through the stages you typically include?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Suppose you want to display certain messages on the console after deployment, such as showing a URL or a command the user needs to run — how would you achieve that?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Where exactly have you set up the deployment stage for the Kubernetes environment — what platform did you use?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Are you using native Kubernetes manifest files, Helm charts, or something else for deploying into the Kubernetes environment?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Is it possible to display such post-deployment messages using a Helm chart?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "What kind of AWS resources have you set up using Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you are given a task to set up Terraform and provision resources into AWS completely from scratch, with nothing existing in AWS currently. What checklist or set of steps would you follow while setting up the Terraform pipeline?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "What is the purpose of storing the Terraform state file in an S3 bucket?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you have a Terraform project managing infrastructure that you've been maintaining for about 3 months, and recently created new EC2 instances/web apps using it. If you then revert the Terraform state file to a version from one month ago and run 'terraform apply', what will happen?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "If a 'prevent\\_destroy' lifecycle block has been applied to those resources, what will happen when you run 'terraform apply' after reverting the state file?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "If you actually want those resources to be destroyed despite the 'prevent\\_destroy' lifecycle block, how would you go about destroying them?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Suppose the same Terraform pipeline is working fine after destroying resources, but 2-3 days later you encounter an error while running the pipeline. What troubleshooting approach would you follow?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you introduce yourself and describe your experience with the various DevOps tools and technology stacks you have worked with?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      },
+      {
+        "company": "Mrisoftware",
+        "round": "Level 2",
+        "date": "",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "If you were building a CI/CD pipeline from scratch for a new project and wanted it to be as ideal as possible, what stages and tools would you include, and what would the overall pipeline look like?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "What is your core cloud platform skill—Azure or AWS?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "As a DevOps engineer, what KPIs (key performance indicators) do you think should be tracked from a DevOps perspective?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "↳",
+            "text": "Given that you mentioned high availability, what is your background in terms of pipelines and DevOps—do you focus on the application side, the infrastructure side, or both?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "↳",
+            "text": "From a high-availability (HA) perspective, what would you do at the infrastructure level to make a product highly available?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "In a global company where cloud engineering and DevOps are operated as a global unit across many regions, how can we ensure standards and consistency in DevOps practices across all regions?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you tell us about your educational background, specifically where you completed your B.Tech?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "Where have you been working as a DevOps engineer during your 6 years of experience?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "Given your job history of 1.5 years at Informatica, 4 years at Accenture, and now only about 6-8 months back at Informatica, why are you looking to change jobs again?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "What is your current CTC (compensation)?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "What is your expected CTC (compensation) for this role?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "Why do you believe a 42% salary increase is justified, especially since you only recently joined Informatica within the past year?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "When you mention wanting career growth, what does career growth mean to you?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Are you aware that this position requires working in shifts and sometimes working from the office depending on the shift?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "If you were working on a critical project and started facing conflicting priorities that put the project at risk, what would your thought process be and what actions would you take?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "How big is the team you have worked with in your current or recent role?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Accionlabs",
+    "rounds": [
+      {
+        "company": "Accionlabs",
+        "round": "Level 1",
+        "date": "05-08-2026 08:58 PM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Can you explain how the Linux boot process works and describe its different stages?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "↳",
+            "text": "When a Linux system is normally booted, what runlevel is it typically at?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you troubleshoot slowness on a system or server?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you ever encountered a situation where inodes on a system were full, and if so, what did you do to resolve it?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the difference between a process and a thread?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "What is your understanding of CI/CD pipelines, and what is the most complex pipeline you have built, including the scale at which it operated?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you briefly explain how Kubernetes works?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you have namespace1 and namespace2, each with a pod, and these pods are scheduled on two different nodes. If you try to resolve and perform a TCP probe from a pod in namespace2 to a pod in namespace1, will you be able to do that? If so, how would this be accomplished in Kubernetes?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "In a scenario where you have a pool of GPU-based servers in a Kubernetes cluster, how would you ensure that only GPU-based pods get scheduled onto those nodes, and not other pods?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "What is your understanding of Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Could you explain roughly how Terraform works internally?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "How do you use Terraform in your day-to-day work?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "What are some complex tasks you have performed using Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you manage multiple environments in Terraform when only the values differ between them, and how do you do this efficiently?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you write a Terraform manifest to create an S3 bucket, using the Terraform documentation as reference?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you have an understanding of how TCP packets work?",
+            "category": "NETWORKING"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain your roles and responsibilities in your current/previous project?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Innova Solutions",
+    "rounds": [
+      {
+        "company": "Innova Solutions",
+        "round": "Level 1",
+        "date": "",
+        "items": [
+          {
+            "prefix": "↳",
+            "text": "Which scripting language did you use for automation tasks (e.g., with Ansible)?",
+            "category": "LINUX"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose a developer accidentally committed directly to the main branch in Git. How would you fix this?",
+            "category": "GIT"
+          },
+          {
+            "prefix": "↳",
+            "text": "Which tool did you use for CI/CD?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you have any experience or knowledge of Azure DevOps?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "Did you use Jenkins pipelines to provision Terraform infrastructure, i.e., to deploy Terraform-managed resources?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Suppose a deployment to a production environment using Jenkins failed halfway through. How would you handle this situation?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you have any knowledge or experience with Azure DevOps?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Can you explain how you built a Docker image, pushed it to ECR, and deployed it to an EKS or ECS cluster using your CI/CD pipeline?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Once the Docker image is pushed to ECR, how would you deploy it to ECS or EKS using a Jenkins pipeline?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you manage Docker images and their versioning?",
+            "category": "DOCKER"
+          },
+          {
+            "prefix": "↳",
+            "text": "Did you use Docker within your CI/CD pipelines?",
+            "category": "DOCKER"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have experience working with Kubernetes?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you have hosted microservices using Kubernetes, and a microservice pod keeps entering a CrashLoopBackOff state. What troubleshooting steps would you follow to resolve this?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose your Kubernetes worker nodes suddenly become 'NotReady'. What could be the possible causes, and how would you troubleshoot this issue?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Given that you can't afford much downtime while troubleshooting NotReady worker nodes, what process would you follow to quickly and safely recover the affected workloads?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose your Kubernetes cluster suddenly experiences memory pressure and pods start failing. How would you identify which process is causing this issue, and how would you recover from it?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "How would you identify where pod evictions are happening and which node is affected?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "What specific command would you use to identify the process (the 'noisy neighbor') consuming excessive CPU or memory inside a pod?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you worked with Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "What kind of infrastructure do you provision using Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you use Terraform specifically to provision AWS resources?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you also use Terraform modules in your infrastructure provisioning?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "What command would you use to unlock a Terraform state lock?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Even with a remote backend configured, Terraform state locks can still occur in some cases. How would you go about unlocking the state in such situations?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Can you explain why using a remote backend is important in Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose some resources were deployed manually through the AWS Console, and you now want to manage them using Terraform. How would you go about doing that?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "How would you manage multiple environments—such as dev, QA, and prod—using Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose deployments to dev and QA environments succeeded, but the staging deployment failed because someone manually changed a resource in that environment. How would you identify which resource was manually changed, and how would you fix it?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "If a 'terraform apply' fails midway while deploying to a production environment, how would you recover from that?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the Terraform lifecycle block and its components?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you worked with Ansible?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you hosted any application using AWS EC2?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the difference between AWS Security Groups and Network ACLs (NACLs)?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what an AWS Transit Gateway is and how it is used?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "If you notice that secrets are visible in Terraform state files, how would you secure them?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "●",
+            "text": "If a developer mistakenly pushed AWS keys or secrets to a Git repository, what would be the immediate response to address this?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "●",
+            "text": "How do you manage secrets within Jenkins pipelines?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you briefly introduce yourself and describe your professional background?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Photon",
+    "rounds": [
+      {
+        "company": "Photon",
+        "round": "Level 1",
+        "date": "05-08-2026 09:08 PM",
+        "items": [
+          {
+            "prefix": "↳",
+            "text": "Can you elaborate specifically on your deployment process and the DevOps implementation you have set up for this project?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Are you using tools like Argo CD or Flux for continuous deployment/GitOps in your setup?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Are you familiar with the concept of GitOps?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "As a DevOps engineer, if you wanted to create a minimal-sized Docker image containing your application code that is portable and deployable across all environments, what steps would you take to achieve that?",
+            "category": "DOCKER"
+          },
+          {
+            "prefix": "↳",
+            "text": "What deployment strategy have you been following for releasing application updates in your Kubernetes environment?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "How many Kubernetes clusters have you been managing/handling?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you use one Kubernetes cluster per environment, or how is your cluster setup organized?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "How many environments (e.g., dev, staging, prod) do you have in your setup?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "If you have three namespaces within a single Kubernetes cluster, how does that setup work?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Can you confirm \\- do you operate with only a single Kubernetes cluster?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Can you confirm you have dev, staging, and production namespaces within that single cluster?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what a CrashLoopBackOff error is in Kubernetes and how you would troubleshoot it?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the role of a service mesh (such as Istio) in a Kubernetes environment?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Which tool or managed service are you using to manage your Kubernetes cluster?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain Kubernetes CNI network plugins such as Calico and Flannel and their role in cluster networking?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Suppose you have multiple services running in your Kubernetes cluster and one service is not reachable from another namespace within the cluster \\- what could be the possible causes of this issue and how would you troubleshoot it?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "You mentioned using Helm charts for deployment \\- how would you manage different environments (like dev, staging, prod) using Helm?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain what a Pod Disruption Budget is in Kubernetes and how it is used?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "If one of your services in the cluster is experiencing high latency, how would you go about troubleshooting it?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Would you be able to write some Kubernetes YAML code for me right now to demonstrate?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Can you write a Kubernetes Deployment YAML file that includes resource limits/requests and specifies three replicas?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have experience using Ansible?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "What are handlers in Ansible, and how are they used within Ansible playbooks?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have experience using Terraform?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "As a DevOps engineer, if you wanted to achieve a highly available architecture, what steps would you take (especially using Terraform)?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "How do you handle Terraform state management and securing the state file?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you primarily worked with Azure or AWS as your cloud platform?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Have you used AWS Lambda functions in your work?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "If you wanted to reduce the cold start time/frequency for an AWS Lambda function, how would you go about doing that?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "How does Helm handle secrets management during deployments?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain the architecture of your current project and how you implemented the DevOps approach for it?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you introduce yourself and walk me through your professional background and past work experience?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have any questions for me before we conclude the interview?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "Investcloud",
+    "rounds": [
+      {
+        "company": "Investcloud",
+        "round": "Level 1",
+        "date": "",
+        "items": [
+          {
+            "prefix": "↳",
+            "text": "Which system do you use to run your Terraform pipelines — do you use GitHub Actions, or something else?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Within your Jenkins pipeline, after the Terraform provisioning step completes, do you then have a subsequent step that runs Ansible?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "If you needed to set up pod and node autoscaling for an application running on EKS, what are the main things you would need to configure to support that?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "In a scenario where you have two applications with different compute needs (e.g., one CPU-heavy, one RAM-heavy) and you have separate node groups optimized for CPU and for RAM respectively, how would you configure things so that each application gets scheduled onto the correct node group?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "You mentioned using kubectl to label nodes so pods get scheduled to the right node group. How do you ensure that when a new node is added due to autoscaling, it automatically receives the same labels?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Given a scenario where you need to upgrade three EKS clusters (development, UAT, and production) by three minor versions each, what would your high-level project plan look like to go from the current state to completion, and what specific steps would you take within each cluster to perform the upgrade?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "In your current role, would people come directly to you and ask for a new piece of Terraform code (for example, to build an EKS cluster), and would you be the one to design that Terraform solution from scratch yourself?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "If you're consuming a Terraform module (such as a VPC module) from another repository and you need to change that module, how would you go about doing that?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "If you needed to modify a Terraform module beyond just changing input variables — for example, adding a network firewall to a VPC module — what steps would you take to actually edit the module itself?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "If you've already written a Terraform module and reused it across 10 different projects, and then you realize you need to add something new to that module, what would you do?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you give me an example of something you've used Ansible for on a project?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "After provisioning resources with Terraform, do you call Ansible directly from Terraform, or do you use a separate system like Ansible Tower/AWX? How exactly do you invoke Ansible after Terraform provisioning?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "In your workflow, after running Terraform format/plan/apply to provision a new resource, at what point do you transition to using Ansible, and how do you do it?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you know the difference between an Ansible playbook and an Ansible role? Can you explain the difference?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "If someone asked you to design AWS architecture for a new application that needs an EC2 instance, Kubernetes, and a database, at a high level, what are the important things you would think about when designing that architecture?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Thinking about high availability from a geographic/architectural footprint perspective, at a simple level, what would you do to ensure fault tolerance if an application or instance went down?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you tell me what you think the platform engineering role is that we're looking for, and what role you believe you've applied for?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Now that I've described the platform engineering team's responsibilities (infrastructure provisioning in AWS and on-prem, owning GitLab/Ansible/JFrog, building CI/CD templates for the DevOps team), does that sound like something you want to do?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "How long have you been working with EKS and AWS?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "Are you working with EKS and AWS on a daily basis, every day?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "Have you personally performed an EKS cluster version upgrade yourself before?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "If you haven't personally performed the EKS upgrade yourself, how do you know the detailed steps involved?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you tell me about a time (not necessarily Kubernetes-related) when you had to upgrade a system and it didn't go well, i.e., something went wrong?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you tell me about a time in your job when you broke something or caused a problem?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": "TransUnion",
+    "rounds": [
+      {
+        "company": "TransUnion",
+        "round": "Level 1",
+        "date": "",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "You mentioned setting up Git repositories for use with Jenkins. Can you walk me through the branching strategy you followed?",
+            "category": "GIT"
+          },
+          {
+            "prefix": "●",
+            "text": "Walk me through a tricky merge conflict you resolved early in your career using SCM practices like branching and merging.",
+            "category": "GIT"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you worked with any version control system other than Git?",
+            "category": "GIT"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you know anything about Bitbucket specifically?",
+            "category": "GIT"
+          },
+          {
+            "prefix": "●",
+            "text": "You mentioned implementing automated testing solutions for unit and integration testing. Did you personally implement these, or did the developers on your team do it?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "You mentioned using Jenkins and Argo CD together. Can you describe the workflow where Jenkins hands off and Argo CD takes over in the deployment process?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "↳",
+            "text": "Have you actually worked hands-on with Argo CD, or not?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "You listed JFrog Artifactory as a tool you've used. What kind of artifacts did you store there—JAR files or Docker images?",
+            "category": "CI/CD"
+          },
+          {
+            "prefix": "●",
+            "text": "You mentioned using multi-stage Docker builds. Can you give a specific example: what was the base image, what did the build stage do, and what made the final image stage smaller?",
+            "category": "DOCKER"
+          },
+          {
+            "prefix": "●",
+            "text": "You mentioned working with Docker containers and Kubernetes clusters. Were you personally administering the clusters, or were you just deploying applications to them?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you also maintain the EKS cluster and its nodes, or do you just write the code/manifests for it?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "Tell me about a real production incident you were on call for—what broke, and how did you find the root cause?",
+            "category": "KUBERNETES"
+          },
+          {
+            "prefix": "●",
+            "text": "You mentioned using both Terraform and Ansible for AWS automation. Why use both tools, and what specifically was Terraform responsible for versus what Ansible was responsible for on the same AWS infrastructure?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Why couldn't you accomplish everything using just one tool, either Terraform or Ansible alone? Why was it necessary to use both?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "↳",
+            "text": "Did you encounter any scaling issues while managing infrastructure provisioning and configuration with Terraform and Ansible?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you tell me about a time when a Terraform code change you made broke something, and how did you fix it?",
+            "category": "IAC"
+          },
+          {
+            "prefix": "●",
+            "text": "You mentioned optimizing infrastructure and reducing costs by eliminating unnecessary servers. Do you have any specific before-and-after numbers to quantify that cost reduction?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Your resume lists both AWS and Azure. Have you ever had the chance to deploy the same workload on both cloud platforms?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "↳",
+            "text": "So is Azure used as a backup cloud in your environment, rather than a primary one?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have any experience working with Google Cloud Platform (GCP)?",
+            "category": "CLOUD"
+          },
+          {
+            "prefix": "●",
+            "text": "You mentioned leveraging Helm charts. Do you have experience with the Grafana monitoring tool?",
+            "category": "MONITORING"
+          },
+          {
+            "prefix": "●",
+            "text": "When setting up Jenkins or AWS resources, how do you handle secrets management?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "↳",
+            "text": "Do you know anything about security/cybersecurity concepts?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "●",
+            "text": "When you worked on giving AWS credentials to users, what security practices did you follow, and how did you provide credentials to them?",
+            "category": "SECURITY"
+          },
+          {
+            "prefix": "●",
+            "text": "Pick one specific project you worked on at Informatica and describe what state it was in when you joined versus its current state.",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "Your resume mentions breaking down monolithic applications into microservices. What was your specific role in that decomposition—were you doing the application-level work, or just the platform/infrastructure side?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you tell me about yourself and your professional background?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "In your first job as a software engineer, what was your actual day-to-day work like, in terms of writing application code versus doing infrastructure work?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "You describe yourself as having extensive experience in CI/CD pipelines and DevOps. What would you say is your strongest contribution to date?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "Regarding your strongest contribution, did you build it entirely from scratch, or did you take an existing setup and build upon it? Can you explain how it worked?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "What part of your current job do you find most interesting, and what part do you wish you did less of?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "↳",
+            "text": "Is there anything about your current job that you don't like?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Have you ever considered moving into cybersecurity, or are you more comfortable staying in DevOps?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "As a junior engineer in your first year at Informatica, how much of the Terraform, Ansible, and Jenkins work were you actually owning, versus shadowing or just assisting others?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Across your three companies, you've used the same tools like Terraform, Ansible, Jenkins, AWS, and Docker. What was actually different about the work you did at each company?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you describe a tactical decision you got wrong and had to back out of, and what you learned from it?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Your resume lists Python as a skill. Do you know Python?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "Is YAML one of your primary languages/skills that you work with?",
+            "category": "OTHER"
+          },
+          {
+            "prefix": "●",
+            "text": "Do you have any knowledge of JavaScript?",
+            "category": "OTHER"
+          }
+        ]
+      },
+      {
+        "company": "TransUnion",
+        "round": "Level 2",
+        "date": "05-08-2026 09:16 PM",
+        "items": [
+          {
+            "prefix": "●",
+            "text": "Can you walk me through how you would take an application (such as the interviewer's) and integrate it into your current environment?",
+            "category": "SYSTEM DESIGN"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you introduce yourself?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "Can you explain a project that you have worked on?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "How comfortable are you with learning Python quickly?",
+            "category": "BEHAVIORAL"
+          },
+          {
+            "prefix": "●",
+            "text": "What interests you about cyber security?",
+            "category": "BEHAVIORAL"
+          }
+        ]
+      }
+    ]
+  }
+]

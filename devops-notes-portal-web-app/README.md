@@ -145,7 +145,7 @@ Deploy the entire application stack (Deployment, Service, PVC, ConfigMap) to any
 4. **Clone your Notes repository on the server**:
    ```bash
    git clone https://github.com/nagaraj602/Notes.git
-   cd Notes/devops-notes-portal
+   cd Notes/devops-notes-portal-web-app
    ```
 
 5. **Deploy the DevOps Hub**:
@@ -235,7 +235,7 @@ Deploy keys are tied **strictly to your `Notes` repository** and have zero acces
 ## 5. Project Structure
 
 ```
-devops-notes-portal/
+devops-notes-portal-web-app/
 ├── app/
 │   ├── config.py                 # Multi-repository configuration
 │   ├── git_sync.py               # Background Git sync engine
@@ -290,7 +290,7 @@ devops-notes-portal/
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/nagaraj602/Notes.git
-   cd Notes/devops-notes-portal
+   cd Notes/devops-notes-portal-web-app
    ```
 
 2. **Create Python virtual environment**:
