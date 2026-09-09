@@ -708,6 +708,11 @@
         <span>Notes</span>
       </button>
 
+      <a href="/my-interviews" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm {% if request.url.path == '/my-interviews' %}bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-400/20 shadow-sky-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border-sky-100{% endif %}" title="My Personal Interview Tracker & GitHub Sync">
+        <i class="fa-solid fa-user-pen text-sky-600"></i>
+        <span>My Interview</span>
+      </a>
+
       <a href="/interviews" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm {% if request.url.path == '/interviews' %}bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-400/20 shadow-amber-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border-sky-100{% endif %}" title="Nagaraj Interview Tracker & Q&A">
         <i class="fa-solid fa-user-tie text-amber-500"></i>
         <span>Nagaraj Interview</span>

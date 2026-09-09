@@ -190,6 +190,19 @@
             </select>
           </div>
 
+          <!-- Dynamic Schedule Sort Dropdown -->
+          <div class="flex items-center space-x-1.5 flex-shrink-0">
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center">
+              <i class="fa-solid fa-arrow-down-wide-short text-indigo-600 mr-1"></i>Sort:
+            </span>
+            <select id="companySortSelect" onchange="renderQuestionsList()" class="rounded-xl px-2.5 py-1 text-xs border border-sky-200 bg-white font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-200 shadow-2xs cursor-pointer" title="Sort companies dynamically based on schedule / interview date">
+              <option value="latest_activity">⚡ Latest Activity (Recent First)</option>
+              <option value="earliest_activity">📅 Earliest / Oldest First</option>
+              <option value="name_asc">🔤 Company Name (A-Z)</option>
+              <option value="questions_desc">🔢 Most Questions Banked</option>
+            </select>
+          </div>
+
           <!-- Category Pills Filter -->
           <div class="flex items-center space-x-1.5 overflow-x-auto scrollbar-none flex-1">
             <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">Topic:</span>
@@ -1850,7 +1863,54 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     let html = "";
     let compCounter = 0;
 
-    companyMap.forEach((compData, companyName) => {
+    const sortMode = document.getElementById("companySortSelect")?.value || "latest_activity";
+    const companiesList = Array.from(companyMap.values());
+
+    // Compute dynamic schedule dates for each company
+    companiesList.forEach(compData => {
+      let latestDate = "";
+      let earliestDate = "9999-99-99";
+      
+      compData.roundsMap.forEach(r => {
+        if (r.date) {
+          if (r.date > latestDate) latestDate = r.date;
+          if (r.date < earliestDate) earliestDate = r.date;
+        }
+      });
+
+      const compScheds = (allSchedules || []).filter(s => (s.company || "").trim().toLowerCase() === compData.company.toLowerCase());
+      compScheds.forEach(s => {
+        if (s.date) {
+          if (s.date > latestDate) latestDate = s.date;
+          if (s.date < earliestDate) earliestDate = s.date;
+        }
+      });
+
+      compData.latestDate = latestDate || "1970-01-01";
+      compData.earliestDate = earliestDate === "9999-99-99" ? "1970-01-01" : earliestDate;
+    });
+
+    companiesList.sort((a, b) => {
+      if (sortMode === "latest_activity") {
+        if (b.latestDate !== a.latestDate) {
+          return b.latestDate.localeCompare(a.latestDate);
+        }
+        return a.company.localeCompare(b.company);
+      } else if (sortMode === "earliest_activity") {
+        if (a.earliestDate !== b.earliestDate) {
+          return a.earliestDate.localeCompare(b.earliestDate);
+        }
+        return a.company.localeCompare(b.company);
+      } else if (sortMode === "name_asc") {
+        return a.company.localeCompare(b.company);
+      } else if (sortMode === "questions_desc") {
+        return b.totalQuestions - a.totalQuestions;
+      }
+      return 0;
+    });
+
+    companiesList.forEach((compData) => {
+      const companyName = compData.company;
       compCounter++;
       const roundsList = Array.from(compData.roundsMap.values());
 

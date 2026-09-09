@@ -95,6 +95,18 @@ async def settings_page(request: Request):
         }
     )
 
+@app.get("/my-interviews", response_class=HTMLResponse)
+async def my_interviews_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="my_interviews.html",
+        context={
+            "categories": CATEGORIES,
+            "last_sync": git_manager.last_sync_time,
+            "sync_status": git_manager.sync_status
+        }
+    )
+
 @app.get("/interviews", response_class=HTMLResponse)
 async def interviews_page(request: Request):
     stats = interview_manager.get_stats()

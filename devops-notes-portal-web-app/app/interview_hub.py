@@ -246,16 +246,73 @@ def parse_interview_qa_text(raw_text: str) -> List[Dict[str, Any]]:
     flush_current()
     return items
 
-DEFAULT_ROUNDS = [
-    "Technical Round 1",
-    "Technical Round 2",
-    "Managerial / Tech Lead Round",
-    "System Design / Architecture Round",
-    "Live Coding / Hands-on Round",
-    "DevSecOps & Cloud Scenario Round",
-    "HR / Cultural Fit Round",
-    "Client / Final Director Round"
+DEFAULT_STANDARD_ROUNDS = [
+    {
+        "id": "round-hr",
+        "name": "HR Round",
+        "stage": "Screening",
+        "description": "Initial HR screening, background check, role discussion, compensation and notice period.",
+        "is_default": True
+    },
+    {
+        "id": "round-tech-1",
+        "name": "Technical Round 1",
+        "stage": "Core Technical",
+        "description": "Core DevOps skills: Linux fundamentals, Bash/Python scripting, Git, CI/CD pipelines, Docker.",
+        "is_default": True
+    },
+    {
+        "id": "round-tech-2",
+        "name": "Technical Round 2",
+        "stage": "Deep Technical",
+        "description": "Advanced technical: Kubernetes administration & troubleshooting, Terraform IaC, Cloud architecture.",
+        "is_default": True
+    },
+    {
+        "id": "round-sys-design",
+        "name": "System Design Round",
+        "stage": "Architecture",
+        "description": "High-availability, disaster recovery, cloud networking, multi-region failover, scaling and security.",
+        "is_default": True
+    },
+    {
+        "id": "round-manager",
+        "name": "Managerial Round",
+        "stage": "Leadership & Scenarios",
+        "description": "Scenario handling, production outage RCA, project management, cross-team collaboration and Agile/Scrum.",
+        "is_default": True
+    },
+    {
+        "id": "round-bar-raiser",
+        "name": "Bar Raiser Round",
+        "stage": "Evaluation",
+        "description": "Cross-functional engineering excellence, decision-making under ambiguity, and architectural evaluation.",
+        "is_default": True
+    },
+    {
+        "id": "round-director",
+        "name": "Director Round",
+        "stage": "Executive",
+        "description": "Strategic engineering vision, organizational impact, leadership values, and high-level fit.",
+        "is_default": True
+    },
+    {
+        "id": "round-cultural",
+        "name": "Cultural Fit Round",
+        "stage": "Culture",
+        "description": "Company principles, workplace culture, collaboration, work-life balance, and conflict resolution.",
+        "is_default": True
+    },
+    {
+        "id": "round-offer",
+        "name": "Offer Negotiation",
+        "stage": "Closing",
+        "description": "Final offer breakdown, compensation negotiation, benefits, start date, and onboarding formalities.",
+        "is_default": True
+    }
 ]
+
+DEFAULT_ROUNDS = [r["name"] for r in DEFAULT_STANDARD_ROUNDS]
 
 class InterviewManager:
     def __init__(self):
@@ -289,8 +346,8 @@ class InterviewManager:
             self._save_json(self.schedules_file, [])
         if not os.path.exists(self.questions_file):
             self._save_json(self.questions_file, [])
-        if not os.path.exists(self.rounds_file):
-            self._save_json(self.rounds_file, [])
+        if not os.path.exists(self.rounds_file) or not self._read_json(self.rounds_file):
+            self._save_json(self.rounds_file, DEFAULT_STANDARD_ROUNDS)
         self._reconcile_schedules_from_questions()
         self._generate_markdown_docs()
 
@@ -369,49 +426,60 @@ class InterviewManager:
 
     # --- ROUNDS API ---
     def get_rounds(self) -> List[Dict[str, Any]]:
-        custom_list = self._read_json(self.rounds_file)
+        rounds_list = self._read_json(self.rounds_file)
+        if not rounds_list:
+            rounds_list = list(DEFAULT_STANDARD_ROUNDS)
+            self._save_json(self.rounds_file, rounds_list)
         result = []
-        for r in DEFAULT_ROUNDS:
+        for r in rounds_list:
+            is_def = r.get("is_default", False)
             result.append({
-                "id": f"def-{r.lower().replace(' ', '-').replace('/', '-')}",
-                "name": r,
-                "is_default": True,
-                "can_delete": False,
-                "can_rename": False
-            })
-        for cr in custom_list:
-            result.append({
-                "id": cr.get("id"),
-                "name": cr.get("name"),
-                "is_default": False,
-                "can_delete": True,
-                "can_rename": True
+                "id": r.get("id"),
+                "name": r.get("name"),
+                "stage": r.get("stage", "General"),
+                "description": r.get("description", ""),
+                "is_default": is_def,
+                "can_delete": not is_def,
+                "can_rename": not is_def
             })
         return result
 
-    def add_custom_round(self, name: str) -> Dict[str, Any]:
+    def add_custom_round(self, name: str, stage: str = "Custom", description: str = "") -> Dict[str, Any]:
         clean_name = name.strip()
         if not clean_name:
             raise ValueError("Round name cannot be empty")
-        custom_list = self._read_json(self.rounds_file)
-        # Check if already exists in default or custom
-        for r in DEFAULT_ROUNDS:
-            if r.lower() == clean_name.lower():
-                return {"id": f"def-{r.lower().replace(' ', '-')}", "name": r, "is_default": True, "can_delete": False, "can_rename": False}
-        for cr in custom_list:
-            if cr.get("name", "").lower() == clean_name.lower():
-                return {"id": cr["id"], "name": cr["name"], "is_default": False, "can_delete": True, "can_rename": True}
+        rounds_list = self._read_json(self.rounds_file)
+        if not rounds_list:
+            rounds_list = list(DEFAULT_STANDARD_ROUNDS)
+        # Check if already exists
+        for r in rounds_list:
+            if r.get("name", "").lower() == clean_name.lower():
+                is_def = r.get("is_default", False)
+                return {
+                    "id": r.get("id"),
+                    "name": r.get("name"),
+                    "stage": r.get("stage", "General"),
+                    "description": r.get("description", ""),
+                    "is_default": is_def,
+                    "can_delete": not is_def,
+                    "can_rename": not is_def
+                }
 
         new_round = {
             "id": f"round-{uuid.uuid4().hex[:8]}",
             "name": clean_name,
+            "stage": stage.strip() or "Custom",
+            "description": description.strip(),
+            "is_default": False,
             "created_at": datetime.utcnow().isoformat()
         }
-        custom_list.append(new_round)
-        self._save_json(self.rounds_file, custom_list, commit_msg=f"Add custom interview round: {clean_name}")
+        rounds_list.append(new_round)
+        self._save_json(self.rounds_file, rounds_list, commit_msg=f"Add custom interview round: {clean_name}")
         return {
             "id": new_round["id"],
             "name": new_round["name"],
+            "stage": new_round["stage"],
+            "description": new_round["description"],
             "is_default": False,
             "can_delete": True,
             "can_rename": True
@@ -421,18 +489,18 @@ class InterviewManager:
         clean_name = new_name.strip()
         if not clean_name:
             raise ValueError("Round name cannot be empty")
-        custom_list = self._read_json(self.rounds_file)
+        rounds_list = self._read_json(self.rounds_file)
         target = None
         old_name = ""
-        for r in custom_list:
-            if r.get("id") == round_id:
+        for r in rounds_list:
+            if r.get("id") == round_id and not r.get("is_default"):
                 target = r
                 old_name = r.get("name", "")
                 r["name"] = clean_name
                 break
         if not target:
             return None
-        self._save_json(self.rounds_file, custom_list, commit_msg=f"Rename custom round '{old_name}' to '{clean_name}'")
+        self._save_json(self.rounds_file, rounds_list, commit_msg=f"Rename custom round '{old_name}' to '{clean_name}'")
         
         # Update any schedules with old round name
         if old_name and old_name != clean_name:
@@ -444,19 +512,30 @@ class InterviewManager:
                     updated_sched = True
             if updated_sched:
                 self._save_json(self.schedules_file, schedules, commit_msg=f"Update schedules round name to '{clean_name}'")
+            # Also update questions
+            questions = self._read_json(self.questions_file)
+            updated_q = False
+            for q in questions:
+                if q.get("round") == old_name:
+                    q["round"] = clean_name
+                    updated_q = True
+            if updated_q:
+                self._save_json(self.questions_file, questions, commit_msg=f"Update questions round name to '{clean_name}'")
 
         return {
             "id": target["id"],
             "name": target["name"],
+            "stage": target.get("stage", "Custom"),
+            "description": target.get("description", ""),
             "is_default": False,
             "can_delete": True,
             "can_rename": True
         }
 
     def delete_custom_round(self, round_id: str) -> bool:
-        custom_list = self._read_json(self.rounds_file)
-        filtered = [r for r in custom_list if r.get("id") != round_id]
-        if len(filtered) == len(custom_list):
+        rounds_list = self._read_json(self.rounds_file)
+        filtered = [r for r in rounds_list if not (r.get("id") == round_id and not r.get("is_default"))]
+        if len(filtered) == len(rounds_list):
             return False
         self._save_json(self.rounds_file, filtered, commit_msg=f"Delete custom interview round ID: {round_id}")
         return True

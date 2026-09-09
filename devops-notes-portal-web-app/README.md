@@ -7,18 +7,22 @@ A modern, production-grade DevOps knowledge portal, interactive notes reader, an
 ## 📑 Table of Contents (Click to Jump)
 
 - [1. Overview & Architecture](#1-overview--architecture)
+  - [1.1 Multi-Repository Architecture & ArtisanTek Sync](#11-multi-repository-architecture--artisantek-sync)
 - [2. Key Features](#2-key-features)
   - [2.1 Notes Explorer & Search](#21-notes-explorer--search)
-  - [2.2 Nagaraj Interview Schedule & Q&A Hub (`/interviews`)](#22-nagaraj-interview-schedule--qa-hub-interviews)
-  - [2.3 Old IQ Questions Bank (`/old-iq-questions`)](#23-old-iq-questions-bank-old-iq-questions)
-  - [2.4 Repository-Backed Session Database & URL Persistence](#24-repository-backed-session-database--url-persistence)
-- [3. Deployment Guide (Kubernetes & K3s)](#3-deployment-guide-kubernetes--k3s)
+  - [2.2 My Interview Hub & Personal Tracker (`/my-interviews`)](#22-my-interview-hub--personal-tracker-my-interviews)
+  - [2.3 Nagaraj Interview Schedule & Q&A Hub (`/interviews`)](#23-nagaraj-interview-schedule--qa-hub-interviews)
+  - [2.4 Old IQ Questions Bank (`/old-iq-questions`)](#24-old-iq-questions-bank-old-iq-questions)
+  - [2.5 Repository-Backed Session Database & URL Persistence](#25-repository-backed-session-database--url-persistence)
+- [3. Deployment Guide (Kubernetes, Docker & GCP)](#3-deployment-guide-kubernetes-docker--gcp)
   - [3.1 Standard Kubernetes Deployment (Docker Desktop, Minikube, Kind)](#31-standard-kubernetes-deployment-docker-desktop-minikube-kind)
-  - [3.2 K3s Lightweight Kubernetes Deployment (Any Linux Server / VM)](#32-k3s-lightweight-kubernetes-deployment-any-linux-server--vm)
-  - [3.3 Standalone Docker Deployment](#33-standalone-docker-deployment)
-- [4. Secure GitHub Authentication (Deploy Keys & PAT)](#4-secure-github-authentication-deploy-keys--pat)
-  - [4.1 Method A: GitHub Deploy Keys (Recommended)](#41-method-a-github-deploy-keys-recommended)
-  - [4.2 Method B: Fine-Grained Personal Access Token (PAT)](#42-method-b-fine-grained-personal-access-token-pat)
+  - [3.2 K3s Lightweight Kubernetes Deployment (Linux Server / VM)](#32-k3s-lightweight-kubernetes-deployment-linux-server--vm)
+  - [3.3 Standalone Docker Container Deployment (GCP / VPS / Local)](#33-standalone-docker-container-deployment-gcp--vps--local)
+  - [3.4 Automated GCP VM Shutdown (11:00 PM IST) & Startup (6:00 AM IST)](#34-automated-gcp-vm-shutdown-1100-pm-ist--startup-600-am-ist)
+- [4. Secure GitHub Authentication & Zero-Leakage Multi-User Sync](#4-secure-github-authentication--zero-leakage-multi-user-sync)
+  - [4.1 Multi-User Zero-Login PAT Storage (Browser `localStorage`)](#41-multi-user-zero-login-pat-storage-browser-localstorage)
+  - [4.2 Server-Side PAT for Nagaraj Interview Hub (`.git_token`)](#42-server-side-pat-for-nagaraj-interview-hub-git_token)
+  - [4.3 GitHub Deploy Keys Setup](#43-github-deploy-keys-setup)
 - [5. Project Structure](#5-project-structure)
 - [6. API Reference](#6-api-reference)
 - [7. Local Development Setup](#7-local-development-setup)
@@ -55,6 +59,19 @@ flowchart TD
     HubAPI <--> UI2
 ```
 
+### 1.1 Multi-Repository Architecture & ArtisanTek Sync
+The portal automatically aggregates multiple repositories into an integrated sidebar tree:
+1. **ArtisanTek Training Materials (`artisantek/training-materials.git`)**:
+   * **Location on Disk / Container**: `/app/data/notes/training-materials`
+   * **Branch**: `master`
+   * **Authentication**: Public repository (no PAT or credentials needed to clone/pull).
+   * **Sync Mechanism**: A background worker (`auto_sync_worker()` in `main.py`) runs every **5 minutes** (`AUTO_SYNC_INTERVAL_MINUTES=5`) calling `git_manager.sync()`. It pulls latest changes via `git pull origin master --rebase`.
+   * **Manual Sync**: Clicking the top-right **"Sync All"** button sends a request to `/api/sync` to pull immediately.
+2. **DevOps Notes & Interviews (`nagaraj602/Notes.git`)**:
+   * **Location on Disk / Container**: `/app/data/notes/devops-notes`
+   * **Branch**: `main`
+   * **Storage**: Persistent Volume (`devops-hub-notes-pvc` on `/app/data/notes`), ensuring zero data loss across container restarts.
+
 ---
 
 ## 2. Key Features
@@ -66,7 +83,23 @@ flowchart TD
 * **Typography Controller**: Change reader font family (`Sans`, `Inter`, `Mono`, `Serif`), font size, and font weight on the fly.
 * **Accordion Question Collapsing**: Technical interview question notes format with collapsible dropdown answers and 1-click **Expand All / Collapse All**.
 
-#### 2.2 Nagaraj Interview Schedule & Q&A Hub (`/interviews`)
+### 2.2 My Interview Hub & Personal Tracker (`/my-interviews`)
+* **Multi-User Zero-Login Architecture**: Allows any visitor to schedule their own interviews, log questions, and track offers without needing a login account on the server.
+* **Zero Token Leakage (Browser `localStorage`)**:
+  * The visitor's Personal Access Token (PAT) and repository URL are stored **strictly in their browser** (`localStorage`).
+  * The server NEVER stores visitor tokens on disk or shares them across visitors.
+* **Direct GitHub REST API Sync**:
+  * Pushes schedules (`schedules.json`), question bank (`questions.json`), rounds (`rounds.json`), and formatted Markdown (`README.md` and `{Company}.md`) directly from the browser to the user's personal GitHub repository using the GitHub REST API.
+  * 1-click **"Pull from Repo"** loads existing records from GitHub on any new machine or browser.
+* **Dynamic Schedule Sorting**:
+  * Automatically sorts companies dynamically based on latest interview activity date.
+  * Interactive sort control: *Latest Activity (Recent First)*, *Earliest First*, *Company Name (A-Z)*, *Most Questions Banked*.
+* **Backup & Restore**: 1-click JSON Export & Import backup buttons.
+
+### 2.3 Nagaraj Interview Schedule & Q&A Hub (`/interviews`)
+* **Dynamic Schedule-Based Sorting**:
+  * Automatically updates company order based on the latest attended/concluded round date (e.g. if Company A has Round 1 on 18 Aug and Round 2 on 1 Sep, and Company B has a round on 25 Aug, Company B is listed first until Round 2 of Company A takes place, at which point Company A automatically moves to the top).
+  * Interactive sort control dropdown (*Latest Activity*, *Earliest / Oldest First*, *Company Name*, *Most Questions*).
 * **Today's Live Schedule Banner**: Prominently highlights interviews happening today with real-time status badges (`🔴 HAPPENING NOW`, `⏳ Upcoming Today`, `🏁 Concluded`).
 * **Dedicated Metric Cards**: 5 dedicated interactive cards for *Total Attended*, *Total Companies*, *This Week's Activity*, *Upcoming Scheduled*, and *Questions Bank* with detailed summary modals.
 * **Hierarchical Company & Round Grouping**: Questions are grouped under dedicated Company banners and Round sub-cards, eliminating redundant repetitions on individual question cards.
@@ -181,70 +214,94 @@ Deploy the entire application stack (Deployment, Service, PVC, ConfigMap) to any
 
 ---
 
-### 3.3 Standalone Docker Deployment
-If you prefer running a standalone container without Kubernetes:
+### 3.3 Standalone Docker Container Deployment (GCP / VPS / Local)
+If you prefer running a standalone container instead of Kubernetes (e.g. on a GCP Compute Engine VM, AWS EC2, or VPS):
 
-1. **Pull the latest image**:
+1. **Pull the latest image (`v6.6.3`)**:
    ```bash
-   docker pull nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0
+   docker pull nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.6.3
    ```
 
-2. **Run container**:
+2. **Run container with persistent volume and auto-restart**:
    ```bash
-   docker run -d -p 8000:8000 \
+   docker run -d \
      --name devops-hub \
+     -p 8000:8000 \
+     -v devops_notes_data:/app/data/notes \
+     -e REPO_URL="https://github.com/nagaraj602/Notes.git" \
+     -e REPO_BRANCH="main" \
+     -e AUTO_SYNC_INTERVAL_MINUTES="5" \
+     -e GITHUB_TOKEN="ghp_your_optional_push_token" \
      --restart unless-stopped \
-     nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.5.0
+     nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.6.3
    ```
-   Access at: **`http://localhost:8000`**
+   * Access at: **`http://<SERVER_IP>:8000`**
+   * The `--restart unless-stopped` flag ensures that when the VM starts or reboots, Docker immediately relaunches the portal container without manual intervention.
 
 ---
 
-## 4. Secure GitHub Authentication (Deploy Keys & PAT)
+### 3.4 Automated GCP VM Shutdown (11:00 PM IST) & Startup (6:00 AM IST)
+To reduce cloud hosting costs on Google Cloud Platform (GCP), configure Compute Engine **Instance Schedules** to stop the VM at 11:00 PM IST every night and start it at 6:00 AM IST every morning.
 
-When hosting the application on a server or shared machine, protect your primary GitHub credentials by using scoped credentials:
+#### Option A: Native GCP Instance Schedules (Recommended)
 
-### 4.1 Method A: GitHub Deploy Keys (Recommended)
-Deploy keys are tied **strictly to your `Notes` repository** and have zero access to any other repositories or account settings:
-
-1. **Generate a dedicated SSH key on your server**:
+1. **Create the Instance Schedule Policy** with `Asia/Kolkata` timezone:
    ```bash
-   ssh-keygen -t ed25519 -C "k3s-notes-sync" -f ~/.ssh/id_notes_deploy -N ""
+   gcloud compute resource-policies create instance-schedule devops-daily-schedule \
+     --region=asia-south1 \
+     --vm-start-schedule="0 6 * * *" \
+     --vm-stop-schedule="0 23 * * *" \
+     --timezone="Asia/Kolkata" \
+     --description="Daily auto-start at 6:00 AM IST and shutdown at 11:00 PM IST"
    ```
 
-2. **Display and copy the public key**:
+2. **Grant Compute Engine Service Account permissions** to manage instance power states:
    ```bash
-   cat ~/.ssh/id_notes_deploy.pub
+   PROJECT_ID=$(gcloud config get-value project)
+   PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+   SERVICE_ACCOUNT="service-${PROJECT_NUMBER}@compute-system.iam.gserviceaccount.com"
+
+   gcloud projects add-iam-policy-binding $PROJECT_ID \
+     --member="serviceAccount:${SERVICE_ACCOUNT}" \
+     --role="roles/compute.instanceAdmin.v1"
    ```
 
-3. **Add Deploy Key in GitHub**:
-   * Go to: `https://github.com/nagaraj602/Notes/settings/keys`
-   * Click **Add deploy key**
-   * **Title**: `K3s / Linux Server Sync`
-   * **Key**: Paste the public key content
-   * Check **Allow write access** (allows automated persistence of session states, schedules, and questions directly back to GitHub)
-   * Click **Add Key**
-
-4. **Configure SSH client (`~/.ssh/config`)**:
+3. **Attach the Schedule to your Compute Engine VM**:
    ```bash
-   cat <<EOF >> ~/.ssh/config
-   Host github.com
-     IdentityFile ~/.ssh/id_notes_deploy
-     StrictHostKeyChecking no
-   EOF
-   chmod 600 ~/.ssh/config ~/.ssh/id_notes_deploy
+   gcloud compute instances add-resource-policies devops-notes-vm \
+     --zone=asia-south1-a \
+     --resource-policies=devops-daily-schedule
    ```
+
+4. **Ensure Docker auto-starts on boot**:
+   ```bash
+   sudo systemctl enable docker
+   ```
+   With `--restart unless-stopped` on your container, the portal will be ready and running immediately at 6:00 AM IST!
+
+#### Option B: GCP Cloud Scheduler + Cloud Run Functions
+Alternatively, create two Cloud Scheduler cron jobs calling Compute Engine REST API:
+* **Stop Job**: `0 23 * * *` (Timezone: `Asia/Kolkata`) ➔ calls `POST https://compute.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instances/{instance}/stop`
+* **Start Job**: `0 6 * * *` (Timezone: `Asia/Kolkata`) ➔ calls `POST https://compute.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instances/{instance}/start`
 
 ---
 
-### 4.2 Method B: Fine-Grained Personal Access Token (PAT)
-1. Go to `https://github.com/settings/tokens?type=beta` (or classic tokens with `repo` scope)
-2. Click **Generate new token**.
-3. **Repository access**: Select *Only select repositories* -> `nagaraj602/Notes`.
-4. **Permissions**: Under *Repository permissions*, set `Contents` to **Read and Write**.
-5. Set an expiration (e.g. 90 days or custom).
+## 4. Secure GitHub Authentication & Zero-Leakage Multi-User Sync
 
----
+### 4.1 Multi-User Zero-Login PAT Storage (Browser `localStorage`)
+* **The Problem**: When deploying the web portal publicly on GCP or a shared server without login authentication, multiple users or students may visit the website. If visitor Alice entered her GitHub PAT on the server, visitor Bob could see or overwrite Alice's token.
+* **The Solution**: On the **"My Interview"** page (`/my-interviews`), GitHub credentials (PAT, repository URL, branch, and folder) and interview records are stored **strictly in the user's browser `localStorage`**.
+* **Zero Server Storage**: The server never stores visitors' private PATs. The browser communicates directly with the GitHub REST API (`https://api.github.com/repos/{owner}/{repo}/contents/{path}`) to push/pull schedules, questions, and markdown docs.
+
+### 4.2 Server-Side PAT for Nagaraj Interview Hub (`.git_token`)
+For the official Nagaraj Interviews showcase and notes synchronization to `nagaraj602/Notes`:
+1. **Environment Variable**: Pass `GITHUB_TOKEN=ghp_xxxx` in Docker (`-e GITHUB_TOKEN=...`) or Kubernetes ConfigMap/Secret.
+2. **Settings UI**: Enter your PAT in `/settings` under *GitHub Push Credentials*. It is saved to `/app/data/notes/.git_token` (on the persistent volume outside the git clone) and `.gitignore` prevents it from ever being committed to Git.
+
+### 4.3 ArtisanTek Training Materials Sync
+* The repository `https://github.com/artisantek/training-materials.git` is cloned to `/app/data/notes/training-materials`.
+* It is a public repository, so cloning and pulling require no PAT or credentials.
+* It auto-syncs every 5 minutes and upon clicking **Sync All**.
 
 ### 4.3 Method C: Direct In-Portal UI Configuration (Easiest)
 You can configure and test your GitHub push credentials directly from the web browser:
