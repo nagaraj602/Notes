@@ -123,7 +123,14 @@ async def interviews_page(request: Request):
     )
 
 @app.get("/admin/submissions", response_class=HTMLResponse)
+@app.get("/admin/submission", response_class=HTMLResponse)
+@app.get("/admin-submissions", response_class=HTMLResponse)
 @app.get("/candidate-submissions", response_class=HTMLResponse)
+@app.get("/candidate_submissions", response_class=HTMLResponse)
+@app.get("/candidate-submission", response_class=HTMLResponse)
+@app.get("/candidate_submission", response_class=HTMLResponse)
+@app.get("/submissions", response_class=HTMLResponse)
+@app.get("/submission", response_class=HTMLResponse)
 async def admin_submissions_page(request: Request):
     return templates.TemplateResponse(
         request=request,
