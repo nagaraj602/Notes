@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.6.2
+    image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:latest
     container_name: devops-hub
     restart: unless-stopped
     ports:
