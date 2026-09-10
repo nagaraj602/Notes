@@ -25,9 +25,9 @@
 
     <!-- Quick Action Buttons -->
     <div class="flex items-center gap-2 flex-wrap">
-      <button onclick="openGitHubSettingsModal()" id="ghStatusBtn" class="px-3 py-2 text-xs font-bold rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all flex items-center space-x-1.5 shadow-xs" title="Configure your personal GitHub PAT and Repository">
+      <button onclick="openGitHubSettingsModal()" id="ghStatusBtn" class="px-3 py-2 text-xs font-bold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-all flex items-center space-x-1.5 shadow-xs animate-pulse" title="Configure your personal GitHub PAT and Repository">
         <i class="fa-brands fa-github text-slate-900"></i>
-        <span id="ghStatusBtnText">Connect GitHub</span>
+        <span id="ghStatusBtnText">Connect GitHub PAT (Required)</span>
       </button>
 
       <button onclick="syncWithGitHub()" id="ghSyncBtn" class="hidden px-3 py-2 text-xs font-bold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all flex items-center space-x-1.5 shadow-xs" title="Push your latest changes to your GitHub repository">
@@ -35,14 +35,16 @@
         <span>Push to GitHub</span>
       </button>
 
-      <button onclick="openScheduleModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5">
-        <i class="fa-solid fa-calendar-plus text-xs"></i>
+      <button id="btnScheduleInterview" onclick="openScheduleModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none" title="GitHub PAT Required: Connect GitHub PAT first to unlock Schedule Interview">
+        <i class="fa-solid fa-lock text-amber-500 text-xs"></i>
         <span>Schedule Interview</span>
+        <span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>
       </button>
 
-      <button onclick="openUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-sky-200 transition-all flex items-center space-x-1.5 shadow-sm">
-        <i class="fa-solid fa-cloud-arrow-up text-sky-600"></i>
+      <button id="btnUploadQa" onclick="openUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none" title="GitHub PAT Required: Connect GitHub PAT first to unlock Upload Q&A">
+        <i class="fa-solid fa-lock text-amber-500 text-xs"></i>
         <span>Upload Q&A</span>
+        <span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>
       </button>
 
       <div class="relative inline-block text-left">
@@ -317,6 +319,13 @@
       <button onclick="closeGitHubSettingsModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
         <i class="fa-solid fa-xmark text-sm"></i>
       </button>
+    <!-- Required Alert Banner when opening actions without PAT -->
+    <div id="ghPatRequiredNotice" class="hidden p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-900 flex items-start space-x-2.5">
+      <i class="fa-solid fa-lock text-amber-600 mt-0.5 text-base flex-shrink-0"></i>
+      <div class="leading-relaxed">
+        <strong>GitHub Personal Access Token (PAT) Required:</strong>
+        You must connect your personal GitHub PAT and repository first before you can schedule interviews, upload Q&A, or manage rounds.
+      </div>
     </div>
 
     <form id="ghSettingsForm" onsubmit="saveGitHubSettings(event)" class="space-y-3.5">
@@ -727,36 +736,86 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     initRoundsDropdowns();
   }
 
-  // --- GitHub Status & Banners ---
+  // --- GitHub Status, PAT Enforcement & Banners ---
+  let pendingPersonalPatAction = null;
+
+  function hasPersonalPat() {
+    const token = (localStorage.getItem(STORAGE_KEY_GH_TOKEN) || "").trim();
+    const repo = (localStorage.getItem(STORAGE_KEY_GH_REPO) || "").trim();
+    return !!(token && repo);
+  }
+
+  function ensurePersonalPatOrPrompt(actionCallback) {
+    if (hasPersonalPat()) {
+      if (actionCallback) actionCallback();
+      return true;
+    }
+    pendingPersonalPatAction = actionCallback;
+    openGitHubSettingsModal(true);
+    return false;
+  }
+
   function renderGitHubBanner() {
-    const token = localStorage.getItem(STORAGE_KEY_GH_TOKEN);
-    const repo = localStorage.getItem(STORAGE_KEY_GH_REPO);
+    const token = (localStorage.getItem(STORAGE_KEY_GH_TOKEN) || "").trim();
+    const repo = (localStorage.getItem(STORAGE_KEY_GH_REPO) || "").trim();
     const branch = localStorage.getItem(STORAGE_KEY_GH_BRANCH) || "main";
     const dismissed = localStorage.getItem(STORAGE_KEY_GH_DISMISSED) === "true";
 
     const ghConnectBanner = document.getElementById("ghConnectBanner");
     const ghConnectedBanner = document.getElementById("ghConnectedBanner");
+    const ghStatusBtn = document.getElementById("ghStatusBtn");
     const ghStatusBtnText = document.getElementById("ghStatusBtnText");
     const ghSyncBtn = document.getElementById("ghSyncBtn");
+    const btnSched = document.getElementById("btnScheduleInterview");
+    const btnUpload = document.getElementById("btnUploadQa");
 
     if (token && repo) {
-      ghConnectBanner.classList.add("hidden");
-      ghConnectedBanner.classList.remove("hidden");
-      ghSyncBtn.classList.remove("hidden");
-      ghStatusBtnText.textContent = "GitHub: " + repo.split("/").pop();
+      if (ghConnectBanner) ghConnectBanner.classList.add("hidden");
+      if (ghConnectedBanner) ghConnectedBanner.classList.remove("hidden");
+      if (ghSyncBtn) ghSyncBtn.classList.remove("hidden");
+      if (ghStatusBtnText) ghStatusBtnText.textContent = "GitHub: " + repo.split("/").pop();
+      if (ghStatusBtn) {
+        ghStatusBtn.className = "px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all flex items-center space-x-1.5 shadow-xs";
+      }
       
       const repoLink = document.getElementById("ghRepoDisplayLink");
-      repoLink.textContent = repo.replace("https://github.com/", "");
-      repoLink.href = repo.startsWith("http") ? repo : `https://github.com/${repo}`;
-      document.getElementById("ghBranchBadge").textContent = branch;
+      if (repoLink) {
+        repoLink.textContent = repo.replace("https://github.com/", "");
+        repoLink.href = repo.startsWith("http") ? repo : `https://github.com/${repo}`;
+      }
+      const branchBadge = document.getElementById("ghBranchBadge");
+      if (branchBadge) branchBadge.textContent = branch;
+
+      // UNLOCK BUTTONS
+      if (btnSched) {
+        btnSched.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5 cursor-pointer";
+        btnSched.innerHTML = `<i class="fa-solid fa-calendar-plus text-xs"></i><span>Schedule Interview</span>`;
+        btnSched.title = "Schedule an interview";
+      }
+      if (btnUpload) {
+        btnUpload.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-sky-200 transition-all flex items-center space-x-1.5 shadow-sm cursor-pointer";
+        btnUpload.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-sky-600"></i><span>Upload Q&A</span>`;
+        btnUpload.title = "Upload interview questions";
+      }
     } else {
-      ghConnectedBanner.classList.add("hidden");
-      ghSyncBtn.classList.add("hidden");
-      ghStatusBtnText.textContent = "Connect GitHub";
-      if (!dismissed) {
-        ghConnectBanner.classList.remove("hidden");
-      } else {
-        ghConnectBanner.classList.add("hidden");
+      if (ghConnectedBanner) ghConnectedBanner.classList.add("hidden");
+      if (ghSyncBtn) ghSyncBtn.classList.add("hidden");
+      if (ghConnectBanner) ghConnectBanner.classList.remove("hidden");
+      if (ghStatusBtnText) ghStatusBtnText.textContent = "Connect GitHub PAT (Required)";
+      if (ghStatusBtn) {
+        ghStatusBtn.className = "px-3 py-2 text-xs font-bold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-all flex items-center space-x-1.5 shadow-xs animate-pulse";
+      }
+
+      // LOCK BUTTONS
+      if (btnSched) {
+        btnSched.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none";
+        btnSched.innerHTML = `<i class="fa-solid fa-lock text-amber-500 text-xs"></i><span>Schedule Interview</span><span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-1">Locked</span>`;
+        btnSched.title = "GitHub PAT Required: Connect GitHub PAT first to unlock Schedule Interview";
+      }
+      if (btnUpload) {
+        btnUpload.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none";
+        btnUpload.innerHTML = `<i class="fa-solid fa-lock text-amber-500 text-xs"></i><span>Upload Q&A</span><span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-1">Locked</span>`;
+        btnUpload.title = "GitHub PAT Required: Connect GitHub PAT first to unlock Upload Q&A";
       }
     }
   }
@@ -767,7 +826,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   }
 
   // --- GitHub Settings Modal ---
-  function openGitHubSettingsModal() {
+  function openGitHubSettingsModal(isForcedPrompt = false) {
     const token = localStorage.getItem(STORAGE_KEY_GH_TOKEN) || "";
     const repo = localStorage.getItem(STORAGE_KEY_GH_REPO) || "";
     const branch = localStorage.getItem(STORAGE_KEY_GH_BRANCH) || "main";
@@ -777,6 +836,15 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     document.getElementById("ghRepoInput").value = repo;
     document.getElementById("ghBranchInput").value = branch;
     document.getElementById("ghFolderInput").value = folder;
+
+    const notice = document.getElementById("ghPatRequiredNotice");
+    if (notice) {
+      if (isForcedPrompt || (!token || !repo)) {
+        notice.classList.remove("hidden");
+      } else {
+        notice.classList.add("hidden");
+      }
+    }
 
     const btnDisconnect = document.getElementById("btnDisconnectGh");
     if (token && repo) {
@@ -790,10 +858,15 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     testBox.innerHTML = "";
 
     document.getElementById("githubSettingsModal").classList.remove("hidden");
+    setTimeout(() => {
+      const inp = document.getElementById("ghPatInput");
+      if (inp) inp.focus();
+    }, 150);
   }
 
   function closeGitHubSettingsModal() {
     document.getElementById("githubSettingsModal").classList.add("hidden");
+    pendingPersonalPatAction = null;
   }
 
   function togglePatVisibility() {
@@ -888,6 +961,12 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     closeGitHubSettingsModal();
     renderGitHubBanner();
     showToast("GitHub settings saved securely in your browser!", "success");
+
+    if (pendingPersonalPatAction) {
+      const cb = pendingPersonalPatAction;
+      pendingPersonalPatAction = null;
+      cb();
+    }
   }
 
   function disconnectGitHub() {
@@ -1750,6 +1829,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   }
 
   function openScheduleModal() {
+    if (!ensurePersonalPatOrPrompt(() => openScheduleModal())) return;
     document.getElementById("schedId").value = "";
     document.getElementById("scheduleModalTitle").textContent = "Schedule Interview";
     const candInput = document.getElementById("schedCandidateName");
@@ -1768,6 +1848,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   }
 
   function editSchedule(id) {
+    if (!ensurePersonalPatOrPrompt(() => editSchedule(id))) return;
     const s = mySchedules.find(x => x.id === id);
     if (!s) return;
     document.getElementById("schedId").value = s.id;
@@ -1794,6 +1875,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
 
   function saveSchedule(event) {
     event.preventDefault();
+    if (!ensurePersonalPatOrPrompt()) return;
     const id = document.getElementById("schedId").value || "sched-" + Math.random().toString(36).substr(2, 9);
     const candidateName = (document.getElementById("schedCandidateName")?.value || "").trim();
     if (candidateName) {
@@ -1846,6 +1928,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
 
   // --- Upload Q&A Modal & Auto-Parsing ---
   function openUploadQaModal() {
+    if (!ensurePersonalPatOrPrompt(() => openUploadQaModal())) return;
     const candInput = document.getElementById("qaCandidateName");
     if (candInput) candInput.value = getCandidateIdentity();
     document.getElementById("qaCompany").value = "";
@@ -1856,6 +1939,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   }
 
   function openUploadQaForCompany(companyName) {
+    if (!ensurePersonalPatOrPrompt(() => openUploadQaForCompany(companyName))) return;
     openUploadQaModal();
     document.getElementById("qaCompany").value = companyName;
     const matchedSched = mySchedules.find(s => (s.company || "").toLowerCase() === companyName.toLowerCase() && s.recording_link);
@@ -1923,6 +2007,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
 
   function saveInterviewQa(event) {
     event.preventDefault();
+    if (!ensurePersonalPatOrPrompt()) return;
     const candName = (document.getElementById("qaCandidateName")?.value || "").trim();
     if (candName) {
       localStorage.setItem("devops_candidate_name", candName);

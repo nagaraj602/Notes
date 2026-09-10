@@ -26,13 +26,15 @@
       <!-- GitHub PAT Status Badge -->
       <div id="hubPatBadge" class="inline-flex items-center"></div>
 
-      <button onclick="openScheduleModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5">
-        <i class="fa-solid fa-calendar-plus text-xs"></i>
+      <button id="btnHubSchedule" onclick="openScheduleModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none" title="Instructor GitHub PAT Required: Authenticate first to unlock Schedule Interview">
+        <i class="fa-solid fa-lock text-amber-500 text-xs"></i>
         <span>Schedule Interview</span>
+        <span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>
       </button>
-      <button onclick="openUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-sky-200 transition-all flex items-center space-x-1.5 shadow-sm">
-        <i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i>
+      <button id="btnHubUploadQa" onclick="openUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none" title="Instructor GitHub PAT Required: Authenticate first to unlock Upload Interview Q&A">
+        <i class="fa-solid fa-lock text-amber-500 text-xs"></i>
         <span>Upload Interview Q&A</span>
+        <span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>
       </button>
     </div>
   </div>
@@ -762,23 +764,49 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
   function renderHubPatBadge() {
     const badge = document.getElementById("hubPatBadge");
-    if (!badge) return;
+    const btnSched = document.getElementById("btnHubSchedule");
+    const btnUpload = document.getElementById("btnHubUploadQa");
+
     if (isInstructorAuthenticated()) {
-      badge.innerHTML = `
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <i class="fa-solid fa-user-shield text-emerald-600"></i>
-          <span>Instructor Mode: <strong>Active</strong></span>
-          <button onclick="instructorLogout()" class="ml-1 text-[11px] text-slate-400 hover:text-rose-600 underline font-sans" title="Lock instructor editing mode">Lock</button>
-        </div>
-      `;
+      if (badge) {
+        badge.innerHTML = `
+          <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <i class="fa-solid fa-user-shield text-emerald-600"></i>
+            <span>Instructor Mode: <strong>Active</strong></span>
+            <button onclick="instructorLogout()" class="ml-1 text-[11px] text-slate-400 hover:text-rose-600 underline font-sans" title="Lock instructor editing mode">Lock</button>
+          </div>
+        `;
+      }
+      if (btnSched) {
+        btnSched.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5 cursor-pointer";
+        btnSched.innerHTML = `<i class="fa-solid fa-calendar-plus text-xs"></i><span>Schedule Interview</span>`;
+        btnSched.title = "Schedule interview on hub";
+      }
+      if (btnUpload) {
+        btnUpload.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-sky-200 transition-all flex items-center space-x-1.5 shadow-sm cursor-pointer";
+        btnUpload.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i><span>Upload Interview Q&A</span>`;
+        btnUpload.title = "Upload interview Q&A";
+      }
     } else {
-      badge.innerHTML = `
-        <a href="/my-interviews" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 transition-all shadow-xs" title="Track your own interviews privately">
-          <i class="fa-solid fa-user-astronaut text-sky-600"></i>
-          <span>Track Your Own Interviews</span>
-        </a>
-      `;
+      if (badge) {
+        badge.innerHTML = `
+          <a href="/my-interviews" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 transition-all shadow-xs" title="Track your own interviews privately">
+            <i class="fa-solid fa-user-astronaut text-sky-600"></i>
+            <span>Track Your Own Interviews</span>
+          </a>
+        `;
+      }
+      if (btnSched) {
+        btnSched.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none";
+        btnSched.innerHTML = `<i class="fa-solid fa-lock text-amber-500 text-xs"></i><span>Schedule Interview</span><span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>`;
+        btnSched.title = "Instructor GitHub PAT Required: Authenticate first to unlock Schedule Interview";
+      }
+      if (btnUpload) {
+        btnUpload.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none";
+        btnUpload.innerHTML = `<i class="fa-solid fa-lock text-amber-500 text-xs"></i><span>Upload Interview Q&A</span><span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>`;
+        btnUpload.title = "Instructor GitHub PAT Required: Authenticate first to unlock Upload Interview Q&A";
+      }
     }
   }
 
