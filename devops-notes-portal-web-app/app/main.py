@@ -5,7 +5,7 @@ from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -156,8 +156,6 @@ async def health():
 async def trigger_sync():
     result = git_manager.sync()
     return JSONResponse(content=result)
-
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, FileResponse, RedirectResponse
 
 @app.get("/raw/{file_path:path}")
 async def get_raw_asset(file_path: str):

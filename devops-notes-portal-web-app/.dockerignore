@@ -8,4 +8,6 @@ __pycache__
 data/
 k8s/
 *.md
+deploy.sh
 deploy.ps1
+scratch/
