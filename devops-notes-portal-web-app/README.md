@@ -355,11 +355,13 @@ To reduce cloud hosting costs on Google Cloud Platform, schedule your Compute En
 ### 4.2 My Interview Hub & Personal Tracker (`/my-interviews`)
 * **Zero-Login Architecture**: Allows any visitor or student to track interviews without needing an account on your server.
 * **Client-Side GitHub REST API Sync**: Personal Access Tokens (PATs) and repository URLs are stored **strictly in the user's browser `localStorage`**. The server never sees or stores visitor tokens.
+* **YouTube Video Recording Links**: Attach YouTube interview recording links to schedules and question sets.
 * **Dynamic Sorting**: Automatically re-ranks companies dynamically based on latest interview activity date.
 * **JSON Backup & Restore**: 1-click export and import of all interview records.
 
 ### 4.3 Nagaraj Interview Schedule & Q&A Hub (`/interviews`)
 * **Today's Live Schedule Banner**: Real-time badges for `🔴 HAPPENING NOW`, `⏳ Upcoming Today`, and `🏁 Concluded`.
+* **YouTube Interview Recordings**: Direct watch buttons and preview links for recorded interview discussions.
 * **Hierarchical Grouping**: Questions grouped under dedicated Company banners and Round cards.
 * **Multi-Category Auto-Detection**: Auto-detects and tags questions across 17 DevOps categories (`Linux`, `Shell script`, `jenkins`, `Github`, `Build tools`, `Docker`, `AWS`, `Kubernetes`, `terraform`, `Ansible`, `jira`, `scrum`, `Agile`, `Monitoring tools`, `python`, `Azure`, `AI tool`).
 

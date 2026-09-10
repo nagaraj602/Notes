@@ -25,30 +25,44 @@ class CandidateSubmissionsManager:
         self._init_file()
 
     def _resolve_file_path(self) -> str:
+        hidden_filename = ".candidate_submissions.json"
         try:
             from app.config import NOTES_DIR
             if NOTES_DIR and os.path.exists(NOTES_DIR):
                 dn = os.path.join(NOTES_DIR, "devops-notes")
                 if os.path.exists(dn):
-                    return os.path.join(dn, "candidate_submissions.json")
-                return os.path.join(NOTES_DIR, "candidate_submissions.json")
+                    return os.path.join(dn, hidden_filename)
+                return os.path.join(NOTES_DIR, hidden_filename)
         except Exception:
             pass
 
-        container_path = "/app/data/notes/devops-notes/candidate_submissions.json"
+        container_path = f"/app/data/notes/devops-notes/{hidden_filename}"
         if os.path.exists(os.path.dirname(container_path)):
             return container_path
 
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        notes_path = os.path.join(base_dir, "candidate_submissions.json")
+        notes_path = os.path.join(base_dir, hidden_filename)
         if os.path.exists(base_dir):
             return notes_path
 
-        app_local = os.path.join(os.path.dirname(__file__), "data", "candidate_submissions.json")
+        app_local = os.path.join(os.path.dirname(__file__), "data", hidden_filename)
         os.makedirs(os.path.dirname(app_local), exist_ok=True)
         return app_local
 
     def _init_file(self):
+        # Migrate old unhidden file if present
+        try:
+            old_unhidden = self.file_path.replace(".candidate_submissions.json", "candidate_submissions.json")
+            if os.path.exists(old_unhidden) and not os.path.exists(self.file_path):
+                with open(old_unhidden, "r", encoding="utf-8") as f:
+                    old_data = json.load(f)
+                self._save_json(old_data)
+                os.remove(old_unhidden)
+            elif os.path.exists(old_unhidden) and os.path.exists(self.file_path):
+                os.remove(old_unhidden)
+        except Exception:
+            pass
+
         if not os.path.exists(self.file_path):
             self._save_json([])
 
@@ -76,7 +90,7 @@ class CandidateSubmissionsManager:
 
         cand_name = (data.get("candidate_name") or data.get("user_name") or "").strip()
         if not cand_name:
-            cand_name = "Anonymous Candidate"
+            cand_name = "Candidate"
 
         company = (data.get("company") or "").strip()
         if not company:
@@ -104,8 +118,46 @@ class CandidateSubmissionsManager:
                 "answer": (q.get("answer") or "").strip(),
                 "categories": q.get("categories") or ["General"],
                 "difficulty": q.get("difficulty") or "Moderate",
-                "recording_link": (q.get("recording_link") or "").strip()
+                "recording_link": (q.get("recording_link") or rec_link or "").strip()
             })
+
+        # Check if matching submission exists for this candidate, company, round, and date
+        existing = next(
+            (s for s in submissions if 
+             (s.get("candidate_name", "").lower() == cand_name.lower()) and 
+             (s.get("company", "").lower() == company.lower()) and 
+             (s.get("round", "").lower() == round_name.lower()) and
+             (s.get("date", "") == sched_date)), 
+            None
+        )
+
+        if existing:
+            if start_t:
+                existing["start_time"] = start_t
+                existing["time"] = start_t
+            if end_t:
+                existing["end_time"] = end_t
+            if salary_ctc:
+                existing["salary_ctc"] = salary_ctc
+            if monthly_sal:
+                existing["monthly_salary"] = monthly_sal
+            if rec_link:
+                existing["recording_link"] = rec_link
+            if notes:
+                existing["notes"] = notes
+            if exp:
+                existing["experience"] = exp
+
+            existing_q_texts = {q.get("question", "").lower().strip() for q in existing.get("questions", [])}
+            for q in clean_questions:
+                if q.get("question", "").lower().strip() not in existing_q_texts:
+                    existing.setdefault("questions", []).append(q)
+                    existing_q_texts.add(q.get("question", "").lower().strip())
+
+            existing["question_count"] = len(existing.get("questions", []))
+            existing["updated_at"] = datetime.utcnow().isoformat()
+            self._save_json(submissions)
+            return existing
 
         new_submission = {
             "id": f"sub-{uuid.uuid4().hex[:8]}",

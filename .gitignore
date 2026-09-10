@@ -7,4 +7,7 @@ env/
 venv/
 .venv/
 .git_token
+candidate_submissions.json
+.candidate_submissions.json
+*.submissions.json
 scratch/
