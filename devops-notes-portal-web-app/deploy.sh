@@ -337,6 +337,47 @@ deploy_gcp_ubuntu_full() {
 # ------------------------------------------------------------------------------
 # 6. Cloudflare Tunnel Installer & Runner
 # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# 6. Cloudflare Tunnel Installer & Runner
+# ------------------------------------------------------------------------------
+show_cloudflare_token_guide() {
+    echo -e "\n${CYAN}========================================================================${RESET}"
+    echo -e "${BOLD} 📖 How to Generate Your Cloudflare Tunnel Token (Step-by-Step)${RESET}"
+    echo -e "${CYAN}========================================================================${RESET}"
+    echo -e " ${BOLD}Prerequisite:${RESET} A free Cloudflare account with a domain added to it."
+    echo ""
+    echo -e " ${BOLD}Step 1:${RESET} Open the Cloudflare Zero Trust Dashboard in your browser:"
+    echo -e "         👉 ${CYAN}https://one.dash.cloudflare.com${RESET}"
+    echo -e "         (If it is your first time, create a free Team name and pick the \$0 Plan)"
+    echo ""
+    echo -e " ${BOLD}Step 2:${RESET} In the left sidebar, click ${YELLOW}Networks${RESET} ➔ ${YELLOW}Tunnels${RESET}."
+    echo ""
+    echo -e " ${BOLD}Step 3:${RESET} Click the ${GREEN}'Add a tunnel'${RESET} (or 'Create a tunnel') button."
+    echo ""
+    echo -e " ${BOLD}Step 4:${RESET} Select connector type: ${BOLD}'Cloudflared'${RESET} and click ${CYAN}'Next'${RESET}."
+    echo ""
+    echo -e " ${BOLD}Step 5:${RESET} Name your tunnel (e.g. ${YELLOW}devops-hub-gcp${RESET}) and click ${CYAN}'Save tunnel'${RESET}."
+    echo ""
+    echo -e " ${BOLD}Step 6:${RESET} On the 'Install and run a connector' page:"
+    echo -e "         • Operating system: Click ${BOLD}Debian${RESET} (for Ubuntu/Debian on GCP)"
+    echo -e "         • Architecture    : Click ${BOLD}64-bit${RESET}"
+    echo -e "         • Cloudflare will display a command box with:"
+    echo -e "           ${YELLOW}sudo cloudflared service install eyJhIjoi...${RESET}"
+    echo -e "           (or 'cloudflared tunnel run --token eyJhIjoi...')"
+    echo ""
+    echo -e " ${BOLD}Step 7:${RESET} Copy that command (or just the eyJh... token) and paste it into this script!"
+    echo ""
+    echo -e " ${BOLD}Step 8:${RESET} Once installed, click ${CYAN}'Next'${RESET} in Cloudflare to add a ${BOLD}Public Hostname${RESET}:"
+    echo -e "         • Subdomain : e.g. ${YELLOW}notes${RESET} (gives you notes.yourdomain.com)"
+    echo -e "         • Domain    : Select your domain from the dropdown"
+    echo -e "         • Service Type: Select ${BOLD}HTTP${RESET}"
+    echo -e "         • URL       : Enter ${BOLD}localhost:8000${RESET}"
+    echo -e "         • Click ${GREEN}'Save hostname'${RESET}"
+    echo ""
+    echo -e " 🎉 That is it! Your app is live at ${CYAN}https://notes.yourdomain.com${RESET} with zero open GCP ports!"
+    echo -e "${CYAN}========================================================================${RESET}\n"
+}
+
 setup_cloudflare_tunnel() {
     local choice="$1"
 
@@ -346,12 +387,20 @@ setup_cloudflare_tunnel() {
         echo -e "${CYAN}------------------------------------------------------------${RESET}"
         echo "  1) Quick Tunnel (Free, instant https://xxxx.trycloudflare.com, no domain needed)"
         echo "  2) Cloudflare Zero Trust Named Tunnel (Permanent custom domain with Token)"
-        echo "  3) Check running Cloudflare Tunnel status"
-        read -p "Select [1, 2, or 3] (Default: 1): " choice
+        echo "  3) 📖 Show Step-by-Step Guide: How to Generate Tunnel Token in Cloudflare"
+        echo "  4) Check running Cloudflare Tunnel status"
+        read -p "Select [1, 2, 3, or 4] (Default: 1): " choice
         choice=${choice:-1}
     fi
 
     if [ "$choice" == "3" ]; then
+        show_cloudflare_token_guide
+        read -p "Press [Enter] to return to Cloudflare tunnel setup..." dummy
+        setup_cloudflare_tunnel ""
+        return 0
+    fi
+
+    if [ "$choice" == "4" ]; then
         if command -v systemctl &>/dev/null && systemctl list-unit-files | grep -q cloudflared; then
             sudo systemctl status cloudflared --no-pager
         else
@@ -400,14 +449,19 @@ setup_cloudflare_tunnel() {
 
     elif [ "$choice" == "2" ]; then
         echo -e "\n${CYAN}Named Tunnel Setup (Cloudflare Zero Trust Dashboard):${RESET}"
-        echo "1. Go to https://one.dash.cloudflare.com"
-        echo "2. Navigate to Networks > Tunnels > Create a Tunnel"
-        echo "3. Copy the tunnel token provided in the Cloudflare dashboard."
-        echo "Paste your token OR the full command from Cloudflare (e.g. 'sudo cloudflared service install eyJh...' or just 'eyJh...'):"
+        echo -e "💡 ${YELLOW}Tip:${RESET} Type ${BOLD}'guide'${RESET} or ${BOLD}'g'${RESET} to read the step-by-step token creation guide."
+        echo "Paste your token OR the full command from Cloudflare (e.g. 'sudo cloudflared service install eyJh...' or 'eyJh...'):"
         read -p "Tunnel Token / Command: " cf_token
         
-        # Auto-extract token if user pasted the full command or raw token
         clean_input=$(echo "$cf_token" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e "s/^['\"]//" -e "s/['\"]$//")
+        
+        if [[ "$clean_input" =~ ^(g|guide|help)$ ]]; then
+            show_cloudflare_token_guide
+            read -p "Paste your token / command now: " cf_token
+            clean_input=$(echo "$cf_token" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e "s/^['\"]//" -e "s/['\"]$//")
+        fi
+
+        # Auto-extract token if user pasted the full command or raw token
         if [[ "$clean_input" =~ (eyJh[A-Za-z0-9._-]+) ]]; then
             cf_token="${BASH_REMATCH[1]}"
         elif [[ "$clean_input" == *"service install "* ]]; then

@@ -186,15 +186,39 @@ grep -o 'https://[-a-zA-Z0-9.]*\.trycloudflare\.com' /tmp/cloudflared.log
 Your application is immediately accessible worldwide via the printed `https://xxxx.trycloudflare.com` URL!
 
 #### Option B: Cloudflare Zero Trust Named Tunnel (Custom Domain)
-If you own a domain on Cloudflare:
-1. Log in to [Cloudflare Zero Trust](https://one.dash.cloudflare.com).
-2. Navigate to **Networks** > **Tunnels** > **Create a Tunnel**.
-3. Choose **Cloudflared**, give it a name (e.g., `devops-hub`), and copy the install command with token:
-   ```bash
-   sudo cloudflared service install <TUNNEL_TOKEN>
-   sudo systemctl enable --now cloudflared
-   ```
-4. In the Cloudflare dashboard, route public hostname (e.g. `notes.yourdomain.com`) to `http://localhost:8000`.
+
+Follow these steps to generate your token in Cloudflare and attach a custom domain:
+
+1. **Log in to Cloudflare Zero Trust**:
+   * Open [https://one.dash.cloudflare.com](https://one.dash.cloudflare.com).
+   * *(If first time, choose a free Team name and select the $0 Free plan)*.
+2. **Create a Tunnel**:
+   * In the left sidebar, navigate to **Networks** ➔ **Tunnels**.
+   * Click **Add a tunnel** (or **Create a tunnel**).
+   * Select connector type: **Cloudflared** ➔ click **Next**.
+   * Name your tunnel (e.g., `devops-hub-gcp`) ➔ click **Save tunnel**.
+3. **Copy the Install Token**:
+   * On the *Install and run a connector* page:
+     * Operating System: Select **Debian** (for Ubuntu/Debian on GCP).
+     * Architecture: Select **64-bit**.
+     * Cloudflare displays a command box containing either:
+       ```bash
+       sudo cloudflared service install eyJhIjoi...
+       # or
+       cloudflared tunnel run --token eyJhIjoi...
+       ```
+4. **Install using [`deploy.sh`](./deploy.sh)**:
+   * Run `./deploy.sh` on your server ➔ Select Option **6** (Cloudflare Tunnel) ➔ Option **2** (Named Tunnel).
+   * Paste the entire command or just the `eyJh...` token. The script automatically extracts the token and installs it as a persistent systemd service (`sudo systemctl enable --now cloudflared`).
+5. **Route Your Custom Domain to the App**:
+   * In Cloudflare dashboard, click **Next** to open the **Public Hostname** tab.
+   * **Subdomain**: e.g., `notes` (will produce `notes.yourdomain.com`).
+   * **Domain**: Select your registered domain from the dropdown.
+   * **Type**: `HTTP`
+   * **URL**: `localhost:8000`
+   * Click **Save hostname**.
+
+🎉 Your app is now live securely at `https://notes.yourdomain.com` with automatic SSL and zero open GCP ports!
 
 ---
 
