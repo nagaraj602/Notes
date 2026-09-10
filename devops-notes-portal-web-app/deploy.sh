@@ -403,13 +403,32 @@ setup_cloudflare_tunnel() {
         echo "1. Go to https://one.dash.cloudflare.com"
         echo "2. Navigate to Networks > Tunnels > Create a Tunnel"
         echo "3. Copy the tunnel token provided in the Cloudflare dashboard."
-        read -p "Enter your Cloudflare Tunnel Token: " cf_token
+        echo "Paste your token OR the full command from Cloudflare (e.g. 'sudo cloudflared service install eyJh...' or just 'eyJh...'):"
+        read -p "Tunnel Token / Command: " cf_token
+        
+        # Auto-extract token if user pasted the full command or raw token
+        clean_input=$(echo "$cf_token" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e "s/^['\"]//" -e "s/['\"]$//")
+        if [[ "$clean_input" =~ (eyJh[A-Za-z0-9._-]+) ]]; then
+            cf_token="${BASH_REMATCH[1]}"
+        elif [[ "$clean_input" == *"service install "* ]]; then
+            cf_token="${clean_input##*service install }"
+            cf_token=$(echo "$cf_token" | awk '{print $1}')
+        elif [[ "$clean_input" == *"--token "* ]]; then
+            cf_token="${clean_input##*--token }"
+            cf_token=$(echo "$cf_token" | awk '{print $1}')
+        fi
+
         if [ -n "$cf_token" ]; then
+            echo -e "\n${CYAN}==> Installing cloudflared system service with token...${RESET}"
+            # Uninstall any stale service first to avoid collision
+            sudo cloudflared service uninstall 2>/dev/null || true
             sudo cloudflared service install "$cf_token"
+            sudo systemctl daemon-reload 2>/dev/null || true
             sudo systemctl enable --now cloudflared
-            echo -e "${GREEN}✔ Cloudflare Tunnel service installed and started!${RESET}"
+            echo -e "${GREEN}✔ Cloudflare Tunnel service installed and running!${RESET}"
+            sudo systemctl status cloudflared --no-pager || true
         else
-            echo -e "${RED}No token provided. Tunnel installation skipped.${RESET}"
+            echo -e "${RED}No valid token found. Tunnel installation skipped.${RESET}"
         fi
     fi
 }
