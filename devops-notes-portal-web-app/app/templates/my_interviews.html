@@ -35,6 +35,11 @@
         <span>Push to GitHub</span>
       </button>
 
+      <button onclick="openCandidateSubmitModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-500/20 transition-all flex items-center space-x-1.5" title="Submit your interview schedule, CTC, recording, and questions to instructor Nagaraj (No GitHub PAT required)">
+        <i class="fa-solid fa-paper-plane text-xs"></i>
+        <span>Submit to Instructor</span>
+      </button>
+
       <button onclick="openScheduleModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5">
         <i class="fa-solid fa-calendar-plus text-xs"></i>
         <span>Schedule Interview</span>
@@ -49,7 +54,12 @@
         <button onclick="toggleDataDropdown()" class="px-2.5 py-2 text-xs font-bold rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 transition-all flex items-center" title="Backup / Restore">
           <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
-        <div id="dataDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-2xl shadow-xl bg-white border border-slate-100 py-1.5 z-50 text-xs font-medium">
+        <div id="dataDropdown" class="hidden absolute right-0 mt-2 w-52 rounded-2xl shadow-xl bg-white border border-slate-100 py-1.5 z-50 text-xs font-medium">
+          <button onclick="openCandidateSubmitModal()" class="w-full text-left px-4 py-2 hover:bg-emerald-50 text-emerald-800 font-bold flex items-center space-x-2">
+            <i class="fa-solid fa-paper-plane text-emerald-600"></i>
+            <span>Submit to Instructor (Nagaraj)</span>
+          </button>
+          <hr class="my-1 border-slate-100">
           <button onclick="exportDataJson()" class="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-file-export text-sky-600"></i>
             <span>Export Backup (JSON)</span>
@@ -296,6 +306,167 @@
       <div id="qaListContainer" class="space-y-3"></div>
     </div>
 
+  </div>
+</div>
+
+<!-- ========================================================================================= -->
+<!-- MODAL 0: Candidate Submission to Instructor Nagaraj (Zero PAT Required) -->
+<!-- ========================================================================================= -->
+<div id="candidateSubmitModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center text-lg shadow-md shadow-emerald-500/20">
+          <i class="fa-solid fa-paper-plane"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900">Submit Interview Experience to Instructor</h3>
+          <p class="text-[11px] text-slate-500">Submit your interview schedule, CTC, recording, and questions to Nagaraj. <strong class="text-emerald-700 font-semibold">Zero GitHub token required!</strong></p>
+        </div>
+      </div>
+      <button type="button" onclick="closeCandidateSubmitModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="candidateSubmitForm" onsubmit="submitCandidateExperience(event)" class="space-y-4 text-xs">
+      
+      <!-- Row 1: Candidate Name & Target Company -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-user text-emerald-600 mr-1"></i>Your Name / Candidate Name *</label>
+          <input type="text" id="candSubName" required placeholder="e.g. Rahul Sharma, Priya Singh" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 focus:outline-none font-sans">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-building text-sky-600 mr-1"></i>Company Name *</label>
+          <input type="text" id="candSubCompany" required placeholder="e.g. Amazon, Infosys, Cisco, Accenture" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
+        </div>
+      </div>
+
+      <!-- Row 2: Round Name & Date -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-bullseye text-indigo-600 mr-1"></i>Round Name *</label>
+          <select id="candSubRoundSelect" onchange="onCandRoundChange()" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
+            <option value="Technical Round 1">Technical Round 1</option>
+            <option value="Technical Round 2">Technical Round 2</option>
+            <option value="Technical Round 3">Technical Round 3</option>
+            <option value="Hands-on / Live Coding Round">Hands-on / Live Coding Round</option>
+            <option value="System Design & Cloud Architecture">System Design & Cloud Architecture</option>
+            <option value="Managerial & Scenario Round">Managerial & Scenario Round</option>
+            <option value="HR / Cultural Fit Round">HR / Cultural Fit Round</option>
+            <option value="Other">Other (Custom Round Name)</option>
+          </select>
+          <input type="text" id="candSubCustomRound" placeholder="Enter custom round name..." class="hidden mt-2 w-full rounded-xl px-3 py-1.5 border border-sky-200 focus:outline-none text-xs">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1"><i class="fa-regular fa-calendar text-slate-600 mr-1"></i>Interview Date *</label>
+          <input type="date" id="candSubDate" required class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
+        </div>
+      </div>
+
+      <!-- Row 3: Timings (Start & End Time) -->
+      <div class="grid grid-cols-2 gap-3.5">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1"><i class="fa-regular fa-clock text-sky-600 mr-1"></i>Start Time *</label>
+          <input type="time" id="candSubStartTime" value="10:00" required class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1"><i class="fa-regular fa-clock text-indigo-600 mr-1"></i>End Time</label>
+          <input type="time" id="candSubEndTime" value="11:00" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Row 4: Salary CTC & Monthly -->
+      <div class="p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-2">
+        <label class="block font-bold text-slate-800"><i class="fa-solid fa-coins text-emerald-600 mr-1"></i>Offered / Target Salary (Annual CTC)</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <span class="text-[10px] text-slate-500 block mb-0.5">Annual CTC</span>
+            <input type="text" id="candSubSalaryCtc" oninput="calculateCandMonthlySalary()" placeholder="e.g. 18 LPA, 24 LPA, $120,000" class="w-full rounded-xl px-3.5 py-2 border border-emerald-200 focus:outline-none bg-white text-xs font-sans">
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 block mb-0.5">Estimated Monthly Salary</span>
+            <input type="text" id="candSubMonthlySalary" placeholder="e.g. ₹1,50,000 / month" class="w-full rounded-xl px-3.5 py-2 border border-emerald-200 focus:outline-none bg-white text-xs font-sans">
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 5: Interview Recording Link / YouTube URL -->
+      <div>
+        <label class="block font-bold text-slate-700 mb-1"><i class="fa-brands fa-youtube text-red-600 mr-1"></i>Interview Recording Link / YouTube URL (Optional)</label>
+        <input type="url" id="candSubRecLink" placeholder="https://www.youtube.com/watch?v=... or unlisted YouTube video" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
+        <p class="text-[10px] text-slate-400 mt-1">Provide your unlisted YouTube recording or drive link so Nagaraj can review your session.</p>
+      </div>
+
+      <!-- Row 6: Candidate Notes / Experience Summary -->
+      <div>
+        <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-note-sticky text-amber-500 mr-1"></i>Interview Experience / Feedback (Optional)</label>
+        <textarea id="candSubNotes" rows="2" placeholder="Share how the interview went, key topics discussed, interviewer feedback..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
+      </div>
+
+      <!-- Row 7: Questions & Answers Section -->
+      <div class="pt-2 border-t border-sky-100 space-y-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <span class="font-extrabold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-question text-indigo-600"></i>
+              <span>Questions Asked in the Interview *</span>
+            </span>
+            <span class="text-[10px] text-slate-500">Add the technical questions asked during this round along with your answers.</span>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="toggleCandPasteBox()" id="btnToggleCandPaste" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1">
+              <i class="fa-solid fa-paste text-[10px]"></i>
+              <span id="btnToggleCandPasteText">Quick Paste Bulk Questions</span>
+            </button>
+            <button type="button" onclick="addCandidateQuestionRow()" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition-all flex items-center space-x-1">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span>Add Question</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Paste Textarea Box -->
+        <div id="candBulkBox" class="hidden p-3 rounded-2xl bg-indigo-50/50 border border-indigo-200 space-y-2">
+          <label class="block text-[11px] font-bold text-indigo-950">Paste Raw Questions / Transcript:</label>
+          <textarea id="candBulkText" rows="4" placeholder="Paste questions here (numbered or line-by-line):
+1. What is the difference between StatefulSet and Deployment in Kubernetes?
+2. How do you handle Terraform state locking in S3 with DynamoDB?
+3. Explain blue-green deployment vs canary release in ArgoCD." class="w-full rounded-xl p-3 border border-indigo-200 bg-white focus:outline-none text-xs font-mono"></textarea>
+          <div class="flex items-center justify-end space-x-2">
+            <button type="button" onclick="parseCandidateBulkQuestions()" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all flex items-center space-x-1">
+              <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i>
+              <span>Parse into Question Cards</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Questions List -->
+        <div id="candQuestionsList" class="space-y-3">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <div id="candSubAlert" class="hidden p-3 rounded-xl text-xs font-mono"></div>
+
+      <!-- Action Buttons -->
+      <div class="pt-3 border-t border-sky-100 flex items-center justify-end space-x-2">
+        <button type="button" onclick="closeCandidateSubmitModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+          Cancel
+        </button>
+        <button 
+          id="btnSubmitCandExperience"
+          type="submit" 
+          class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md shadow-emerald-500/20 flex items-center space-x-1.5 active:scale-95 transition-all"
+        >
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Submit Interview Experience</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -1607,6 +1778,10 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
                     </div>
                   </div>
                   <div class="flex items-center space-x-2">
+                    <button type="button" onclick="event.stopPropagation(); shareRoundWithInstructor('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}', '${escapeHtml(rndData.date || '')}')" class="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold border border-emerald-200 text-[11px] flex items-center space-x-1 shadow-xs transition-all" title="Submit this interview round, CTC, and Q&A to instructor Nagaraj">
+                      <i class="fa-solid fa-paper-plane text-emerald-600 text-[10px]"></i>
+                      <span class="hidden sm:inline">Submit to Nagaraj</span>
+                    </button>
                     ${rndData.recording_link ? `
                       <a href="${escapeHtml(rndData.recording_link)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold border border-rose-200 text-[11px] flex items-center space-x-1.5 shadow-xs transition-all hover:scale-105" title="Watch YouTube Interview Recording">
                         <i class="fa-brands fa-youtube text-red-600 text-xs"></i>
@@ -2089,6 +2264,382 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     currentCategoryFilter = "All";
     document.querySelectorAll(".qa-cat-pill").forEach(p => p.classList.remove("active-qa-pill"));
     renderQuestionsList();
+  }
+
+  // --- SUBMIT EXPERIENCE TO INSTRUCTOR (NAGARAJ) (NO PAT REQUIRED) ---
+  function openCandidateSubmitModal() {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("candSubDate").value = today;
+    const savedName = localStorage.getItem("devops_candidate_name") || "";
+    if (savedName) {
+      document.getElementById("candSubName").value = savedName;
+    }
+
+    const qList = document.getElementById("candQuestionsList");
+    qList.innerHTML = "";
+    addCandidateQuestionRow();
+
+    document.getElementById("candSubAlert").classList.add("hidden");
+    document.getElementById("candBulkBox").classList.add("hidden");
+    document.getElementById("candidateSubmitModal").classList.remove("hidden");
+  }
+
+  function openSubmitToInstructorModal() {
+    openCandidateSubmitModal();
+  }
+
+  function closeCandidateSubmitModal() {
+    document.getElementById("candidateSubmitModal").classList.add("hidden");
+  }
+
+  function shareRoundWithInstructor(companyName, roundName, dateStr) {
+    openCandidateSubmitModal();
+
+    document.getElementById("candSubCompany").value = companyName || "";
+    if (dateStr) {
+      document.getElementById("candSubDate").value = dateStr;
+    }
+
+    const roundSelect = document.getElementById("candSubRoundSelect");
+    let matched = false;
+    for (let opt of roundSelect.options) {
+      if (opt.value.toLowerCase() === (roundName || "").toLowerCase()) {
+        roundSelect.value = opt.value;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched && roundName) {
+      roundSelect.value = "Other";
+      const customInp = document.getElementById("candSubCustomRound");
+      customInp.value = roundName;
+      customInp.classList.remove("hidden");
+    }
+
+    // Lookup schedule info from mySchedules
+    const sched = mySchedules.find(s => 
+      (s.company || "").toLowerCase() === (companyName || "").toLowerCase() &&
+      (s.round || "").toLowerCase() === (roundName || "").toLowerCase()
+    );
+
+    if (sched) {
+      if (sched.start_time || sched.time) document.getElementById("candSubStartTime").value = sched.start_time || sched.time;
+      if (sched.end_time) document.getElementById("candSubEndTime").value = sched.end_time;
+      if (sched.salary_ctc) {
+        document.getElementById("candSubSalaryCtc").value = sched.salary_ctc;
+        calculateCandMonthlySalary();
+      }
+      if (sched.monthly_salary) document.getElementById("candSubMonthlySalary").value = sched.monthly_salary;
+      if (sched.recording_link) document.getElementById("candSubRecLink").value = sched.recording_link;
+      if (sched.notes) document.getElementById("candSubNotes").value = sched.notes;
+    }
+
+    // Lookup questions from myQuestions
+    const matchingQuestions = myQuestions.filter(q => 
+      (q.company || "").toLowerCase() === (companyName || "").toLowerCase() &&
+      (q.round || "").toLowerCase() === (roundName || "").toLowerCase()
+    );
+
+    if (matchingQuestions.length > 0) {
+      const qList = document.getElementById("candQuestionsList");
+      qList.innerHTML = "";
+      matchingQuestions.forEach(q => {
+        const cat = (q.categories && q.categories.length > 0) ? q.categories[0] : "General";
+        addCandidateQuestionRow(q.question || "", q.answer || "", cat, q.difficulty || "Moderate");
+      });
+    }
+  }
+
+  function onCandRoundChange() {
+    const sel = document.getElementById("candSubRoundSelect").value;
+    const customInp = document.getElementById("candSubCustomRound");
+    if (sel === "Other") {
+      customInp.classList.remove("hidden");
+      customInp.focus();
+    } else {
+      customInp.classList.add("hidden");
+    }
+  }
+
+  function calculateCandMonthlySalary() {
+    const val = (document.getElementById("candSubSalaryCtc")?.value || "").trim();
+    const monthlyInp = document.getElementById("candSubMonthlySalary");
+    if (!val) {
+      monthlyInp.value = "";
+      return;
+    }
+
+    let raw = val.toLowerCase().replace(/,/g, "").trim();
+    let annualAmount = 0;
+    let currencySymbol = "₹";
+
+    if (raw.includes("$")) {
+      currencySymbol = "$";
+      raw = raw.replace(/\$/g, "");
+    } else if (raw.includes("€") || raw.includes("eur")) {
+      currencySymbol = "€";
+      raw = raw.replace(/€|eur/g, "");
+    } else if (raw.includes("£") || raw.includes("gbp")) {
+      currencySymbol = "£";
+      raw = raw.replace(/£|gbp/g, "");
+    } else if (raw.includes("₹") || raw.includes("inr") || raw.includes("rs")) {
+      currencySymbol = "₹";
+      raw = raw.replace(/₹|inr|rs\.?/g, "");
+    }
+
+    raw = raw.trim();
+
+    if (raw.includes("lpa") || raw.includes("lakh") || raw.includes("lac") || raw.includes("l")) {
+      const num = parseFloat(raw.replace(/[a-z]/g, "").trim());
+      if (!isNaN(num)) annualAmount = num * 100000;
+    } else if (raw.includes("cr")) {
+      const num = parseFloat(raw.replace(/[a-z]/g, "").trim());
+      if (!isNaN(num)) annualAmount = num * 10000000;
+    } else if (raw.includes("k")) {
+      const num = parseFloat(raw.replace(/[a-z]/g, "").trim());
+      if (!isNaN(num)) annualAmount = num * 1000;
+    } else {
+      const num = parseFloat(raw);
+      if (!isNaN(num)) {
+        if (num <= 100) annualAmount = num * 100000;
+        else annualAmount = num;
+      }
+    }
+
+    if (annualAmount > 0) {
+      const monthly = Math.round(annualAmount / 12);
+      monthlyInp.value = `${currencySymbol}${monthly.toLocaleString("en-IN")} / month`;
+    }
+  }
+
+  let candQuestionCounter = 0;
+  function addCandidateQuestionRow(initialText = "", initialAnswer = "", initialCat = "Kubernetes", initialDiff = "Moderate") {
+    candQuestionCounter++;
+    const qList = document.getElementById("candQuestionsList");
+    const div = document.createElement("div");
+    div.className = "cand-q-card p-3.5 rounded-2xl bg-white border border-sky-200/90 shadow-2xs space-y-2.5 transition-all";
+    div.id = `candQRow_${candQuestionCounter}`;
+
+    div.innerHTML = `
+      <div class="flex items-center justify-between pb-1.5 border-b border-sky-100">
+        <span class="font-bold text-slate-700 text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-question text-indigo-600"></i>
+          <span>Question #${qList.children.length + 1}</span>
+        </span>
+        <button type="button" onclick="removeCandidateQuestionRow('${div.id}')" class="text-slate-400 hover:text-rose-600 text-xs px-1.5 py-0.5" title="Remove question">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-slate-700 mb-1">Question *</label>
+        <textarea required rows="2" class="cand-q-text w-full rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:ring-2 focus:ring-sky-200 font-sans text-xs" placeholder="e.g. How does Horizontal Pod Autoscaler (HPA) scale pods in Kubernetes?">${escapeHtml(initialText)}</textarea>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-slate-700 mb-1">Answer / Key Discussion Points</label>
+        <textarea rows="2" class="cand-q-answer w-full rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:ring-2 focus:ring-sky-200 font-sans text-xs" placeholder="Explain your answer or what the interviewer expected...">${escapeHtml(initialAnswer)}</textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-600 mb-0.5">Topic / Category</label>
+          <select class="cand-q-cat w-full rounded-xl px-2.5 py-1.5 border border-sky-200 bg-white font-sans text-xs">
+            <option value="Kubernetes" ${initialCat === "Kubernetes" ? "selected" : ""}>Kubernetes</option>
+            <option value="Terraform" ${initialCat === "Terraform" ? "selected" : ""}>Terraform</option>
+            <option value="AWS" ${initialCat === "AWS" ? "selected" : ""}>AWS</option>
+            <option value="Docker" ${initialCat === "Docker" ? "selected" : ""}>Docker</option>
+            <option value="CI/CD" ${initialCat === "CI/CD" ? "selected" : ""}>CI/CD</option>
+            <option value="Linux" ${initialCat === "Linux" ? "selected" : ""}>Linux</option>
+            <option value="Python" ${initialCat === "Python" ? "selected" : ""}>Python</option>
+            <option value="Git" ${initialCat === "Git" ? "selected" : ""}>Git</option>
+            <option value="Monitoring" ${initialCat === "Monitoring" ? "selected" : ""}>Monitoring & Logging</option>
+            <option value="System Design" ${initialCat === "System Design" ? "selected" : ""}>System Design</option>
+            <option value="General" ${initialCat === "General" ? "selected" : ""}>General</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-0.5">Difficulty</label>
+          <select class="cand-q-diff w-full rounded-xl px-2.5 py-1.5 border border-sky-200 bg-white font-sans text-xs">
+            <option value="Easy" ${initialDiff === "Easy" ? "selected" : ""}>Easy</option>
+            <option value="Moderate" ${initialDiff === "Moderate" ? "selected" : ""}>Moderate</option>
+            <option value="Hard" ${initialDiff === "Hard" ? "selected" : ""}>Hard</option>
+            <option value="Expert" ${initialDiff === "Expert" ? "selected" : ""}>Expert</option>
+          </select>
+        </div>
+      </div>
+    `;
+
+    qList.appendChild(div);
+  }
+
+  function removeCandidateQuestionRow(id) {
+    const row = document.getElementById(id);
+    if (row) row.remove();
+    const qList = document.getElementById("candQuestionsList");
+    if (qList.children.length === 0) {
+      addCandidateQuestionRow();
+    }
+  }
+
+  function toggleCandPasteBox() {
+    const box = document.getElementById("candBulkBox");
+    const txt = document.getElementById("btnToggleCandPasteText");
+    if (box.classList.contains("hidden")) {
+      box.classList.remove("hidden");
+      txt.innerText = "Hide Quick Paste";
+      document.getElementById("candBulkText").focus();
+    } else {
+      box.classList.add("hidden");
+      txt.innerText = "Quick Paste Bulk Questions";
+    }
+  }
+
+  function parseCandidateBulkQuestions() {
+    const raw = (document.getElementById("candBulkText").value || "").trim();
+    if (!raw) return;
+
+    const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const questions = [];
+
+    lines.forEach(l => {
+      let cleaned = l.replace(/^\d+[\.\)]\s*/, "").replace(/^[-*•]\s*/, "").trim();
+      if (cleaned.length > 5) {
+        questions.push(cleaned);
+      }
+    });
+
+    if (questions.length === 0) {
+      alert("No recognizable questions found. Please check your text.");
+      return;
+    }
+
+    const qList = document.getElementById("candQuestionsList");
+    if (qList.children.length === 1) {
+      const firstText = qList.querySelector(".cand-q-text")?.value.trim();
+      if (!firstText) qList.innerHTML = "";
+    }
+
+    questions.forEach(q => {
+      let cat = "General";
+      const qLow = q.toLowerCase();
+      if (qLow.includes("k8s") || qLow.includes("kubernetes") || qLow.includes("pod") || qLow.includes("ingress")) cat = "Kubernetes";
+      else if (qLow.includes("terraform") || qLow.includes("iac") || qLow.includes("state")) cat = "Terraform";
+      else if (qLow.includes("aws") || qLow.includes("s3") || qLow.includes("ec2") || qLow.includes("iam") || qLow.includes("vpc")) cat = "AWS";
+      else if (qLow.includes("docker") || qLow.includes("container") || qLow.includes("dockerfile")) cat = "Docker";
+      else if (qLow.includes("jenkins") || qLow.includes("ci/cd") || qLow.includes("pipeline") || qLow.includes("github actions")) cat = "CI/CD";
+      else if (qLow.includes("linux") || qLow.includes("bash") || qLow.includes("shell") || qLow.includes("cron")) cat = "Linux";
+      else if (qLow.includes("python")) cat = "Python";
+
+      addCandidateQuestionRow(q, "", cat, "Moderate");
+    });
+
+    document.getElementById("candBulkText").value = "";
+    toggleCandPasteBox();
+  }
+
+  async function submitCandidateExperience(e) {
+    e.preventDefault();
+
+    const alertBox = document.getElementById("candSubAlert");
+    const btn = document.getElementById("btnSubmitCandExperience");
+
+    const candName = document.getElementById("candSubName").value.trim();
+    const company = document.getElementById("candSubCompany").value.trim();
+    let round = document.getElementById("candSubRoundSelect").value;
+    if (round === "Other") {
+      const custom = document.getElementById("candSubCustomRound").value.trim();
+      round = custom || "Custom Round";
+    }
+
+    const date = document.getElementById("candSubDate").value;
+    const startTime = document.getElementById("candSubStartTime").value;
+    const endTime = document.getElementById("candSubEndTime").value;
+    const salaryCtc = document.getElementById("candSubSalaryCtc").value.trim();
+    const monthlySalary = document.getElementById("candSubMonthlySalary").value.trim();
+    const recordingLink = document.getElementById("candSubRecLink").value.trim();
+    const notes = document.getElementById("candSubNotes").value.trim();
+
+    const qCards = document.querySelectorAll("#candQuestionsList .cand-q-card");
+    const questions = [];
+    qCards.forEach(card => {
+      const qText = card.querySelector(".cand-q-text")?.value.trim();
+      const qAns = card.querySelector(".cand-q-answer")?.value.trim() || "";
+      const qCat = card.querySelector(".cand-q-cat")?.value || "General";
+      const qDiff = card.querySelector(".cand-q-diff")?.value || "Moderate";
+      if (qText) {
+        questions.push({
+          question: qText,
+          answer: qAns,
+          categories: [qCat],
+          difficulty: qDiff,
+          recording_link: recordingLink
+        });
+      }
+    });
+
+    if (questions.length === 0) {
+      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200";
+      alertBox.innerText = "Please provide at least one question asked in this interview.";
+      alertBox.classList.remove("hidden");
+      return;
+    }
+
+    localStorage.setItem("devops_candidate_name", candName);
+
+    const payload = {
+      candidate_name: candName,
+      user_name: candName,
+      company: company,
+      round: round,
+      date: date,
+      time: startTime,
+      start_time: startTime,
+      end_time: endTime,
+      salary_ctc: salaryCtc,
+      monthly_salary: monthlySalary,
+      recording_link: recordingLink,
+      notes: notes,
+      questions: questions
+    };
+
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Submitting...`;
+    alertBox.classList.add("hidden");
+
+    try {
+      const res = await fetch("/api/candidate-submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to submit interview experience");
+      }
+
+      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-emerald-50 text-emerald-900 border border-emerald-300";
+      alertBox.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+          <span><strong>Success!</strong> Your interview experience and ${questions.length} questions were submitted successfully to Nagaraj!</span>
+        </div>
+      `;
+      alertBox.classList.remove("hidden");
+
+      setTimeout(() => {
+        closeCandidateSubmitModal();
+      }, 1500);
+
+    } catch (err) {
+      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200";
+      alertBox.innerText = err.message || "Failed to submit. Please try again.";
+      alertBox.classList.remove("hidden");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Submit Interview Experience</span>`;
+    }
   }
 
   function escapeHtml(str) {

@@ -27,6 +27,7 @@ from app.cidr_engine import (
 )
 from app.interview_hub import interview_manager, CATEGORIES
 from app.old_iq_manager import old_iq_manager
+from app.candidate_submissions import candidate_manager
 
 # Background Auto-Sync Task
 async def auto_sync_worker():
@@ -115,6 +116,19 @@ async def interviews_page(request: Request):
         name="interviews.html",
         context={
             "stats": stats,
+            "categories": CATEGORIES,
+            "last_sync": git_manager.last_sync_time,
+            "sync_status": git_manager.sync_status
+        }
+    )
+
+@app.get("/admin/submissions", response_class=HTMLResponse)
+@app.get("/candidate-submissions", response_class=HTMLResponse)
+async def admin_submissions_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_submissions.html",
+        context={
             "categories": CATEGORIES,
             "last_sync": git_manager.last_sync_time,
             "sync_status": git_manager.sync_status
@@ -701,4 +715,111 @@ async def api_delete_git_token():
 @app.post("/api/settings/git-push-test")
 async def api_test_git_push():
     res = interview_manager.test_git_push()
-    return JSONResponse(res)
+    return JSONResponse(res)
+
+# --- CANDIDATE INTERVIEW SUBMISSIONS & SECRET ADMIN APIS ---
+class CandidateSubmissionCreateRequest(BaseModel):
+    candidate_name: Optional[str] = "Anonymous Candidate"
+    company: str
+    round: Optional[str] = "Technical Round 1"
+    date: Optional[str] = ""
+    time: Optional[str] = "10:00"
+    start_time: Optional[str] = "10:00"
+    end_time: Optional[str] = ""
+    salary_ctc: Optional[str] = ""
+    monthly_salary: Optional[str] = ""
+    recording_link: Optional[str] = ""
+    experience: Optional[str] = ""
+    notes: Optional[str] = ""
+    questions: Optional[List[Dict[str, Any]]] = []
+
+class AdminVerifyRequest(BaseModel):
+    token: str
+
+def verify_admin_access(token_str: str) -> bool:
+    clean = (token_str or "").strip()
+    if not clean:
+        return False
+    admin_key = os.getenv("ADMIN_ACCESS_KEY", "").strip()
+    if admin_key and clean == admin_key:
+        return True
+    server_token = interview_manager._get_github_token(NOTES_DIR).strip()
+    if server_token and clean == server_token:
+        return True
+    try:
+        import urllib.request
+        gh_req = urllib.request.Request("https://api.github.com/user")
+        gh_req.add_header("Authorization", f"token {clean}")
+        gh_req.add_header("User-Agent", "DevOpsPortal")
+        with urllib.request.urlopen(gh_req, timeout=4) as resp:
+            data = json.loads(resp.read().decode())
+            if data.get("login", "").lower() == "nagaraj602":
+                return True
+    except Exception:
+        pass
+    return False
+
+@app.post("/api/candidate-submissions")
+async def api_submit_candidate_interview(req: CandidateSubmissionCreateRequest):
+    try:
+        item = candidate_manager.add_submission(req.dict())
+        return JSONResponse({"status": "success", "submission": item})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/candidate-submissions/verify-access")
+async def api_verify_candidate_admin(req: AdminVerifyRequest):
+    if verify_admin_access(req.token):
+        return JSONResponse({"status": "authorized"})
+    raise HTTPException(status_code=403, detail="Invalid admin credentials. Access denied.")
+
+@app.post("/api/candidate-submissions/auth-with-server")
+async def api_auth_candidate_with_server():
+    server_tok = interview_manager._get_github_token(NOTES_DIR).strip()
+    if server_tok:
+        return JSONResponse({"status": "authorized", "token": server_tok})
+    raise HTTPException(status_code=403, detail="No server token configured.")
+
+@app.get("/api/candidate-submissions")
+async def api_get_candidate_submissions(
+    request: Request,
+    candidate: Optional[str] = "",
+    company: Optional[str] = "",
+    q: Optional[str] = ""
+):
+    auth_hdr = request.headers.get("Authorization", "")
+    token = auth_hdr.replace("Bearer ", "").strip()
+    if not verify_admin_access(token):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    return JSONResponse(candidate_manager.get_submissions(candidate=candidate, company=company, q=q))
+
+@app.get("/api/candidate-submissions/stats")
+async def api_get_candidate_submission_stats(request: Request):
+    auth_hdr = request.headers.get("Authorization", "")
+    token = auth_hdr.replace("Bearer ", "").strip()
+    if not verify_admin_access(token):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    return JSONResponse(candidate_manager.get_stats())
+
+@app.delete("/api/candidate-submissions/{sub_id}")
+async def api_delete_candidate_submission(sub_id: str, request: Request):
+    auth_hdr = request.headers.get("Authorization", "")
+    token = auth_hdr.replace("Bearer ", "").strip()
+    if not verify_admin_access(token):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    deleted = candidate_manager.delete_submission(sub_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    return JSONResponse({"status": "deleted"})
+
+@app.post("/api/candidate-submissions/{sub_id}/approve")
+async def api_approve_candidate_submission(sub_id: str, request: Request):
+    auth_hdr = request.headers.get("Authorization", "")
+    token = auth_hdr.replace("Bearer ", "").strip()
+    if not verify_admin_access(token):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    try:
+        res = candidate_manager.import_to_hub(sub_id)
+        return JSONResponse(res)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
