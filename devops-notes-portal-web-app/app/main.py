@@ -511,12 +511,52 @@ class RoundCreateRequest(BaseModel):
 class RoundUpdateRequest(BaseModel):
     name: str
 
-def check_github_pat_configured():
+def extract_admin_token(request: Request) -> str:
+    tok = request.headers.get("x-admin-token", "")
+    if not tok:
+        auth = request.headers.get("Authorization", "")
+        if auth.startswith("Bearer ") or auth.startswith("token "):
+            tok = auth.split(" ", 1)[1]
+    if not tok:
+        tok = request.query_params.get("admin_token", "")
+    return tok.strip()
+
+def verify_admin_access(token_str: str) -> bool:
+    clean = (token_str or "").strip()
+    if not clean:
+        return False
+    admin_key = os.getenv("ADMIN_ACCESS_KEY", "").strip()
+    if admin_key and clean == admin_key:
+        return True
+    server_token = interview_manager._get_github_token(NOTES_DIR).strip()
+    if server_token and clean == server_token:
+        return True
+    try:
+        import urllib.request
+        gh_req = urllib.request.Request("https://api.github.com/user")
+        gh_req.add_header("Authorization", f"token {clean}")
+        gh_req.add_header("User-Agent", "DevOpsPortal")
+        with urllib.request.urlopen(gh_req, timeout=4) as resp:
+            data = json.loads(resp.read().decode())
+            login = data.get("login", "").lower()
+            if login in ["nagaraj602", "nagarajkamath602"]:
+                return True
+    except Exception:
+        pass
+    return False
+
+def check_instructor_pat_and_permission(request: Request):
+    tok = extract_admin_token(request)
+    if not verify_admin_access(tok):
+        raise HTTPException(
+            status_code=403,
+            detail="Instructor authorization required. This operation affects Nagaraj's repository. To track your personal interviews, please use /my-interviews."
+        )
     status = interview_manager.get_token_status()
     if not status.get("has_token"):
         raise HTTPException(
             status_code=403,
-            detail="GitHub Personal Access Token (PAT) is required before performing any schedule or question operations. Please configure your GitHub PAT first."
+            detail="GitHub Personal Access Token (PAT) is required on server. Please configure your GitHub PAT first."
         )
 
 @app.get("/api/interviews/rounds")
@@ -524,8 +564,8 @@ async def api_get_rounds():
     return JSONResponse(interview_manager.get_rounds())
 
 @app.post("/api/interviews/rounds")
-async def api_add_round(req: RoundCreateRequest):
-    check_github_pat_configured()
+async def api_add_round(req: RoundCreateRequest, request: Request):
+    check_instructor_pat_and_permission(request)
     try:
         new_r = interview_manager.add_custom_round(req.name)
         return JSONResponse({"status": "success", "round": new_r})
@@ -533,8 +573,8 @@ async def api_add_round(req: RoundCreateRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.put("/api/interviews/rounds/{round_id}")
-async def api_rename_round(round_id: str, req: RoundUpdateRequest):
-    check_github_pat_configured()
+async def api_rename_round(round_id: str, req: RoundUpdateRequest, request: Request):
+    check_instructor_pat_and_permission(request)
     try:
         updated = interview_manager.rename_custom_round(round_id, req.name)
         if not updated:
@@ -544,8 +584,8 @@ async def api_rename_round(round_id: str, req: RoundUpdateRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.delete("/api/interviews/rounds/{round_id}")
-async def api_delete_round(round_id: str):
-    check_github_pat_configured()
+async def api_delete_round(round_id: str, request: Request):
+    check_instructor_pat_and_permission(request)
     success = interview_manager.delete_custom_round(round_id)
     if not success:
         raise HTTPException(status_code=404, detail="Round not found")
@@ -560,36 +600,36 @@ async def api_get_schedules():
     return JSONResponse(interview_manager.get_schedules())
 
 @app.post("/api/interviews/schedules")
-async def api_add_schedule(req: ScheduleCreateRequest):
-    check_github_pat_configured()
+async def api_add_schedule(req: ScheduleCreateRequest, request: Request):
+    check_instructor_pat_and_permission(request)
     item = interview_manager.add_schedule(req.dict())
     return JSONResponse({"status": "success", "schedule": item})
 
 @app.put("/api/interviews/schedules/{sched_id}")
-async def api_update_schedule(sched_id: str, req: ScheduleUpdateRequest):
-    check_github_pat_configured()
+async def api_update_schedule(sched_id: str, req: ScheduleUpdateRequest, request: Request):
+    check_instructor_pat_and_permission(request)
     updated = interview_manager.update_schedule(sched_id, req.dict(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Schedule not found")
     return JSONResponse({"status": "success", "schedule": updated})
 
 @app.delete("/api/interviews/schedules/{sched_id}")
-async def api_delete_schedule(sched_id: str):
-    check_github_pat_configured()
+async def api_delete_schedule(sched_id: str, request: Request):
+    check_instructor_pat_and_permission(request)
     success = interview_manager.delete_schedule(sched_id)
     if not success:
         raise HTTPException(status_code=404, detail="Schedule not found")
     return JSONResponse({"status": "deleted"})
 
 @app.delete("/api/interviews/company")
-async def api_delete_company(company: str):
-    check_github_pat_configured()
+async def api_delete_company(company: str, request: Request):
+    check_instructor_pat_and_permission(request)
     res = interview_manager.delete_company(company)
     return JSONResponse(res)
 
 @app.delete("/api/interviews/company/round")
-async def api_delete_company_round(company: str, round: str):
-    check_github_pat_configured()
+async def api_delete_company_round(company: str, round: str, request: Request):
+    check_instructor_pat_and_permission(request)
     res = interview_manager.delete_company_round(company, round)
     return JSONResponse(res)
 
@@ -599,22 +639,22 @@ async def api_get_questions(q: Optional[str] = "", category: Optional[str] = "",
     return JSONResponse(questions)
 
 @app.post("/api/interviews/questions")
-async def api_add_question(req: QuestionCreateRequest):
-    check_github_pat_configured()
+async def api_add_question(req: QuestionCreateRequest, request: Request):
+    check_instructor_pat_and_permission(request)
     new_q = interview_manager.add_question(req.dict())
     return JSONResponse({"status": "success", "question": new_q})
 
 @app.put("/api/interviews/questions/{q_id}")
-async def api_update_question(q_id: str, req: QuestionUpdateRequest):
-    check_github_pat_configured()
+async def api_update_question(q_id: str, req: QuestionUpdateRequest, request: Request):
+    check_instructor_pat_and_permission(request)
     updated = interview_manager.update_question(q_id, req.dict(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Question not found")
     return JSONResponse({"status": "success", "question": updated})
 
 @app.delete("/api/interviews/questions/{q_id}")
-async def api_delete_question(q_id: str):
-    check_github_pat_configured()
+async def api_delete_question(q_id: str, request: Request):
+    check_instructor_pat_and_permission(request)
     success = interview_manager.delete_question(q_id)
     if not success:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -636,8 +676,8 @@ async def api_parse_qa(req: ParseQaRequest):
     return JSONResponse({"questions": parsed, "count": len(parsed)})
 
 @app.post("/api/interviews/questions/bulk")
-async def api_add_bulk_questions(req: BulkQuestionsRequest):
-    check_github_pat_configured()
+async def api_add_bulk_questions(req: BulkQuestionsRequest, request: Request):
+    check_instructor_pat_and_permission(request)
     qa_list = [item.dict() for item in req.questions]
     count = interview_manager.add_bulk_questions(
         company=req.company,
@@ -656,8 +696,8 @@ async def api_get_pending_followups():
     return JSONResponse(interview_manager.get_pending_followups())
 
 @app.post("/api/interviews/dismiss-followup")
-async def api_dismiss_followup(req: FollowupActionRequest):
-    check_github_pat_configured()
+async def api_dismiss_followup(req: FollowupActionRequest, request: Request):
+    check_instructor_pat_and_permission(request)
     if req.action == "cancel":
         interview_manager.update_schedule(req.schedule_id, {"status": "cancelled"})
     elif req.action == "reschedule":
@@ -690,17 +730,23 @@ async def api_update_session_state(req: SessionStateUpdateRequest):
     data = session_manager.update_state(req.dict(exclude_unset=True))
     return JSONResponse({"status": "success", "state": data})
 
-# --- GITHUB TOKEN & GIT PUSH SETTINGS APIS ---
+# --- GITHUB TOKEN & GIT PUSH SETTINGS APIS (INSTRUCTOR RESTRICTED) ---
 class SaveGitTokenRequest(BaseModel):
     token: str
 
 @app.get("/api/settings/git-token")
-async def api_get_git_token_status():
+async def api_get_git_token_status(request: Request):
+    tok = extract_admin_token(request)
+    if not verify_admin_access(tok):
+        raise HTTPException(status_code=403, detail="Instructor authorization required.")
     status = interview_manager.get_token_status()
     return JSONResponse(status)
 
 @app.post("/api/settings/git-token")
-async def api_save_git_token(req: SaveGitTokenRequest):
+async def api_save_git_token(req: SaveGitTokenRequest, request: Request):
+    tok = extract_admin_token(request) or req.token
+    if not verify_admin_access(tok):
+        raise HTTPException(status_code=403, detail="Instructor authorization required.")
     try:
         res = interview_manager.save_github_token(req.token)
         return JSONResponse(res)
@@ -708,12 +754,18 @@ async def api_save_git_token(req: SaveGitTokenRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.delete("/api/settings/git-token")
-async def api_delete_git_token():
+async def api_delete_git_token(request: Request):
+    tok = extract_admin_token(request)
+    if not verify_admin_access(tok):
+        raise HTTPException(status_code=403, detail="Instructor authorization required.")
     deleted = interview_manager.delete_github_token()
     return JSONResponse({"status": "deleted" if deleted else "not_found"})
 
 @app.post("/api/settings/git-push-test")
-async def api_test_git_push():
+async def api_test_git_push(request: Request):
+    tok = extract_admin_token(request)
+    if not verify_admin_access(tok):
+        raise HTTPException(status_code=403, detail="Instructor authorization required.")
     res = interview_manager.test_git_push()
     return JSONResponse(res)
 
@@ -735,29 +787,6 @@ class CandidateSubmissionCreateRequest(BaseModel):
 
 class AdminVerifyRequest(BaseModel):
     token: str
-
-def verify_admin_access(token_str: str) -> bool:
-    clean = (token_str or "").strip()
-    if not clean:
-        return False
-    admin_key = os.getenv("ADMIN_ACCESS_KEY", "").strip()
-    if admin_key and clean == admin_key:
-        return True
-    server_token = interview_manager._get_github_token(NOTES_DIR).strip()
-    if server_token and clean == server_token:
-        return True
-    try:
-        import urllib.request
-        gh_req = urllib.request.Request("https://api.github.com/user")
-        gh_req.add_header("Authorization", f"token {clean}")
-        gh_req.add_header("User-Agent", "DevOpsPortal")
-        with urllib.request.urlopen(gh_req, timeout=4) as resp:
-            data = json.loads(resp.read().decode())
-            if data.get("login", "").lower() == "nagaraj602":
-                return True
-    except Exception:
-        pass
-    return False
 
 @app.post("/api/candidate-submissions")
 async def api_submit_candidate_interview(req: CandidateSubmissionCreateRequest):

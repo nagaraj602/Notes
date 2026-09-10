@@ -728,10 +728,6 @@
         <span class="hidden md:inline">CIDR Architect</span>
       </a>
 
-      <a href="/settings" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm {% if request.url.path == '/settings' %}bg-slate-100 text-slate-900 border-slate-300 ring-2 ring-slate-400/20 shadow-slate-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-slate-900 border-sky-100{% endif %}" title="Settings">
-        <i class="fa-solid fa-sliders text-slate-500"></i>
-        <span class="hidden lg:inline">Settings</span>
-      </a>
       
       <button onclick="triggerManualSync()" class="ml-1 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all shadow-md shadow-sky-500/20 hover:scale-[1.02] flex items-center space-x-1.5 active:scale-95">
         <i id="sync-icon" class="fa-solid fa-rotate text-xs"></i>

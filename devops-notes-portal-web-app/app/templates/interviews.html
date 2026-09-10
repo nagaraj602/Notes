@@ -224,17 +224,17 @@
   </div>
 </div>
 
-<!-- GITHUB PAT AUTHENTICATION GATE MODAL -->
+<!-- INSTRUCTOR ACCESS VERIFICATION GATE MODAL -->
 <div id="patRequiredModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
   <div class="bg-white rounded-3xl max-w-md w-full border border-sky-200 shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in duration-150">
     <div class="flex items-start justify-between pb-3 border-b border-sky-100">
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-lg shadow-md shadow-sky-500/20">
-          <i class="fa-brands fa-github"></i>
+          <i class="fa-solid fa-lock"></i>
         </div>
         <div>
-          <h3 id="patModalTitle" class="text-sm font-extrabold text-slate-900">GitHub PAT Required</h3>
-          <p class="text-[11px] text-slate-500">Authentication required to schedule or edit</p>
+          <h3 id="patModalTitle" class="text-sm font-extrabold text-slate-900">Instructor Access Required</h3>
+          <p class="text-[11px] text-slate-500">Publishing to nagaraj602/Notes is restricted</p>
         </div>
       </div>
       <button onclick="closePatModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
@@ -242,37 +242,35 @@
       </button>
     </div>
 
-    <!-- Required Warning Notice -->
-    <div id="patModalBanner" class="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 flex items-start space-x-2.5">
-      <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 text-sm flex-shrink-0"></i>
-      <div class="leading-relaxed">
-        <strong>GitHub Personal Access Token (PAT) Required:</strong>
-        To schedule interviews, add rounds, or upload Q&A, you must first configure your GitHub PAT so all changes are automatically synced and committed to your GitHub repository.
+    <!-- Candidate Notice vs Instructor Gate Banner -->
+    <div id="patModalBanner" class="p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 space-y-2.5">
+      <div class="flex items-start space-x-2">
+        <i class="fa-solid fa-shield-halved text-amber-600 mt-0.5 text-sm flex-shrink-0"></i>
+        <div class="leading-relaxed">
+          <strong>This repository belongs to Nagaraj.</strong>
+          Interviews and Q&A added here commit and push directly to <code>nagaraj602/Notes</code>. Only Nagaraj (the instructor) can schedule or modify records here.
+        </div>
+      </div>
+      <div class="pt-2.5 border-t border-amber-200/80 flex items-center justify-between gap-2">
+        <span class="text-[11px] font-bold text-amber-800">Are you a candidate?</span>
+        <a href="/my-interviews" class="px-3 py-1 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[11px] shadow-2xs transition-all flex items-center space-x-1">
+          <i class="fa-solid fa-user-astronaut text-[10px]"></i>
+          <span>My Personal Tracker →</span>
+        </a>
       </div>
     </div>
 
-    <!-- Current token status row if token is already present -->
-    <div id="patCurrentStatusRow" class="hidden text-xs text-slate-600 font-mono bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
-      <div>
-        <span class="text-slate-400 text-[10px] block uppercase font-bold">Current Active Token</span>
-        <span class="font-bold text-indigo-700" id="patModalMasked">----</span>
-      </div>
-      <button type="button" onclick="removePatFromModal()" class="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 border border-rose-200 text-[11px] font-bold">
-        <i class="fa-regular fa-trash-can mr-1"></i>Clear
-      </button>
-    </div>
-
-    <!-- Form -->
+    <!-- Form for Instructor Verification -->
     <div class="space-y-3">
       <div>
         <label for="modalPatInput" class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-          GitHub Personal Access Token (PAT)
+          Instructor GitHub PAT or Admin Token
         </label>
         <div class="relative">
           <input 
             type="password" 
             id="modalPatInput" 
-            placeholder="Paste GitHub Token here (e.g. ghp_xxxxxxxxxxxxxxxxxxxx)" 
+            placeholder="Paste your GitHub PAT or Admin Secret" 
             class="w-full px-3.5 py-2.5 rounded-xl border border-sky-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500 pr-10 text-slate-900 bg-white"
             onkeydown="if(event.key==='Enter') savePatFromModal()"
           />
@@ -280,24 +278,10 @@
             type="button" 
             onclick="toggleModalPatEye()" 
             class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            title="Toggle Token Visibility"
+            title="Toggle Visibility"
           >
             <i id="modalPatEye" class="fa-regular fa-eye text-xs"></i>
           </button>
-        </div>
-      </div>
-
-      <!-- Quick help guide -->
-      <div class="text-[11px] text-slate-600 bg-slate-50/80 p-3 rounded-2xl border border-slate-200 space-y-1.5">
-        <div class="font-bold text-slate-800 flex items-center justify-between">
-          <span>Need a token?</span>
-          <a href="https://github.com/settings/tokens/new?scopes=repo&description=DevOps+Notes+Portal+Sync" target="_blank" class="text-sky-600 hover:underline flex items-center gap-1 font-bold">
-            <span>Generate on GitHub</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-          </a>
-        </div>
-        <div class="text-[10px] text-slate-500">
-          GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (classic) with <strong><code>repo</code></strong> scope.
         </div>
       </div>
 
@@ -314,8 +298,8 @@
           onclick="savePatFromModal()" 
           class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 shadow-md shadow-sky-500/20 flex items-center space-x-1.5 active:scale-95 transition-all"
         >
-          <i class="fa-solid fa-check"></i>
-          <span>Save & Continue</span>
+          <i class="fa-solid fa-lock-open"></i>
+          <span>Verify & Unlock</span>
         </button>
       </div>
     </div>
@@ -719,9 +703,21 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   let searchDebounceTimer = null;
   const availableCategories = {{ categories | tojson }};
 
-  let gitTokenStatus = { has_token: false, token_masked: "", source: "" };
+  let currentAdminToken = sessionStorage.getItem("admin_access_token") || localStorage.getItem("admin_access_token") || "";
   let pendingPatAction = null;
   let modalPatVisible = false;
+
+  function getInstructorHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    if (currentAdminToken) {
+      headers["x-admin-token"] = currentAdminToken;
+    }
+    return headers;
+  }
+
+  function isInstructorAuthenticated() {
+    return !!currentAdminToken;
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     fetch("/api/session/state", {
@@ -734,7 +730,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
   async function initInterviewHub() {
     await Promise.all([
-      loadTokenStatus(),
+      checkInstructorAuth(),
       loadStats(),
       loadRounds(),
       loadSchedules(),
@@ -743,15 +739,23 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     ]);
   }
 
-  // --- GITHUB PAT AUTHENTICATION & GATING ---
-  async function loadTokenStatus() {
-    try {
-      const res = await fetch("/api/settings/git-token");
-      if (res.ok) {
-        gitTokenStatus = await res.json();
-      }
-    } catch (e) {
-      console.warn("Failed to load git token status", e);
+  // --- INSTRUCTOR AUTHENTICATION & GATING ---
+  async function checkInstructorAuth() {
+    if (currentAdminToken) {
+      try {
+        const res = await fetch("/api/candidate-submissions/verify-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: currentAdminToken })
+        });
+        if (res.ok) {
+          renderHubPatBadge();
+          return;
+        }
+      } catch (e) {}
+      currentAdminToken = "";
+      sessionStorage.removeItem("admin_access_token");
+      localStorage.removeItem("admin_access_token");
     }
     renderHubPatBadge();
   }
@@ -759,42 +763,48 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   function renderHubPatBadge() {
     const badge = document.getElementById("hubPatBadge");
     if (!badge) return;
-    if (gitTokenStatus && gitTokenStatus.has_token) {
+    if (isInstructorAuthenticated()) {
       badge.innerHTML = `
-        <div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-xs">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>GitHub PAT: <strong class="text-indigo-700 font-mono">${escapeHtml(gitTokenStatus.token_masked || 'Active')}</strong></span>
-          <button onclick="openPatModal(false)" class="ml-1 text-[11px] text-sky-600 hover:text-sky-800 underline font-sans" title="Manage GitHub PAT">Change</button>
+          <i class="fa-solid fa-user-shield text-emerald-600"></i>
+          <span>Instructor Mode: <strong>Active</strong></span>
+          <button onclick="instructorLogout()" class="ml-1 text-[11px] text-slate-400 hover:text-rose-600 underline font-sans" title="Lock instructor editing mode">Lock</button>
         </div>
       `;
     } else {
       badge.innerHTML = `
-        <button onclick="openPatModal(true)" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 transition-all shadow-xs" title="GitHub Personal Access Token (PAT) Required to Schedule & Edit">
-          <i class="fa-solid fa-key text-amber-600"></i>
-          <span>Connect GitHub PAT</span>
-          <span class="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold">Required</span>
-        </button>
+        <a href="/my-interviews" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 transition-all shadow-xs" title="Track your own interviews privately">
+          <i class="fa-solid fa-user-astronaut text-sky-600"></i>
+          <span>Track Your Own Interviews</span>
+        </a>
       `;
     }
   }
 
+  function instructorLogout() {
+    currentAdminToken = "";
+    sessionStorage.removeItem("admin_access_token");
+    localStorage.removeItem("admin_access_token");
+    renderHubPatBadge();
+    if (typeof showToast === "function") {
+      showToast("Instructor mode locked.", "info");
+    }
+  }
+
   function ensurePatOrPrompt(actionCallback) {
-    if (gitTokenStatus && gitTokenStatus.has_token) {
+    if (isInstructorAuthenticated()) {
       if (actionCallback) actionCallback();
       return true;
     }
     pendingPatAction = actionCallback;
-    openPatModal(true);
+    openPatModal();
     return false;
   }
 
-  function openPatModal(isRequired = true) {
+  function openPatModal() {
     const modal = document.getElementById("patRequiredModal");
     if (!modal) return;
-    const title = document.getElementById("patModalTitle");
-    const banner = document.getElementById("patModalBanner");
-    const statusRow = document.getElementById("patCurrentStatusRow");
-    const masked = document.getElementById("patModalMasked");
     const alertBox = document.getElementById("modalPatAlert");
     const input = document.getElementById("modalPatInput");
 
@@ -802,23 +812,13 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     alertBox.innerText = "";
     input.value = "";
 
-    if (gitTokenStatus && gitTokenStatus.has_token) {
-      title.innerText = "Manage GitHub Personal Access Token";
-      banner.classList.add("hidden");
-      statusRow.classList.remove("hidden");
-      masked.innerText = gitTokenStatus.token_masked || "Active";
-    } else {
-      title.innerText = "GitHub PAT Required";
-      banner.classList.remove("hidden");
-      statusRow.classList.add("hidden");
-    }
-
     modal.classList.remove("hidden");
     setTimeout(() => input.focus(), 150);
   }
 
   function closePatModal() {
     document.getElementById("patRequiredModal").classList.add("hidden");
+    pendingPatAction = null;
   }
 
   function toggleModalPatEye() {
@@ -837,7 +837,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
     if (!tok) {
       alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200 block";
-      alertBox.innerText = "Please enter your GitHub Personal Access Token.";
+      alertBox.innerText = "Please enter your GitHub PAT or Instructor Admin Token.";
       return;
     }
 
@@ -845,21 +845,32 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Verifying...`;
 
     try {
-      const res = await fetch("/api/settings/git-token", {
+      const res = await fetch("/api/candidate-submissions/verify-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: tok })
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || "Failed to save token");
+        throw new Error(data.detail || "Authentication failed. Access denied.");
       }
 
-      await loadTokenStatus();
+      currentAdminToken = tok;
+      sessionStorage.setItem("admin_access_token", tok);
+
+      if (tok.startsWith("ghp_") || tok.startsWith("github_pat_")) {
+        await fetch("/api/settings/git-token", {
+          method: "POST",
+          headers: getInstructorHeaders(),
+          body: JSON.stringify({ token: tok })
+        }).catch(() => {});
+      }
+
+      renderHubPatBadge();
       closePatModal();
 
       if (typeof showToast === "function") {
-        showToast("GitHub PAT connected & verified successfully!", "success");
+        showToast("Instructor access verified successfully!", "success");
       }
 
       if (pendingPatAction) {
@@ -869,25 +880,10 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       }
     } catch (err) {
       alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200 block";
-      alertBox.innerText = err.message || "Failed to save token";
+      alertBox.innerText = err.message || "Failed to verify instructor access.";
     } finally {
       btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-check"></i><span>Save & Continue</span>`;
-    }
-  }
-
-  async function removePatFromModal() {
-    if (!confirm("Are you sure you want to remove this GitHub Personal Access Token? You will need to re-enter it to schedule or edit interviews.")) return;
-    try {
-      await fetch("/api/settings/git-token", { method: "DELETE" });
-      gitTokenStatus = { has_token: false };
-      renderHubPatBadge();
-      closePatModal();
-      if (typeof showToast === "function") {
-        showToast("GitHub PAT removed.", "info");
-      }
-    } catch (e) {
-      alert("Failed to remove token: " + e);
+      btn.innerHTML = `<i class="fa-solid fa-lock-open"></i><span>Verify & Unlock</span>`;
     }
   }
 
@@ -966,7 +962,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     try {
       const res = await fetch("/api/interviews/rounds", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getInstructorHeaders(),
         body: JSON.stringify({ name: val })
       });
       const data = await res.json();
@@ -1059,7 +1055,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     try {
       const res = await fetch("/api/interviews/rounds", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getInstructorHeaders(),
         body: JSON.stringify({ name: name })
       });
       const data = await res.json();
@@ -1099,7 +1095,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     try {
       const res = await fetch(`/api/interviews/rounds/${roundId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getInstructorHeaders(),
         body: JSON.stringify({ name: newName })
       });
       const data = await res.json();
@@ -1120,7 +1116,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
     try {
       const res = await fetch(`/api/interviews/rounds/${roundId}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: getInstructorHeaders()
       });
       if (res.ok) {
         await loadRounds();
@@ -1874,6 +1871,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   async function handleFollowupAction(schedId, action) {
+    if (!ensurePatOrPrompt(() => handleFollowupAction(schedId, action))) return;
     if (action === "reschedule") {
       const newDate = prompt("Enter new interview date (YYYY-MM-DD):", new Date().toISOString().split("T")[0]);
       if (!newDate) return;
@@ -1881,13 +1879,13 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       const newEnd = prompt("Enter new end time (HH:MM):", "11:00") || "11:00";
       await fetch("/api/interviews/dismiss-followup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getInstructorHeaders(),
         body: JSON.stringify({ schedule_id: schedId, action: "reschedule", new_date: newDate, new_time: newStart })
       });
     } else {
       await fetch("/api/interviews/dismiss-followup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getInstructorHeaders(),
         body: JSON.stringify({ schedule_id: schedId, action: action })
       });
     }
@@ -2020,7 +2018,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
     try {
       const res = await fetch(`/api/interviews/company?company=${encodeURIComponent(companyName)}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: getInstructorHeaders()
       });
       if (res.ok) {
         await loadStats();
@@ -2045,7 +2044,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
     try {
       const res = await fetch(`/api/interviews/company/round?company=${encodeURIComponent(companyName)}&round=${encodeURIComponent(roundName)}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: getInstructorHeaders()
       });
       if (res.ok) {
         await loadStats();
@@ -2471,7 +2471,10 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     if (!confirm("Are you sure you want to delete this interview schedule?")) return;
 
     try {
-      const res = await fetch(`/api/interviews/schedules/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/interviews/schedules/${id}`, {
+        method: "DELETE",
+        headers: getInstructorHeaders()
+      });
       if (res.ok) {
         closeScheduleModal();
         initInterviewHub();
@@ -2505,7 +2508,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       // Also register as custom round
       await fetch("/api/interviews/rounds", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getInstructorHeaders(),
         body: JSON.stringify({ name: customVal })
       }).catch(() => {});
     }
@@ -2532,13 +2535,13 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     if (id) {
       res = await fetch(`/api/interviews/schedules/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getInstructorHeaders(),
         body: JSON.stringify(payload)
       });
     } else {
       res = await fetch("/api/interviews/schedules", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getInstructorHeaders(),
         body: JSON.stringify(payload)
       });
     }
@@ -2620,7 +2623,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
     const saveRes = await fetch("/api/interviews/questions/bulk", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getInstructorHeaders(),
       body: JSON.stringify({
         company: company,
         round: round,
@@ -2682,7 +2685,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
     const res = await fetch(`/api/interviews/questions/${qId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getInstructorHeaders(),
       body: JSON.stringify(payload)
     });
 
@@ -2703,7 +2706,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     if (!confirm("Are you sure you want to delete this question?")) return;
 
     const res = await fetch(`/api/interviews/questions/${qId}`, {
-      method: "DELETE"
+      method: "DELETE",
+      headers: getInstructorHeaders()
     });
 
     if (!res.ok) {

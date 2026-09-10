@@ -3,7 +3,57 @@
 
 {% block content %}
 <div class="flex-1 overflow-y-auto p-6 md:p-12 relative">
-  <div class="max-w-4xl mx-auto space-y-8">
+
+  <!-- 1. Instructor Access Verification Gate -->
+  <div id="settingsAuthGate" class="max-w-md mx-auto my-12 glass-card bg-white p-8 rounded-3xl border border-sky-200 shadow-2xl space-y-5 text-center">
+    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-2xl mx-auto shadow-lg shadow-sky-500/20">
+      <i class="fa-solid fa-lock"></i>
+    </div>
+    <div>
+      <h2 class="text-lg font-extrabold text-slate-900">Instructor Verification Required</h2>
+      <p class="text-xs text-slate-500 mt-1">This page configures the server-side Git sync for <code>nagaraj602/Notes</code>. Please authenticate as Nagaraj to access these settings.</p>
+    </div>
+
+    <div class="space-y-3 pt-2">
+      <div class="relative">
+        <input 
+          type="password" 
+          id="settingsAuthInput" 
+          placeholder="Enter your GitHub PAT or Admin Token" 
+          class="w-full px-4 py-2.5 rounded-xl border border-sky-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500 pr-10 text-slate-900"
+          onkeydown="if(event.key==='Enter') verifySettingsAccess()"
+        />
+        <button 
+          type="button" 
+          onclick="toggleSettingsAuthEye()" 
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+        >
+          <i id="settingsAuthEye" class="fa-regular fa-eye text-xs"></i>
+        </button>
+      </div>
+
+      <div id="settingsAuthAlert" class="hidden p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200"></div>
+
+      <button 
+        id="btnVerifySettings"
+        onclick="verifySettingsAccess()" 
+        class="w-full py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 shadow-md shadow-sky-500/20 transition-all flex items-center justify-center space-x-1.5"
+      >
+        <i class="fa-solid fa-lock-open"></i>
+        <span>Verify & Unlock Settings</span>
+      </button>
+
+      <div class="pt-2 border-t border-slate-100">
+        <a href="/my-interviews" class="text-xs font-bold text-slate-500 hover:text-slate-700 flex items-center justify-center space-x-1 mx-auto">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i>
+          <span>Are you a candidate? Go to My Personal Tracker</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Main Settings Dashboard (Hidden until authorized) -->
+  <div id="settingsDashboard" class="hidden max-w-4xl mx-auto space-y-8">
     <!-- Header Title -->
     <div class="flex items-center justify-between border-b border-sky-100/80 pb-6">
       <div>
@@ -218,6 +268,84 @@
 
 <script>
   let tokenVisible = false;
+  let settingsAuthEyeVisible = false;
+  let currentAdminToken = sessionStorage.getItem("admin_access_token") || localStorage.getItem("admin_access_token") || "";
+
+  function getAuthHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    if (currentAdminToken) {
+      headers["x-admin-token"] = currentAdminToken;
+    }
+    return headers;
+  }
+
+  function toggleSettingsAuthEye() {
+    const inp = document.getElementById("settingsAuthInput");
+    const eye = document.getElementById("settingsAuthEye");
+    settingsAuthEyeVisible = !settingsAuthEyeVisible;
+    inp.type = settingsAuthEyeVisible ? "text" : "password";
+    eye.className = settingsAuthEyeVisible ? "fa-regular fa-eye-slash text-xs" : "fa-regular fa-eye text-xs";
+  }
+
+  function unlockSettings() {
+    document.getElementById("settingsAuthGate").classList.add("hidden");
+    document.getElementById("settingsDashboard").classList.remove("hidden");
+    loadTokenStatus();
+  }
+
+  async function checkInitialSettingsAuth() {
+    if (currentAdminToken) {
+      try {
+        const res = await fetch("/api/candidate-submissions/verify-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: currentAdminToken })
+        });
+        if (res.ok) {
+          unlockSettings();
+          return;
+        }
+      } catch (e) {}
+    }
+  }
+
+  async function verifySettingsAccess() {
+    const inp = document.getElementById("settingsAuthInput");
+    const alertBox = document.getElementById("settingsAuthAlert");
+    const btn = document.getElementById("btnVerifySettings");
+    const tok = inp.value.trim();
+
+    if (!tok) {
+      alertBox.innerText = "Please enter your GitHub PAT or Admin token.";
+      alertBox.classList.remove("hidden");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Verifying...';
+    alertBox.classList.add("hidden");
+
+    try {
+      const res = await fetch("/api/candidate-submissions/verify-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: tok })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Authentication failed");
+      }
+      currentAdminToken = tok;
+      sessionStorage.setItem("admin_access_token", tok);
+      unlockSettings();
+    } catch (err) {
+      alertBox.innerText = err.message || "Invalid credentials. Access denied.";
+      alertBox.classList.remove("hidden");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-lock-open"></i><span>Verify & Unlock Settings</span>';
+    }
+  }
 
   function toggleTokenVisibility() {
     const input = document.getElementById("githubTokenInput");
@@ -229,7 +357,9 @@
 
   async function loadTokenStatus() {
     try {
-      const res = await fetch("/api/settings/git-token");
+      const res = await fetch("/api/settings/git-token", {
+        headers: getAuthHeaders()
+      });
       if (!res.ok) return;
       const data = await res.json();
 
@@ -283,7 +413,7 @@
     try {
       const res = await fetch("/api/settings/git-token", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ token })
       });
       const data = await res.json();
@@ -316,7 +446,10 @@
     feedback.className = "hidden";
 
     try {
-      const res = await fetch("/api/settings/git-push-test", { method: "POST" });
+      const res = await fetch("/api/settings/git-push-test", { 
+        method: "POST",
+        headers: getAuthHeaders()
+      });
       const data = await res.json();
       if (res.ok && data.status === "success") {
         showToast("Git push verified! Changes are live on GitHub.", "success");
@@ -341,7 +474,10 @@
       return;
     }
     try {
-      const res = await fetch("/api/settings/git-token", { method: "DELETE" });
+      const res = await fetch("/api/settings/git-token", { 
+        method: "DELETE",
+        headers: getAuthHeaders()
+      });
       const data = await res.json();
       showToast("Token removed", "info");
       loadTokenStatus();
@@ -351,7 +487,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    loadTokenStatus();
+    checkInitialSettingsAuth();
   });
 </script>
 {% endblock %}
