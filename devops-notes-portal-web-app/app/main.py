@@ -497,12 +497,21 @@ class RoundCreateRequest(BaseModel):
 class RoundUpdateRequest(BaseModel):
     name: str
 
+def check_github_pat_configured():
+    status = interview_manager.get_token_status()
+    if not status.get("has_token"):
+        raise HTTPException(
+            status_code=403,
+            detail="GitHub Personal Access Token (PAT) is required before performing any schedule or question operations. Please configure your GitHub PAT first."
+        )
+
 @app.get("/api/interviews/rounds")
 async def api_get_rounds():
     return JSONResponse(interview_manager.get_rounds())
 
 @app.post("/api/interviews/rounds")
 async def api_add_round(req: RoundCreateRequest):
+    check_github_pat_configured()
     try:
         new_r = interview_manager.add_custom_round(req.name)
         return JSONResponse({"status": "success", "round": new_r})
@@ -511,6 +520,7 @@ async def api_add_round(req: RoundCreateRequest):
 
 @app.put("/api/interviews/rounds/{round_id}")
 async def api_rename_round(round_id: str, req: RoundUpdateRequest):
+    check_github_pat_configured()
     try:
         updated = interview_manager.rename_custom_round(round_id, req.name)
         if not updated:
@@ -521,6 +531,7 @@ async def api_rename_round(round_id: str, req: RoundUpdateRequest):
 
 @app.delete("/api/interviews/rounds/{round_id}")
 async def api_delete_round(round_id: str):
+    check_github_pat_configured()
     success = interview_manager.delete_custom_round(round_id)
     if not success:
         raise HTTPException(status_code=404, detail="Round not found")
@@ -536,11 +547,13 @@ async def api_get_schedules():
 
 @app.post("/api/interviews/schedules")
 async def api_add_schedule(req: ScheduleCreateRequest):
+    check_github_pat_configured()
     item = interview_manager.add_schedule(req.dict())
     return JSONResponse({"status": "success", "schedule": item})
 
 @app.put("/api/interviews/schedules/{sched_id}")
 async def api_update_schedule(sched_id: str, req: ScheduleUpdateRequest):
+    check_github_pat_configured()
     updated = interview_manager.update_schedule(sched_id, req.dict(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Schedule not found")
@@ -548,6 +561,7 @@ async def api_update_schedule(sched_id: str, req: ScheduleUpdateRequest):
 
 @app.delete("/api/interviews/schedules/{sched_id}")
 async def api_delete_schedule(sched_id: str):
+    check_github_pat_configured()
     success = interview_manager.delete_schedule(sched_id)
     if not success:
         raise HTTPException(status_code=404, detail="Schedule not found")
@@ -555,11 +569,13 @@ async def api_delete_schedule(sched_id: str):
 
 @app.delete("/api/interviews/company")
 async def api_delete_company(company: str):
+    check_github_pat_configured()
     res = interview_manager.delete_company(company)
     return JSONResponse(res)
 
 @app.delete("/api/interviews/company/round")
 async def api_delete_company_round(company: str, round: str):
+    check_github_pat_configured()
     res = interview_manager.delete_company_round(company, round)
     return JSONResponse(res)
 
@@ -570,11 +586,13 @@ async def api_get_questions(q: Optional[str] = "", category: Optional[str] = "",
 
 @app.post("/api/interviews/questions")
 async def api_add_question(req: QuestionCreateRequest):
+    check_github_pat_configured()
     new_q = interview_manager.add_question(req.dict())
     return JSONResponse({"status": "success", "question": new_q})
 
 @app.put("/api/interviews/questions/{q_id}")
 async def api_update_question(q_id: str, req: QuestionUpdateRequest):
+    check_github_pat_configured()
     updated = interview_manager.update_question(q_id, req.dict(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -582,6 +600,7 @@ async def api_update_question(q_id: str, req: QuestionUpdateRequest):
 
 @app.delete("/api/interviews/questions/{q_id}")
 async def api_delete_question(q_id: str):
+    check_github_pat_configured()
     success = interview_manager.delete_question(q_id)
     if not success:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -604,6 +623,7 @@ async def api_parse_qa(req: ParseQaRequest):
 
 @app.post("/api/interviews/questions/bulk")
 async def api_add_bulk_questions(req: BulkQuestionsRequest):
+    check_github_pat_configured()
     qa_list = [item.dict() for item in req.questions]
     count = interview_manager.add_bulk_questions(
         company=req.company,
@@ -623,6 +643,7 @@ async def api_get_pending_followups():
 
 @app.post("/api/interviews/dismiss-followup")
 async def api_dismiss_followup(req: FollowupActionRequest):
+    check_github_pat_configured()
     if req.action == "cancel":
         interview_manager.update_schedule(req.schedule_id, {"status": "cancelled"})
     elif req.action == "reschedule":

@@ -21,8 +21,11 @@
       </div>
     </div>
 
-    <!-- Quick Action Buttons -->
+    <!-- Quick Action Buttons & GitHub PAT Status -->
     <div class="flex items-center gap-2 flex-wrap">
+      <!-- GitHub PAT Status Badge -->
+      <div id="hubPatBadge" class="inline-flex items-center"></div>
+
       <button onclick="openScheduleModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5">
         <i class="fa-solid fa-calendar-plus text-xs"></i>
         <span>Schedule Interview</span>
@@ -221,6 +224,104 @@
   </div>
 </div>
 
+<!-- GITHUB PAT AUTHENTICATION GATE MODAL -->
+<div id="patRequiredModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-3xl max-w-md w-full border border-sky-200 shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in duration-150">
+    <div class="flex items-start justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-lg shadow-md shadow-sky-500/20">
+          <i class="fa-brands fa-github"></i>
+        </div>
+        <div>
+          <h3 id="patModalTitle" class="text-sm font-extrabold text-slate-900">GitHub PAT Required</h3>
+          <p class="text-[11px] text-slate-500">Authentication required to schedule or edit</p>
+        </div>
+      </div>
+      <button onclick="closePatModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Required Warning Notice -->
+    <div id="patModalBanner" class="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 flex items-start space-x-2.5">
+      <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 text-sm flex-shrink-0"></i>
+      <div class="leading-relaxed">
+        <strong>GitHub Personal Access Token (PAT) Required:</strong>
+        To schedule interviews, add rounds, or upload Q&A, you must first configure your GitHub PAT so all changes are automatically synced and committed to your GitHub repository.
+      </div>
+    </div>
+
+    <!-- Current token status row if token is already present -->
+    <div id="patCurrentStatusRow" class="hidden text-xs text-slate-600 font-mono bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
+      <div>
+        <span class="text-slate-400 text-[10px] block uppercase font-bold">Current Active Token</span>
+        <span class="font-bold text-indigo-700" id="patModalMasked">----</span>
+      </div>
+      <button type="button" onclick="removePatFromModal()" class="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 border border-rose-200 text-[11px] font-bold">
+        <i class="fa-regular fa-trash-can mr-1"></i>Clear
+      </button>
+    </div>
+
+    <!-- Form -->
+    <div class="space-y-3">
+      <div>
+        <label for="modalPatInput" class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+          GitHub Personal Access Token (PAT)
+        </label>
+        <div class="relative">
+          <input 
+            type="password" 
+            id="modalPatInput" 
+            placeholder="Paste GitHub Token here (e.g. ghp_xxxxxxxxxxxxxxxxxxxx)" 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-sky-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500 pr-10 text-slate-900 bg-white"
+            onkeydown="if(event.key==='Enter') savePatFromModal()"
+          />
+          <button 
+            type="button" 
+            onclick="toggleModalPatEye()" 
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            title="Toggle Token Visibility"
+          >
+            <i id="modalPatEye" class="fa-regular fa-eye text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick help guide -->
+      <div class="text-[11px] text-slate-600 bg-slate-50/80 p-3 rounded-2xl border border-slate-200 space-y-1.5">
+        <div class="font-bold text-slate-800 flex items-center justify-between">
+          <span>Need a token?</span>
+          <a href="https://github.com/settings/tokens/new?scopes=repo&description=DevOps+Notes+Portal+Sync" target="_blank" class="text-sky-600 hover:underline flex items-center gap-1 font-bold">
+            <span>Generate on GitHub</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+          </a>
+        </div>
+        <div class="text-[10px] text-slate-500">
+          GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (classic) with <strong><code>repo</code></strong> scope.
+        </div>
+      </div>
+
+      <div id="modalPatAlert" class="hidden p-3 rounded-xl text-xs font-mono"></div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-sky-100/60">
+        <button type="button" onclick="closePatModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+          Cancel
+        </button>
+        <button 
+          id="btnModalSavePat"
+          type="button" 
+          onclick="savePatFromModal()" 
+          class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 shadow-md shadow-sky-500/20 flex items-center space-x-1.5 active:scale-95 transition-all"
+        >
+          <i class="fa-solid fa-check"></i>
+          <span>Save & Continue</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL 1: Schedule Interview Modal (With Company Info, Role Info, JD, and Auto-Calculated Monthly CTC) -->
 <div id="scheduleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
   <div class="bg-white rounded-3xl max-w-xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto">
@@ -344,9 +445,15 @@
         <input type="url" id="schedRecordingLink" placeholder="https://www.youtube.com/watch?v=... or unlisted YouTube video" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
       </div>
 
-      <div class="pt-3 border-t border-sky-100 flex items-center justify-end space-x-2">
-        <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
-        <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-md shadow-sky-500/20">Save Schedule</button>
+      <div class="pt-3 border-t border-sky-100 flex items-center justify-between">
+        <button type="button" id="btnDeleteCurrentSchedule" onclick="deleteCurrentSchedule()" class="hidden px-3.5 py-2 rounded-xl text-rose-600 hover:bg-rose-50 border border-rose-200 font-bold text-xs flex items-center space-x-1">
+          <i class="fa-regular fa-trash-can"></i>
+          <span>Delete</span>
+        </button>
+        <div class="flex items-center space-x-2 ml-auto">
+          <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-md shadow-sky-500/20">Save Schedule</button>
+        </div>
       </div>
     </form>
   </div>
@@ -612,6 +719,10 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   let searchDebounceTimer = null;
   const availableCategories = {{ categories | tojson }};
 
+  let gitTokenStatus = { has_token: false, token_masked: "", source: "" };
+  let pendingPatAction = null;
+  let modalPatVisible = false;
+
   document.addEventListener("DOMContentLoaded", () => {
     fetch("/api/session/state", {
       method: "POST",
@@ -623,12 +734,161 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
   async function initInterviewHub() {
     await Promise.all([
+      loadTokenStatus(),
       loadStats(),
       loadRounds(),
       loadSchedules(),
       loadPendingFollowups(),
       loadQuestions()
     ]);
+  }
+
+  // --- GITHUB PAT AUTHENTICATION & GATING ---
+  async function loadTokenStatus() {
+    try {
+      const res = await fetch("/api/settings/git-token");
+      if (res.ok) {
+        gitTokenStatus = await res.json();
+      }
+    } catch (e) {
+      console.warn("Failed to load git token status", e);
+    }
+    renderHubPatBadge();
+  }
+
+  function renderHubPatBadge() {
+    const badge = document.getElementById("hubPatBadge");
+    if (!badge) return;
+    if (gitTokenStatus && gitTokenStatus.has_token) {
+      badge.innerHTML = `
+        <div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>GitHub PAT: <strong class="text-indigo-700 font-mono">${escapeHtml(gitTokenStatus.token_masked || 'Active')}</strong></span>
+          <button onclick="openPatModal(false)" class="ml-1 text-[11px] text-sky-600 hover:text-sky-800 underline font-sans" title="Manage GitHub PAT">Change</button>
+        </div>
+      `;
+    } else {
+      badge.innerHTML = `
+        <button onclick="openPatModal(true)" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 transition-all shadow-xs" title="GitHub Personal Access Token (PAT) Required to Schedule & Edit">
+          <i class="fa-solid fa-key text-amber-600"></i>
+          <span>Connect GitHub PAT</span>
+          <span class="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold">Required</span>
+        </button>
+      `;
+    }
+  }
+
+  function ensurePatOrPrompt(actionCallback) {
+    if (gitTokenStatus && gitTokenStatus.has_token) {
+      if (actionCallback) actionCallback();
+      return true;
+    }
+    pendingPatAction = actionCallback;
+    openPatModal(true);
+    return false;
+  }
+
+  function openPatModal(isRequired = true) {
+    const modal = document.getElementById("patRequiredModal");
+    if (!modal) return;
+    const title = document.getElementById("patModalTitle");
+    const banner = document.getElementById("patModalBanner");
+    const statusRow = document.getElementById("patCurrentStatusRow");
+    const masked = document.getElementById("patModalMasked");
+    const alertBox = document.getElementById("modalPatAlert");
+    const input = document.getElementById("modalPatInput");
+
+    alertBox.className = "hidden p-3 rounded-xl text-xs font-mono";
+    alertBox.innerText = "";
+    input.value = "";
+
+    if (gitTokenStatus && gitTokenStatus.has_token) {
+      title.innerText = "Manage GitHub Personal Access Token";
+      banner.classList.add("hidden");
+      statusRow.classList.remove("hidden");
+      masked.innerText = gitTokenStatus.token_masked || "Active";
+    } else {
+      title.innerText = "GitHub PAT Required";
+      banner.classList.remove("hidden");
+      statusRow.classList.add("hidden");
+    }
+
+    modal.classList.remove("hidden");
+    setTimeout(() => input.focus(), 150);
+  }
+
+  function closePatModal() {
+    document.getElementById("patRequiredModal").classList.add("hidden");
+  }
+
+  function toggleModalPatEye() {
+    const input = document.getElementById("modalPatInput");
+    const eye = document.getElementById("modalPatEye");
+    modalPatVisible = !modalPatVisible;
+    input.type = modalPatVisible ? "text" : "password";
+    eye.className = modalPatVisible ? "fa-regular fa-eye-slash text-xs" : "fa-regular fa-eye text-xs";
+  }
+
+  async function savePatFromModal() {
+    const input = document.getElementById("modalPatInput");
+    const alertBox = document.getElementById("modalPatAlert");
+    const btn = document.getElementById("btnModalSavePat");
+    const tok = input.value.trim();
+
+    if (!tok) {
+      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200 block";
+      alertBox.innerText = "Please enter your GitHub Personal Access Token.";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Verifying...`;
+
+    try {
+      const res = await fetch("/api/settings/git-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: tok })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to save token");
+      }
+
+      await loadTokenStatus();
+      closePatModal();
+
+      if (typeof showToast === "function") {
+        showToast("GitHub PAT connected & verified successfully!", "success");
+      }
+
+      if (pendingPatAction) {
+        const cb = pendingPatAction;
+        pendingPatAction = null;
+        cb();
+      }
+    } catch (err) {
+      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200 block";
+      alertBox.innerText = err.message || "Failed to save token";
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-check"></i><span>Save & Continue</span>`;
+    }
+  }
+
+  async function removePatFromModal() {
+    if (!confirm("Are you sure you want to remove this GitHub Personal Access Token? You will need to re-enter it to schedule or edit interviews.")) return;
+    try {
+      await fetch("/api/settings/git-token", { method: "DELETE" });
+      gitTokenStatus = { has_token: false };
+      renderHubPatBadge();
+      closePatModal();
+      if (typeof showToast === "function") {
+        showToast("GitHub PAT removed.", "info");
+      }
+    } catch (e) {
+      alert("Failed to remove token: " + e);
+    }
   }
 
   // --- ROUNDS MANAGEMENT API & FUNCTIONS ---
@@ -727,6 +987,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   function openManageRoundsModal() {
+    if (!ensurePatOrPrompt(() => openManageRoundsModal())) return;
     renderManageRoundsList();
     document.getElementById("newRoundNameInput").value = "";
     document.getElementById("manageRoundsModal").classList.remove("hidden");
@@ -852,6 +1113,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   async function deleteCustomRound(roundId, roundName) {
+    if (!ensurePatOrPrompt(() => deleteCustomRound(roundId, roundName))) return;
     if (!confirm(`Are you sure you want to delete the custom round "${roundName}"?`)) {
       return;
     }
@@ -1736,6 +1998,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   function openUploadQaForCompany(companyName, roundName = "") {
+    if (!ensurePatOrPrompt(() => openUploadQaForCompany(companyName, roundName))) return;
     openUploadQaModal();
     const select = document.getElementById("qaCompanySelect");
     if (select) {
@@ -1749,6 +2012,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   async function deleteCompany(companyName, questionCount) {
+    if (!ensurePatOrPrompt(() => deleteCompany(companyName, questionCount))) return;
     const qMsg = questionCount > 0 ? ` and its ${questionCount} questions` : "";
     if (!confirm(`Are you sure you want to permanently delete "${companyName}"${qMsg}?\n\nThis will remove all interview schedules, rounds, and recorded questions for this company.`)) {
       return;
@@ -1773,6 +2037,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   async function deleteCompanyRound(companyName, roundName, questionCount) {
+    if (!ensurePatOrPrompt(() => deleteCompanyRound(companyName, roundName, questionCount))) return;
     const qMsg = questionCount > 0 ? ` along with its ${questionCount} questions` : "";
     if (!confirm(`Are you sure you want to delete round "${roundName}" for "${companyName}"${qMsg}?`)) {
       return;
@@ -2132,6 +2397,11 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
   // --- MODAL: SCHEDULE INTERVIEW ---
   function openScheduleModal() {
+    if (!ensurePatOrPrompt(() => openScheduleModal())) return;
+
+    const delBtn = document.getElementById("btnDeleteCurrentSchedule");
+    if (delBtn) delBtn.classList.add("hidden");
+
     const now = new Date();
     let nextH = now.getHours() + 1;
     let endH = nextH + 1;
@@ -2165,8 +2435,14 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   function editSchedule(id) {
+    if (!ensurePatOrPrompt(() => editSchedule(id))) return;
+
     const s = allSchedules.find(x => x.id === id);
     if (!s) return;
+
+    const delBtn = document.getElementById("btnDeleteCurrentSchedule");
+    if (delBtn) delBtn.classList.remove("hidden");
+
     document.getElementById("schedId").value = s.id;
     document.getElementById("schedCompany").value = s.company || "";
     document.getElementById("schedRole").value = s.role || "DevOps Engineer";
@@ -2188,8 +2464,30 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     document.getElementById("scheduleModal").classList.remove("hidden");
   }
 
+  async function deleteCurrentSchedule() {
+    const id = document.getElementById("schedId").value;
+    if (!id) return;
+    if (!ensurePatOrPrompt(() => deleteCurrentSchedule())) return;
+    if (!confirm("Are you sure you want to delete this interview schedule?")) return;
+
+    try {
+      const res = await fetch(`/api/interviews/schedules/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        closeScheduleModal();
+        initInterviewHub();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || "Failed to delete schedule");
+      }
+    } catch (e) {
+      alert("Failed to delete schedule: " + e);
+    }
+  }
+
   async function submitSchedule(e) {
     e.preventDefault();
+    if (!ensurePatOrPrompt()) return;
+
     const id = document.getElementById("schedId").value;
     const startTime = document.getElementById("schedStartTime").value || "10:00";
     const endTime = document.getElementById("schedEndTime").value || "";
@@ -2230,18 +2528,25 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       status: document.getElementById("schedStatus").value
     };
 
+    let res;
     if (id) {
-      await fetch(`/api/interviews/schedules/${id}`, {
+      res = await fetch(`/api/interviews/schedules/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
     } else {
-      await fetch("/api/interviews/schedules", {
+      res = await fetch("/api/interviews/schedules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+    }
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Failed to save schedule" }));
+      alert(err.detail || "Failed to save schedule");
+      return;
     }
 
     closeScheduleModal();
@@ -2250,6 +2555,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
   // --- MODAL: UNIFIED UPLOAD Q&A ---
   function openUploadQaModal() {
+    if (!ensurePatOrPrompt(() => openUploadQaModal())) return;
+
     populateCompanyDropdown();
     document.getElementById("uploadQaForm").reset();
     document.getElementById("qaRecordingLink").value = "";
@@ -2258,6 +2565,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   }
 
   function openUploadQaForSchedule(schedId) {
+    if (!ensurePatOrPrompt(() => openUploadQaForSchedule(schedId))) return;
+
     openUploadQaModal();
     const s = allSchedules.find(x => x.id === schedId);
     if (s) {
@@ -2309,7 +2618,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       return;
     }
 
-    await fetch("/api/interviews/questions/bulk", {
+    const saveRes = await fetch("/api/interviews/questions/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -2323,12 +2632,20 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       })
     });
 
+    if (!saveRes.ok) {
+      const err = await saveRes.json().catch(() => ({ detail: "Failed to upload questions" }));
+      alert(err.detail || "Failed to upload questions");
+      return;
+    }
+
     closeUploadQaModal();
     initInterviewHub();
   }
 
   // --- MODAL: EDIT QUESTION & RE-CATEGORIZE ---
   function openEditQuestionModal(qId) {
+    if (!ensurePatOrPrompt(() => openEditQuestionModal(qId))) return;
+
     const q = allQuestions.find(x => x.id === qId);
     if (!q) return;
 
@@ -2351,6 +2668,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
   async function submitEditQuestion(e) {
     e.preventDefault();
+    if (!ensurePatOrPrompt()) return;
+
     const qId = document.getElementById("editQId").value;
     const selectedCats = Array.from(document.querySelectorAll("input[name='editQCats']:checked")).map(cb => cb.value);
 
@@ -2361,23 +2680,37 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       categories: selectedCats
     };
 
-    await fetch(`/api/interviews/questions/${qId}`, {
+    const res = await fetch(`/api/interviews/questions/${qId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Failed to update question" }));
+      alert(err.detail || "Failed to update question");
+      return;
+    }
 
     closeEditQuestionModal();
     loadQuestions();
   }
 
   async function deleteCurrentQuestion() {
+    if (!ensurePatOrPrompt(() => deleteCurrentQuestion())) return;
+
     const qId = document.getElementById("editQId").value;
     if (!confirm("Are you sure you want to delete this question?")) return;
 
-    await fetch(`/api/interviews/questions/${qId}`, {
+    const res = await fetch(`/api/interviews/questions/${qId}`, {
       method: "DELETE"
     });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Failed to delete question" }));
+      alert(err.detail || "Failed to delete question");
+      return;
+    }
 
     closeEditQuestionModal();
     initInterviewHub();

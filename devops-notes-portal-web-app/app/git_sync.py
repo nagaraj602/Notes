@@ -8,6 +8,46 @@ from app.config import REPOS, NOTES_DIR
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("GitSync")
 
+def _get_active_token(target_dir: str) -> str:
+    for env_var in ["GITHUB_TOKEN", "GH_TOKEN", "GIT_PUSH_TOKEN", "GIT_TOKEN"]:
+        val = os.getenv(env_var, "").strip()
+        if val:
+            return val
+    token_files = [
+        os.path.join(target_dir, ".git_token"),
+        os.path.join(target_dir, "devops-notes", ".git_token"),
+        os.path.join(os.path.dirname(target_dir), ".git_token"),
+        "/app/data/notes/.git_token"
+    ]
+    for tf in token_files:
+        if os.path.exists(tf):
+            try:
+                with open(tf, "r", encoding="utf-8") as f:
+                    tok = f.read().strip()
+                    if tok:
+                        return tok
+            except Exception:
+                pass
+    git_cred = os.path.expanduser("~/.git-credentials")
+    if os.path.exists(git_cred):
+        try:
+            with open(git_cred, "r", encoding="utf-8") as f:
+                txt = f.read()
+            import re
+            m = re.search(r'https?://[^:]+:([^@]+)@github\.com', txt)
+            if m:
+                return m.group(1).strip()
+        except Exception:
+            pass
+    return ""
+
+def _get_authenticated_url(url: str, token: str) -> str:
+    if not token or "github.com" not in url:
+        return url
+    import re
+    clean_url = re.sub(r'https?://(?:[^@]+@)?github\.com/', 'https://github.com/', url)
+    return clean_url.replace("https://github.com/", f"https://{token}@github.com/")
+
 class GitSyncManager:
     def __init__(self, repos=REPOS, target_dir=NOTES_DIR):
         self.repos = repos
@@ -21,6 +61,7 @@ class GitSyncManager:
         all_success = True
         messages = []
         valid_folders = [r["folder"] for r in self.repos]
+        active_token = _get_active_token(self.target_dir)
 
         # Clean up any legacy loose files/folders that don't match the current repo folders
         try:
@@ -44,6 +85,7 @@ class GitSyncManager:
             branch = repo_info.get("branch", "main")
             folder_name = repo_info["folder"]
             dest_dir = os.path.join(self.target_dir, folder_name)
+            auth_url = _get_authenticated_url(repo_url, active_token)
 
             try:
                 os.makedirs(dest_dir, exist_ok=True)
@@ -56,7 +98,7 @@ class GitSyncManager:
                         os.makedirs(dest_dir, exist_ok=True)
 
                     logger.info(f"Cloning {repo_name} from {repo_url} (branch: {branch}) into {dest_dir}...")
-                    git.Repo.clone_from(repo_url, dest_dir, branch=branch)
+                    git.Repo.clone_from(auth_url, dest_dir, branch=branch)
                     status_msg = f"Cloned {repo_name} ({branch})"
                 else:
                     logger.info(f"Pulling {repo_name} ({branch})...")
@@ -69,11 +111,28 @@ class GitSyncManager:
                         if not cw.has_option("user", "email") or not cw.get_value("user", "email"):
                             cw.set_value("user", "email", "nagarajkamath602@outlook.com")
 
+                    # Update remote origin URL with authenticated token if available
+                    try:
+                        repo.git.remote("set-url", "origin", auth_url)
+                    except Exception:
+                        pass
+
                     origin = repo.remotes.origin
                     try:
                         repo.git.pull("origin", branch, "--rebase")
                     except Exception:
                         origin.pull(branch)
+
+                    # If this is devops-notes and token is available, check for unpushed commits and push
+                    if folder_name == "devops-notes" and active_token:
+                        try:
+                            ahead_log = repo.git.log(f"origin/{branch}..{branch}", "--oneline")
+                            if ahead_log.strip():
+                                logger.info(f"Pushing unpushed commits in {repo_name} to GitHub...")
+                                repo.git.push("origin", f"{branch}:{branch}")
+                        except Exception as pe:
+                            logger.warning(f"Could not push unpushed commits in {repo_name}: {pe}")
+
                     status_msg = f"Updated {repo_name} ({branch})"
                     
                 self.repo_statuses[repo_name] = {
@@ -104,7 +163,7 @@ class GitSyncManager:
                     logger.info(f"Retrying fresh clone for {repo_name}...")
                     shutil.rmtree(dest_dir, ignore_errors=True)
                     os.makedirs(dest_dir, exist_ok=True)
-                    git.Repo.clone_from(repo_url, dest_dir, branch=branch)
+                    git.Repo.clone_from(auth_url, dest_dir, branch=branch)
                     status_msg = f"Freshly cloned {repo_name} ({branch})"
                     self.repo_statuses[repo_name] = {
                         "status": "success",
@@ -124,6 +183,14 @@ class GitSyncManager:
                         "message": str(retry_err)
                     }
                     messages.append(f"{repo_name} error: {str(retry_err)}")
+
+        # Reconcile interview manager files with freshly pulled data
+        try:
+            from app.interview_hub import interview_manager
+            interview_manager._reconcile_schedules_from_questions()
+            interview_manager._generate_markdown_docs()
+        except Exception as ie:
+            logger.warning(f"Interview manager reconciliation after sync warning: {ie}")
 
         self.last_sync_time = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
         self.sync_status = "All Synced" if all_success else "Partial Sync Error"
