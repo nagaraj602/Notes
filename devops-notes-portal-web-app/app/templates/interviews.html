@@ -4,7 +4,7 @@
 {% block content %}
 <div class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50/50">
 
-  <!-- Top Action & Statistics Header -->
+  <!-- Top Action & Statistics Header (Read-Only Showcase) -->
   <div class="px-6 py-4 bg-white/70 backdrop-blur-md border-b border-sky-100 flex-shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
       <div class="flex items-center space-x-2.5">
@@ -16,26 +16,17 @@
             <span>Nagaraj Interview Schedule & Question Hub</span>
             <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold border border-sky-200">Nagaraj Tracker</span>
           </h1>
-          <p class="text-xs text-slate-500">Track company info, role requirements, JD, CTC, start & end timings, and categorized Q&A.</p>
+          <p class="text-xs text-slate-500">Explore company schedules, role requirements, JD, CTC, timelines, and categorized interview questions & answers.</p>
         </div>
       </div>
     </div>
 
-    <!-- Quick Action Buttons & GitHub PAT Status -->
+    <!-- Clean Navigation to Personal Tracker -->
     <div class="flex items-center gap-2 flex-wrap">
-      <!-- GitHub PAT Status Badge -->
-      <div id="hubPatBadge" class="inline-flex items-center"></div>
-
-      <button id="btnHubSchedule" onclick="openScheduleModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none" title="Instructor GitHub PAT Required: Authenticate first to unlock Schedule Interview">
-        <i class="fa-solid fa-lock text-amber-500 text-xs"></i>
-        <span>Schedule Interview</span>
-        <span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>
-      </button>
-      <button id="btnHubUploadQa" onclick="openUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none" title="Instructor GitHub PAT Required: Authenticate first to unlock Upload Interview Q&A">
-        <i class="fa-solid fa-lock text-amber-500 text-xs"></i>
-        <span>Upload Interview Q&A</span>
-        <span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>
-      </button>
+      <a href="/my-interviews" class="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 flex items-center space-x-2 transition-all" title="Manage and track your personal interviews privately">
+        <i class="fa-solid fa-user-astronaut text-xs"></i>
+        <span>Track Your Personal Interviews →</span>
+      </a>
     </div>
   </div>
 
@@ -44,9 +35,6 @@
 
     <!-- 🌟 TOP HIGHLIGHT: TODAY'S LIVE & SCHEDULED INTERVIEWS WIDGET -->
     <div id="todayInterviewsContainer" class="hidden space-y-3"></div>
-
-    <!-- Smart Pending Follow-Up Alert Banner (Appears when a past interview is missing Q&A) -->
-    <div id="pendingFollowupsContainer" class="hidden space-y-3"></div>
 
     <!-- Interactive Metrics Summary Cards (Clickable to view detailed lists) -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
@@ -226,381 +214,80 @@
   </div>
 </div>
 
-<!-- INSTRUCTOR ACCESS VERIFICATION GATE MODAL -->
-<div id="patRequiredModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-md w-full border border-sky-200 shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in duration-150">
-    <div class="flex items-start justify-between pb-3 border-b border-sky-100">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-lg shadow-md shadow-sky-500/20">
-          <i class="fa-solid fa-lock"></i>
+<!-- MODAL 1: Schedule Details & JD Viewer (Read-Only) -->
+<div id="scheduleDetailsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-3xl max-w-xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-building text-xs"></i>
         </div>
         <div>
-          <h3 id="patModalTitle" class="text-sm font-extrabold text-slate-900">Instructor Access Required</h3>
-          <p class="text-[11px] text-slate-500">Publishing to nagaraj602/Notes is restricted</p>
+          <h3 id="viewModalCompany" class="text-sm font-extrabold text-slate-900">Company Name</h3>
+          <p id="viewModalRound" class="text-[11px] font-bold text-indigo-600">Round Name</p>
         </div>
       </div>
-      <button onclick="closePatModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+      <button onclick="closeScheduleDetailsModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
-    <!-- Candidate Notice vs Instructor Gate Banner -->
-    <div id="patModalBanner" class="p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 space-y-2.5">
-      <div class="flex items-start space-x-2">
-        <i class="fa-solid fa-shield-halved text-amber-600 mt-0.5 text-sm flex-shrink-0"></i>
-        <div class="leading-relaxed">
-          <strong>This repository belongs to Nagaraj.</strong>
-          Interviews and Q&A added here commit and push directly to <code>nagaraj602/Notes</code>. Only Nagaraj (the instructor) can schedule or modify records here.
+    <div class="space-y-3.5 text-xs">
+      <!-- Role & Status Badges -->
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center space-x-2">
+          <span id="viewModalRole" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-800 font-bold border border-slate-200 text-xs">DevOps Engineer</span>
+          <span id="viewModalStatus" class="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">Completed</span>
+        </div>
+        <div id="viewModalDateTime" class="text-slate-600 font-mono font-bold flex items-center bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-100">
+          <i class="fa-regular fa-clock text-sky-600 mr-1.5"></i><span>Date & Time</span>
         </div>
       </div>
-      <div class="pt-2.5 border-t border-amber-200/80 flex items-center justify-between gap-2">
-        <span class="text-[11px] font-bold text-amber-800">Are you a candidate?</span>
-        <a href="/my-interviews" class="px-3 py-1 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[11px] shadow-2xs transition-all flex items-center space-x-1">
-          <i class="fa-solid fa-user-astronaut text-[10px]"></i>
-          <span>My Personal Tracker →</span>
+
+      <!-- Salary CTC Display (if available) -->
+      <div id="viewModalSalaryBox" class="hidden p-3 bg-emerald-50/70 rounded-2xl border border-emerald-200/80 flex items-center justify-between">
+        <span class="font-bold text-slate-800 flex items-center"><i class="fa-solid fa-coins text-emerald-600 mr-1.5"></i>Target / Offered CTC:</span>
+        <span id="viewModalSalaryVal" class="font-black text-emerald-800 font-mono">18 LPA</span>
+      </div>
+
+      <!-- About the Company (if available) -->
+      <div id="viewModalAboutCompBox" class="hidden space-y-1">
+        <label class="block font-bold text-slate-700"><i class="fa-solid fa-building-circle-check text-sky-600 mr-1"></i>About Company</label>
+        <div id="viewModalAboutComp" class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 leading-relaxed"></div>
+      </div>
+
+      <!-- About the Role & Requirements (if available) -->
+      <div id="viewModalRoleInfoBox" class="hidden space-y-1">
+        <label class="block font-bold text-slate-700"><i class="fa-solid fa-id-card-clip text-indigo-600 mr-1"></i>Role Requirements</label>
+        <div id="viewModalRoleInfo" class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 leading-relaxed"></div>
+      </div>
+
+      <!-- Job Description (JD) (if available) -->
+      <div id="viewModalJdBox" class="hidden space-y-1">
+        <label class="block font-bold text-slate-700"><i class="fa-solid fa-file-contract text-amber-600 mr-1"></i>Job Description (JD)</label>
+        <div id="viewModalJd" class="p-3 bg-slate-50 rounded-xl border border-slate-200 font-mono text-[11px] whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed text-slate-800"></div>
+      </div>
+
+      <!-- Links (Recording & Meeting) -->
+      <div id="viewModalLinksBox" class="hidden pt-2 border-t border-sky-100 flex items-center gap-2 flex-wrap">
+        <a id="viewModalRecordingLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold border border-rose-200 text-xs flex items-center space-x-1.5 transition-all shadow-xs">
+          <i class="fa-brands fa-youtube text-red-600 text-sm"></i>
+          <span>Watch YouTube Recording</span>
+        </a>
+        <a id="viewModalMeetingLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden px-3.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200 text-xs flex items-center space-x-1.5 transition-all shadow-xs">
+          <i class="fa-solid fa-video text-xs"></i>
+          <span>Meeting Link</span>
         </a>
       </div>
     </div>
 
-    <!-- Form for Instructor Verification -->
-    <div class="space-y-3">
-      <div>
-        <label for="modalPatInput" class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-          Instructor GitHub PAT or Admin Token
-        </label>
-        <div class="relative">
-          <input 
-            type="password" 
-            id="modalPatInput" 
-            placeholder="Paste your GitHub PAT or Admin Secret" 
-            class="w-full px-3.5 py-2.5 rounded-xl border border-sky-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500 pr-10 text-slate-900 bg-white"
-            onkeydown="if(event.key==='Enter') savePatFromModal()"
-          />
-          <button 
-            type="button" 
-            onclick="toggleModalPatEye()" 
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            title="Toggle Visibility"
-          >
-            <i id="modalPatEye" class="fa-regular fa-eye text-xs"></i>
-          </button>
-        </div>
-      </div>
-
-      <div id="modalPatAlert" class="hidden p-3 rounded-xl text-xs font-mono"></div>
-
-      <!-- Action Buttons -->
-      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-sky-100/60">
-        <button type="button" onclick="closePatModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
-          Cancel
-        </button>
-        <button 
-          id="btnModalSavePat"
-          type="button" 
-          onclick="savePatFromModal()" 
-          class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 shadow-md shadow-sky-500/20 flex items-center space-x-1.5 active:scale-95 transition-all"
-        >
-          <i class="fa-solid fa-lock-open"></i>
-          <span>Verify & Unlock</span>
-        </button>
-      </div>
+    <div class="pt-3 border-t border-sky-100 flex items-center justify-end">
+      <button type="button" onclick="closeScheduleDetailsModal()" class="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">Close</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL 1: Schedule Interview Modal (With Company Info, Role Info, JD, and Auto-Calculated Monthly CTC) -->
-<div id="scheduleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto">
-    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
-      <div class="flex items-center space-x-2.5">
-        <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-calendar-plus text-xs"></i>
-        </div>
-        <h3 id="scheduleModalTitle" class="text-sm font-extrabold text-slate-900">Schedule Interview</h3>
-      </div>
-      <button onclick="closeScheduleModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <form id="scheduleForm" onsubmit="submitSchedule(event)" class="space-y-3.5 text-xs">
-      <input type="hidden" id="schedId" value="">
-      
-      <div>
-        <label class="block font-bold text-slate-700 mb-1">Company Name *</label>
-        <input type="text" id="schedCompany" required placeholder="e.g. Amazon, Google, Microsoft, Cognizant" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Role / Position</label>
-          <input type="text" id="schedRole" value="DevOps Engineer" placeholder="e.g. Senior DevOps Engineer" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
-        </div>
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block font-bold text-slate-700">Round Name *</label>
-            <button type="button" onclick="openManageRoundsModal()" class="text-[11px] font-bold text-sky-600 hover:text-sky-800 flex items-center space-x-1" title="Manage default & custom rounds">
-              <i class="fa-solid fa-gear text-[10px]"></i>
-              <span>Manage Rounds</span>
-            </button>
-          </div>
-          <select id="schedRoundSelect" required onchange="onSchedRoundSelectChange()" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
-            <!-- Populated dynamically with Default Rounds + Custom Rounds -->
-          </select>
-          
-          <!-- Inline quick add custom round box -->
-          <div id="schedCustomRoundBox" class="hidden mt-2 flex items-center space-x-1.5 animate-in fade-in">
-            <input type="text" id="schedCustomRoundInput" placeholder="Enter custom round name..." class="flex-1 rounded-xl px-3 py-1.5 border border-sky-300 focus:outline-none text-xs">
-            <button type="button" onclick="saveInlineCustomRound()" class="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-2xs whitespace-nowrap">
-              <i class="fa-solid fa-plus mr-1"></i> Save
-            </button>
-            <button type="button" onclick="cancelInlineCustomRound()" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Date, Start Time, and End Time -->
-      <div>
-        <label class="block font-bold text-slate-700 mb-1">Interview Date *</label>
-        <input type="date" id="schedDate" required onchange="validateScheduleTime()" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block font-bold text-slate-700 mb-1"><i class="fa-regular fa-clock text-sky-600 mr-1"></i>Start Time *</label>
-          <input type="time" id="schedStartTime" required value="10:00" onchange="onStartTimeChange(); validateScheduleTime();" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
-        </div>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1"><i class="fa-regular fa-clock text-indigo-600 mr-1"></i>End Time *</label>
-          <input type="time" id="schedEndTime" required value="11:00" onchange="validateScheduleTime()" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
-        </div>
-      </div>
-
-      <!-- Status Selection with Dynamic Past vs Future Time Filter -->
-      <div>
-        <label class="block font-bold text-slate-700 mb-1">Status</label>
-        <select id="schedStatus" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
-          <option id="optStatusScheduled" value="scheduled">Scheduled</option>
-          <option id="optStatusCompleted" value="completed">Completed</option>
-          <option id="optStatusRescheduled" value="rescheduled">Rescheduled</option>
-          <option id="optStatusCancelled" value="cancelled">Cancelled</option>
-        </select>
-        <div id="pastTimeNotice" class="hidden mt-1.5 p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-medium flex items-center space-x-1.5">
-          <i class="fa-solid fa-clock-rotate-left text-amber-600"></i>
-          <span>The selected time is in the past. Status is set to <strong>Completed</strong>.</span>
-        </div>
-      </div>
-
-      <!-- 💰 Salary & CTC Section with Auto-Calculated Monthly Gross -->
-      <div class="p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-200/80 space-y-2">
-        <label class="block font-bold text-slate-800"><i class="fa-solid fa-money-bill-wave text-emerald-600 mr-1"></i>Offered / Target Salary (Annual CTC)</label>
-        <input type="text" id="schedSalaryCtc" oninput="calculateMonthlySalary()" placeholder="e.g. 18 LPA, 24,00,000, 15.5 LPA, $120,000" class="w-full rounded-xl px-3.5 py-2 border border-emerald-200 focus:ring-2 focus:ring-emerald-200 focus:outline-none bg-white font-sans text-xs">
-        
-        <!-- Live Monthly Salary Output Card -->
-        <div id="monthlySalaryDisplay" class="hidden p-2.5 rounded-xl bg-white border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between shadow-xs">
-          <span class="flex items-center"><i class="fa-solid fa-coins text-emerald-500 mr-1.5 text-xs"></i>Estimated Monthly Gross Salary:</span>
-          <span id="monthlySalaryValue" class="font-black text-xs sm:text-sm text-emerald-800 font-mono">₹1,50,000 / month</span>
-        </div>
-      </div>
-
-      <!-- About Company, Role Requirements, and Job Description (JD) -->
-      <div>
-        <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-building-circle-check text-sky-600 mr-1"></i>About the Company</label>
-        <textarea id="schedAboutCompany" rows="2" placeholder="e.g. Product FinTech company, Series B funded, US & India operations, hybrid working culture..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
-      </div>
-
-      <div>
-        <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-id-card-clip text-indigo-600 mr-1"></i>About the Role / Position & Requirements</label>
-        <textarea id="schedRoleInfo" rows="2" placeholder="e.g. Senior DevOps position, managing AWS EKS, Terraform IaC, ArgoCD GitOps, Jenkins CI/CD..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
-      </div>
-
-      <div>
-        <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-file-contract text-amber-600 mr-1"></i>Job Description (JD)</label>
-        <textarea id="schedJobDescription" rows="3" placeholder="Paste full JD, required skills, tools stack, and interview round expectations..." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-mono text-[11px]"></textarea>
-      </div>
-
-      <div>
-        <label class="block font-bold text-slate-700 mb-1">Meeting Link (Optional)</label>
-        <input type="url" id="schedMeetingLink" placeholder="https://teams.microsoft.com or https://meet.google.com" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
-      </div>
-
-      <div>
-        <label class="block font-bold text-slate-700 mb-1"><i class="fa-brands fa-youtube text-red-600 mr-1"></i>Interview Recording Link / YouTube URL (Optional)</label>
-        <input type="url" id="schedRecordingLink" placeholder="https://www.youtube.com/watch?v=... or unlisted YouTube video" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
-      </div>
-
-      <div class="pt-3 border-t border-sky-100 flex items-center justify-between">
-        <button type="button" id="btnDeleteCurrentSchedule" onclick="deleteCurrentSchedule()" class="hidden px-3.5 py-2 rounded-xl text-rose-600 hover:bg-rose-50 border border-rose-200 font-bold text-xs flex items-center space-x-1">
-          <i class="fa-regular fa-trash-can"></i>
-          <span>Delete</span>
-        </button>
-        <div class="flex items-center space-x-2 ml-auto">
-          <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-md shadow-sky-500/20">Save Schedule</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- MODAL 2: Unified Upload Q&A Modal (Bound to Scheduled Company & Rounds + Experience & Notes) -->
-<div id="uploadQaModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
-      <div class="flex items-center space-x-2.5">
-        <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
-        </div>
-        <div>
-          <h3 class="text-sm font-extrabold text-slate-900">Upload Interview Questions & Experience</h3>
-          <p class="text-[11px] text-slate-500">Select scheduled company and round. Upload Q&A with interview experience and notes.</p>
-        </div>
-      </div>
-      <button onclick="closeUploadQaModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <form id="uploadQaForm" onsubmit="submitUploadQa(event)" class="space-y-3.5 text-xs">
-      <!-- 1. Company Dropdown Selector (From user's schedules) -->
-      <div>
-        <label class="block font-bold text-slate-700 mb-1">Select Scheduled Company *</label>
-        <div class="flex items-center space-x-2">
-          <select id="qaCompanySelect" required onchange="onCompanySelectChange()" class="flex-1 rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
-            <option value="">-- Choose from your scheduled companies --</option>
-          </select>
-          <button type="button" onclick="closeUploadQaModal(); openScheduleModal();" class="px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold border border-sky-200 text-xs whitespace-nowrap" title="Add a new interview schedule">
-            <i class="fa-solid fa-plus mr-1"></i> New Schedule
-          </button>
-        </div>
-      </div>
-
-      <!-- 2. Round Name Dropdown Selector (Strictly bound to the selected company's schedules) & Date -->
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Select Scheduled Round *</label>
-          <select id="qaRoundSelect" required onchange="onRoundSelectChange()" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-sans">
-            <option value="">-- Select Company First --</option>
-          </select>
-          <input type="text" id="qaCustomRoundInput" placeholder="Enter custom round name..." class="hidden mt-2 w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
-        </div>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Interview Date</label>
-          <input type="date" id="qaDateInput" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none bg-slate-50">
-        </div>
-      </div>
-
-      <!-- 3. Interview Difficulty & Overall Experience Section -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-slate-50/80 rounded-2xl border border-sky-100">
-        <div>
-          <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-gauge-high text-amber-500 mr-1"></i>Interview Difficulty</label>
-          <select id="qaDifficulty" class="w-full rounded-xl px-3 py-1.5 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none bg-white">
-            <option value="Moderate">Moderate / Practical</option>
-            <option value="Easy">Easy / Direct Fundamentals</option>
-            <option value="Hard">Hard / Deep Scenario Based</option>
-            <option value="Challenging">Challenging / Live Problem Solving</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1"><i class="fa-solid fa-comment-dots text-indigo-500 mr-1"></i>Interview Experience & Feedback</label>
-          <input type="text" id="qaExperience" placeholder="e.g. Interviewer focused heavily on AWS VPC peering, Docker multi-stage & Terraform state" class="w-full rounded-xl px-3 py-1.5 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none bg-white">
-        </div>
-      </div>
-
-      <!-- YouTube Interview Recording Link -->
-      <div>
-        <label class="block font-bold text-slate-700 mb-1"><i class="fa-brands fa-youtube text-red-600 mr-1"></i>Interview Recording Link / YouTube URL (Optional)</label>
-        <input type="url" id="qaRecordingLink" placeholder="https://www.youtube.com/watch?v=... or unlisted YouTube video" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none bg-white">
-      </div>
-
-      <!-- 4. Questions & Answers Paste Area -->
-      <div>
-        <div class="flex items-center justify-between mb-1">
-          <label class="block font-bold text-slate-700">Paste Interview Questions & Answers *</label>
-          <span class="text-[10px] text-slate-400 font-mono">Supports Q: ... A: ..., numbers 1. 2., or Markdown</span>
-        </div>
-        <textarea id="qaBulkText" rows="7" required placeholder="Example format:
-
-Q: What is the difference between Security Group and NACL?
-A: Security groups are stateful and work at instance level. NACLs are stateless and operate at subnet level.
-
-Q: How do you configure Ingress in EKS?
-A: Install AWS Load Balancer Controller and create an Ingress manifest with internet-facing scheme annotation." class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-mono text-xs"></textarea>
-      </div>
-
-      <div class="pt-3 border-t border-sky-100 flex items-center justify-between">
-        <span class="text-[11px] text-slate-500"><i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-1"></i>Auto-categorizes into Docker, AWS, Kubernetes, Terraform, etc.</span>
-        <div class="flex items-center space-x-2">
-          <button type="button" onclick="closeUploadQaModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-500/20">Import & Auto-Categorize</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- MODAL 3: Category & Question Editor Modal -->
-<div id="editQuestionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
-      <div class="flex items-center space-x-2.5">
-        <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-tags text-xs"></i>
-        </div>
-        <h3 class="text-sm font-extrabold text-slate-900">Edit Question & Categories</h3>
-      </div>
-      <button onclick="closeEditQuestionModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <form id="editQuestionForm" onsubmit="submitEditQuestion(event)" class="space-y-3.5 text-xs">
-      <input type="hidden" id="editQId" value="">
-
-      <div>
-        <label class="block font-bold text-slate-700 mb-1">Question</label>
-        <textarea id="editQText" rows="2" required class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none"></textarea>
-      </div>
-
-      <div>
-        <label class="block font-bold text-slate-700 mb-1">Answer (Markdown)</label>
-        <textarea id="editQAnswer" rows="6" required class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none font-mono text-xs"></textarea>
-      </div>
-
-      <div>
-        <label class="block font-bold text-slate-700 mb-1"><i class="fa-brands fa-youtube text-red-600 mr-1"></i>Recording Clip / YouTube Link (Optional)</label>
-        <input type="url" id="editQRecordingLink" placeholder="https://youtu.be/... (clip or full recording)" class="w-full rounded-xl px-3.5 py-2 border border-sky-200 focus:ring-2 focus:ring-sky-200 focus:outline-none">
-      </div>
-
-      <div>
-        <label class="block font-bold text-slate-700 mb-1">Assign Categories (Select all that apply)</label>
-        <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-36 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-sky-100">
-          {% for cat in categories %}
-          <label class="flex items-center space-x-1.5 text-[11px] text-slate-700 cursor-pointer hover:text-sky-700">
-            <input type="checkbox" name="editQCats" value="{{ cat }}" class="rounded text-sky-600 focus:ring-sky-400">
-            <span>{{ cat }}</span>
-          </label>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div class="pt-3 border-t border-sky-100 flex items-center justify-between">
-        <button type="button" onclick="deleteCurrentQuestion()" class="px-3 py-1.5 rounded-xl text-rose-600 hover:bg-rose-50 border border-rose-200 font-semibold flex items-center space-x-1">
-          <i class="fa-solid fa-trash-can text-xs"></i>
-          <span>Delete</span>
-        </button>
-        <div class="flex items-center space-x-2">
-          <button type="button" onclick="closeEditQuestionModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-md shadow-sky-500/20">Update Question</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- MODAL 4: Interactive Stat List Modal -->
+<!-- MODAL 2: Interactive Stat List Modal -->
 <div id="statListModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
   <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[85vh] flex flex-col">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100 flex-shrink-0">
@@ -621,7 +308,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   </div>
 </div>
 
-<!-- MODAL 5: Full Month Calendar Modal (Shows Company Name, Round Name, Timings & Salary) -->
+<!-- MODAL 3: Full Month Calendar Modal (Shows Company Name, Round Name, Timings & Salary) -->
 <div id="fullCalendarModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
   <div class="bg-white rounded-3xl max-w-4xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] flex flex-col">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100">
@@ -650,53 +337,9 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   </div>
 </div>
 
-<!-- MODAL 6: Manage Interview Rounds (Add, Rename, Delete Custom Rounds) -->
-<div id="manageRoundsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[90vh] flex flex-col">
-    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
-      <div class="flex items-center space-x-2.5">
-        <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-list-check text-xs"></i>
-        </div>
-        <div>
-          <h3 class="text-sm font-extrabold text-slate-900">Manage Interview Rounds</h3>
-          <p class="text-[11px] text-slate-500">Configure default and custom interview round names.</p>
-        </div>
-      </div>
-      <button onclick="closeManageRoundsModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <!-- Add New Custom Round Input Form -->
-    <div class="p-3 bg-purple-50/60 rounded-2xl border border-purple-200/80 space-y-2">
-      <label class="block font-bold text-slate-800 text-xs"><i class="fa-solid fa-plus-circle text-purple-600 mr-1"></i>Add New Custom Round Name</label>
-      <div class="flex items-center space-x-2">
-        <input type="text" id="newRoundNameInput" placeholder="e.g. Bar Raiser, Assignment Review, Director Round" class="flex-1 rounded-xl px-3.5 py-2 border border-purple-200 focus:ring-2 focus:ring-purple-200 focus:outline-none bg-white text-xs font-sans">
-        <button type="button" onclick="addCustomRoundFromManager()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs whitespace-nowrap">
-          <i class="fa-solid fa-plus mr-1"></i> Add
-        </button>
-      </div>
-    </div>
-
-    <!-- Rounds List (Scrollable) -->
-    <div class="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[350px]">
-      <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1">Available Rounds</div>
-      <div id="manageRoundsListContainer" class="space-y-1.5">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
-    <div class="pt-3 border-t border-sky-100 flex items-center justify-end">
-      <button type="button" onclick="closeManageRoundsModal()" class="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">Done</button>
-    </div>
-  </div>
-</div>
-
 <script>
   let currentWeekOffset = 0;
   let currentMonthOffset = 0;
-  let allRounds = [];
   let allSchedules = [];
   let allQuestions = [];
   let currentStats = {};
@@ -704,22 +347,6 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
   let activeViewMode = "company";
   let searchDebounceTimer = null;
   const availableCategories = {{ categories | tojson }};
-
-  let currentAdminToken = sessionStorage.getItem("admin_access_token") || localStorage.getItem("admin_access_token") || "";
-  let pendingPatAction = null;
-  let modalPatVisible = false;
-
-  function getInstructorHeaders() {
-    const headers = { "Content-Type": "application/json" };
-    if (currentAdminToken) {
-      headers["x-admin-token"] = currentAdminToken;
-    }
-    return headers;
-  }
-
-  function isInstructorAuthenticated() {
-    return !!currentAdminToken;
-  }
 
   document.addEventListener("DOMContentLoaded", () => {
     fetch("/api/session/state", {
@@ -732,428 +359,10 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
   async function initInterviewHub() {
     await Promise.all([
-      checkInstructorAuth(),
       loadStats(),
-      loadRounds(),
       loadSchedules(),
-      loadPendingFollowups(),
       loadQuestions()
     ]);
-  }
-
-  // --- INSTRUCTOR AUTHENTICATION & GATING ---
-  async function checkInstructorAuth() {
-    if (currentAdminToken) {
-      try {
-        const res = await fetch("/api/candidate-submissions/verify-access", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: currentAdminToken })
-        });
-        if (res.ok) {
-          renderHubPatBadge();
-          return;
-        }
-      } catch (e) {}
-      currentAdminToken = "";
-      sessionStorage.removeItem("admin_access_token");
-      localStorage.removeItem("admin_access_token");
-    }
-    renderHubPatBadge();
-  }
-
-  function renderHubPatBadge() {
-    const badge = document.getElementById("hubPatBadge");
-    const btnSched = document.getElementById("btnHubSchedule");
-    const btnUpload = document.getElementById("btnHubUploadQa");
-
-    if (isInstructorAuthenticated()) {
-      if (badge) {
-        badge.innerHTML = `
-          <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-xs">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <i class="fa-solid fa-user-shield text-emerald-600"></i>
-            <span>Instructor Mode: <strong>Active</strong></span>
-            <button onclick="instructorLogout()" class="ml-1 text-[11px] text-slate-400 hover:text-rose-600 underline font-sans" title="Lock instructor editing mode">Lock</button>
-          </div>
-        `;
-      }
-      if (btnSched) {
-        btnSched.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5 cursor-pointer";
-        btnSched.innerHTML = `<i class="fa-solid fa-calendar-plus text-xs"></i><span>Schedule Interview</span>`;
-        btnSched.title = "Schedule interview on hub";
-      }
-      if (btnUpload) {
-        btnUpload.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-white/90 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-sky-200 transition-all flex items-center space-x-1.5 shadow-sm cursor-pointer";
-        btnUpload.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i><span>Upload Interview Q&A</span>`;
-        btnUpload.title = "Upload interview Q&A";
-      }
-    } else {
-      if (badge) {
-        badge.innerHTML = `
-          <a href="/my-interviews" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 transition-all shadow-xs" title="Track your own interviews privately">
-            <i class="fa-solid fa-user-astronaut text-sky-600"></i>
-            <span>Track Your Own Interviews</span>
-          </a>
-        `;
-      }
-      if (btnSched) {
-        btnSched.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none";
-        btnSched.innerHTML = `<i class="fa-solid fa-lock text-amber-500 text-xs"></i><span>Schedule Interview</span><span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>`;
-        btnSched.title = "Instructor GitHub PAT Required: Authenticate first to unlock Schedule Interview";
-      }
-      if (btnUpload) {
-        btnUpload.className = "px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center space-x-1.5 cursor-not-allowed shadow-none";
-        btnUpload.innerHTML = `<i class="fa-solid fa-lock text-amber-500 text-xs"></i><span>Upload Interview Q&A</span><span class="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold ml-0.5">Locked</span>`;
-        btnUpload.title = "Instructor GitHub PAT Required: Authenticate first to unlock Upload Interview Q&A";
-      }
-    }
-  }
-
-  function instructorLogout() {
-    currentAdminToken = "";
-    sessionStorage.removeItem("admin_access_token");
-    localStorage.removeItem("admin_access_token");
-    renderHubPatBadge();
-    if (typeof showToast === "function") {
-      showToast("Instructor mode locked.", "info");
-    }
-  }
-
-  function ensurePatOrPrompt(actionCallback) {
-    if (isInstructorAuthenticated()) {
-      if (actionCallback) actionCallback();
-      return true;
-    }
-    pendingPatAction = actionCallback;
-    openPatModal();
-    return false;
-  }
-
-  function openPatModal() {
-    const modal = document.getElementById("patRequiredModal");
-    if (!modal) return;
-    const alertBox = document.getElementById("modalPatAlert");
-    const input = document.getElementById("modalPatInput");
-
-    alertBox.className = "hidden p-3 rounded-xl text-xs font-mono";
-    alertBox.innerText = "";
-    input.value = "";
-
-    modal.classList.remove("hidden");
-    setTimeout(() => input.focus(), 150);
-  }
-
-  function closePatModal() {
-    document.getElementById("patRequiredModal").classList.add("hidden");
-    pendingPatAction = null;
-  }
-
-  function toggleModalPatEye() {
-    const input = document.getElementById("modalPatInput");
-    const eye = document.getElementById("modalPatEye");
-    modalPatVisible = !modalPatVisible;
-    input.type = modalPatVisible ? "text" : "password";
-    eye.className = modalPatVisible ? "fa-regular fa-eye-slash text-xs" : "fa-regular fa-eye text-xs";
-  }
-
-  async function savePatFromModal() {
-    const input = document.getElementById("modalPatInput");
-    const alertBox = document.getElementById("modalPatAlert");
-    const btn = document.getElementById("btnModalSavePat");
-    const tok = input.value.trim();
-
-    if (!tok) {
-      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200 block";
-      alertBox.innerText = "Please enter your GitHub PAT or Instructor Admin Token.";
-      return;
-    }
-
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Verifying...`;
-
-    try {
-      const res = await fetch("/api/candidate-submissions/verify-access", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: tok })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Authentication failed. Access denied.");
-      }
-
-      currentAdminToken = tok;
-      sessionStorage.setItem("admin_access_token", tok);
-
-      if (tok.startsWith("ghp_") || tok.startsWith("github_pat_")) {
-        await fetch("/api/settings/git-token", {
-          method: "POST",
-          headers: getInstructorHeaders(),
-          body: JSON.stringify({ token: tok })
-        }).catch(() => {});
-      }
-
-      renderHubPatBadge();
-      closePatModal();
-
-      if (typeof showToast === "function") {
-        showToast("Instructor access verified successfully!", "success");
-      }
-
-      if (pendingPatAction) {
-        const cb = pendingPatAction;
-        pendingPatAction = null;
-        cb();
-      }
-    } catch (err) {
-      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200 block";
-      alertBox.innerText = err.message || "Failed to verify instructor access.";
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-lock-open"></i><span>Verify & Unlock</span>`;
-    }
-  }
-
-  // --- ROUNDS MANAGEMENT API & FUNCTIONS ---
-  async function loadRounds(selectedRoundName = null) {
-    try {
-      const res = await fetch("/api/interviews/rounds");
-      allRounds = await res.json();
-      populateSchedRoundSelect(selectedRoundName);
-    } catch (err) {
-      console.error("Failed to load rounds:", err);
-    }
-  }
-
-  function populateSchedRoundSelect(selectedRoundName = null) {
-    const select = document.getElementById("schedRoundSelect");
-    if (!select) return;
-
-    const defaultRounds = (allRounds || []).filter(r => r.is_default);
-    const customRounds = (allRounds || []).filter(r => !r.is_default);
-
-    let html = `<optgroup label="Default Built-in Rounds">`;
-    defaultRounds.forEach(r => {
-      html += `<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)}</option>`;
-    });
-    html += `</optgroup>`;
-
-    if (customRounds.length > 0) {
-      html += `<optgroup label="Custom Added Rounds">`;
-      customRounds.forEach(r => {
-        html += `<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)} (Custom)</option>`;
-      });
-      html += `</optgroup>`;
-    }
-
-    html += `<option value="__custom__">+ Add Custom Round Name...</option>`;
-    select.innerHTML = html;
-
-    if (selectedRoundName) {
-      const exists = (allRounds || []).some(r => r.name.toLowerCase() === selectedRoundName.toLowerCase());
-      if (exists) {
-        select.value = selectedRoundName;
-        document.getElementById("schedCustomRoundBox").classList.add("hidden");
-      } else {
-        select.value = "__custom__";
-        document.getElementById("schedCustomRoundBox").classList.remove("hidden");
-        document.getElementById("schedCustomRoundInput").value = selectedRoundName;
-      }
-    } else {
-      select.value = defaultRounds.length > 0 ? defaultRounds[0].name : "Technical Round 1";
-      document.getElementById("schedCustomRoundBox").classList.add("hidden");
-    }
-  }
-
-  function onSchedRoundSelectChange() {
-    const select = document.getElementById("schedRoundSelect");
-    const customBox = document.getElementById("schedCustomRoundBox");
-    const customInput = document.getElementById("schedCustomRoundInput");
-
-    if (select.value === "__custom__") {
-      customBox.classList.remove("hidden");
-      customInput.focus();
-    } else {
-      customBox.classList.add("hidden");
-    }
-  }
-
-  async function saveInlineCustomRound() {
-    const customInput = document.getElementById("schedCustomRoundInput");
-    const val = customInput.value.trim();
-    if (!val) {
-      alert("Please enter a round name.");
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/interviews/rounds", {
-        method: "POST",
-        headers: getInstructorHeaders(),
-        body: JSON.stringify({ name: val })
-      });
-      const data = await res.json();
-      if (data.status === "success") {
-        await loadRounds(val);
-        customInput.value = "";
-      }
-    } catch (err) {
-      alert("Failed to save round name.");
-    }
-  }
-
-  function cancelInlineCustomRound() {
-    const select = document.getElementById("schedRoundSelect");
-    document.getElementById("schedCustomRoundBox").classList.add("hidden");
-    document.getElementById("schedCustomRoundInput").value = "";
-    select.value = "Technical Round 1";
-  }
-
-  function openManageRoundsModal() {
-    if (!ensurePatOrPrompt(() => openManageRoundsModal())) return;
-    renderManageRoundsList();
-    document.getElementById("newRoundNameInput").value = "";
-    document.getElementById("manageRoundsModal").classList.remove("hidden");
-  }
-
-  function closeManageRoundsModal() {
-    document.getElementById("manageRoundsModal").classList.add("hidden");
-    const currentSelected = document.getElementById("schedRoundSelect") ? document.getElementById("schedRoundSelect").value : null;
-    loadRounds(currentSelected !== "__custom__" ? currentSelected : null);
-  }
-
-  function renderManageRoundsList() {
-    const container = document.getElementById("manageRoundsListContainer");
-    if (!container) return;
-
-    if (!allRounds || allRounds.length === 0) {
-      container.innerHTML = `<p class="text-xs text-slate-400 py-3 text-center">No rounds found</p>`;
-      return;
-    }
-
-    container.innerHTML = allRounds.map(r => {
-      if (r.is_default) {
-        return `
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div class="flex items-center space-x-2">
-              <i class="fa-solid fa-layer-group text-slate-400 text-xs"></i>
-              <span class="font-bold text-xs text-slate-800">${escapeHtml(r.name)}</span>
-            </div>
-            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600 border border-slate-300">Built-in</span>
-          </div>
-        `;
-      } else {
-        return `
-          <div id="round-row-${r.id}" class="flex items-center justify-between p-2.5 rounded-xl bg-purple-50/70 border border-purple-200">
-            <div id="round-display-${r.id}" class="flex items-center space-x-2 flex-1 mr-2">
-              <i class="fa-solid fa-star text-purple-500 text-xs"></i>
-              <span class="font-bold text-xs text-purple-950">${escapeHtml(r.name)}</span>
-              <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-200/80 text-purple-800">Custom</span>
-            </div>
-            
-            <div id="round-editbox-${r.id}" class="hidden flex-1 items-center space-x-1 mr-2">
-              <input type="text" id="round-rename-input-${r.id}" value="${escapeHtml(r.name)}" class="flex-1 rounded-lg px-2.5 py-1 border border-purple-300 text-xs bg-white">
-              <button onclick="saveRenameRound('${r.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px]">Save</button>
-              <button onclick="cancelRenameRound('${r.id}')" class="px-2 py-1 rounded-lg bg-slate-200 text-slate-600 font-bold text-[11px]">Cancel</button>
-            </div>
-
-            <div id="round-actions-${r.id}" class="flex items-center space-x-1 flex-shrink-0">
-              <button onclick="startRenameRound('${r.id}')" class="px-2 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold" title="Rename round">
-                <i class="fa-solid fa-pen-to-square text-[10px]"></i>
-              </button>
-              <button onclick="deleteCustomRound('${r.id}', '${escapeHtml(r.name)}')" class="px-2 py-1 rounded-lg bg-white hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold" title="Delete custom round">
-                <i class="fa-solid fa-trash text-[10px]"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      }
-    }).join("");
-  }
-
-  async function addCustomRoundFromManager() {
-    const input = document.getElementById("newRoundNameInput");
-    const name = input.value.trim();
-    if (!name) {
-      alert("Please enter a round name.");
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/interviews/rounds", {
-        method: "POST",
-        headers: getInstructorHeaders(),
-        body: JSON.stringify({ name: name })
-      });
-      const data = await res.json();
-      if (data.status === "success") {
-        input.value = "";
-        await loadRounds();
-        renderManageRoundsList();
-      }
-    } catch (err) {
-      alert("Failed to add custom round.");
-    }
-  }
-
-  function startRenameRound(roundId) {
-    document.getElementById(`round-display-${roundId}`).classList.add("hidden");
-    document.getElementById(`round-actions-${roundId}`).classList.add("hidden");
-    document.getElementById(`round-editbox-${roundId}`).classList.remove("hidden");
-    document.getElementById(`round-editbox-${roundId}`).classList.add("flex");
-    document.getElementById(`round-rename-input-${roundId}`).focus();
-  }
-
-  function cancelRenameRound(roundId) {
-    document.getElementById(`round-display-${roundId}`).classList.remove("hidden");
-    document.getElementById(`round-actions-${roundId}`).classList.remove("hidden");
-    document.getElementById(`round-editbox-${roundId}`).classList.add("hidden");
-    document.getElementById(`round-editbox-${roundId}`).classList.remove("flex");
-  }
-
-  async function saveRenameRound(roundId) {
-    const input = document.getElementById(`round-rename-input-${roundId}`);
-    const newName = input.value.trim();
-    if (!newName) {
-      alert("Round name cannot be empty.");
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/interviews/rounds/${roundId}`, {
-        method: "PUT",
-        headers: getInstructorHeaders(),
-        body: JSON.stringify({ name: newName })
-      });
-      const data = await res.json();
-      if (data.status === "success") {
-        await Promise.all([loadRounds(), loadSchedules()]);
-        renderManageRoundsList();
-      }
-    } catch (err) {
-      alert("Failed to rename round.");
-    }
-  }
-
-  async function deleteCustomRound(roundId, roundName) {
-    if (!ensurePatOrPrompt(() => deleteCustomRound(roundId, roundName))) return;
-    if (!confirm(`Are you sure you want to delete the custom round "${roundName}"?`)) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/interviews/rounds/${roundId}`, {
-        method: "DELETE",
-        headers: getInstructorHeaders()
-      });
-      if (res.ok) {
-        await loadRounds();
-        renderManageRoundsList();
-      }
-    } catch (err) {
-      alert("Failed to delete custom round.");
-    }
   }
 
   // --- STATS ---
@@ -1226,68 +435,6 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     return s12;
   }
 
-  // --- 💰 DYNAMIC REAL-TIME MONTHLY SALARY CALCULATOR (CTC / 12) ---
-  function calculateMonthlySalary(val) {
-    val = val !== undefined ? val : (document.getElementById("schedSalaryCtc") ? document.getElementById("schedSalaryCtc").value : "");
-    val = (val || "").trim();
-    const display = document.getElementById("monthlySalaryDisplay");
-    const valElem = document.getElementById("monthlySalaryValue");
-    if (!val) {
-      if (display) display.classList.add("hidden");
-      return "";
-    }
-
-    let raw = val.toLowerCase().replace(/,/g, "").trim();
-    let annualAmount = 0;
-    let currencySymbol = "₹";
-
-    if (raw.includes("$")) {
-      currencySymbol = "$";
-      raw = raw.replace(/\$/g, "");
-    } else if (raw.includes("€") || raw.includes("eur")) {
-      currencySymbol = "€";
-      raw = raw.replace(/€|eur/g, "");
-    } else if (raw.includes("£") || raw.includes("gbp")) {
-      currencySymbol = "£";
-      raw = raw.replace(/£|gbp/g, "");
-    } else if (raw.includes("₹") || raw.includes("inr") || raw.includes("rs")) {
-      currencySymbol = "₹";
-      raw = raw.replace(/₹|inr|rs\.?/g, "");
-    }
-
-    if (raw.includes("lpa") || raw.includes("lakh") || raw.includes("lac") || raw.includes("l")) {
-      const num = parseFloat(raw.replace(/[^0-9.]/g, ""));
-      if (!isNaN(num) && num > 0) {
-        annualAmount = num * 100000;
-      }
-    } else if (raw.includes("k")) {
-      const num = parseFloat(raw.replace(/[^0-9.]/g, ""));
-      if (!isNaN(num) && num > 0) {
-        annualAmount = num * 1000;
-      }
-    } else {
-      const num = parseFloat(raw.replace(/[^0-9.]/g, ""));
-      if (!isNaN(num) && num > 0) {
-        annualAmount = num;
-      }
-    }
-
-    if (annualAmount > 0) {
-      const monthly = Math.round(annualAmount / 12);
-      const formattedMonthly = `${currencySymbol}${monthly.toLocaleString('en-IN')}`;
-      let lakhText = "";
-      if (currencySymbol === "₹" && monthly >= 100000) {
-        lakhText = ` (~₹${(monthly / 100000).toFixed(2)} Lakhs/mo)`;
-      }
-      if (valElem) valElem.innerText = `${formattedMonthly} / month${lakhText}`;
-      if (display) display.classList.remove("hidden");
-      return `${formattedMonthly} / month`;
-    } else {
-      if (display) display.classList.add("hidden");
-      return "";
-    }
-  }
-
   // --- 🌟 RENDER TODAY'S LIVE & SCHEDULED INTERVIEWS WIDGET AT TOP ---
   function renderTodayInterviews() {
     const container = document.getElementById("todayInterviewsContainer");
@@ -1313,7 +460,6 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     const currentHours = String(now.getHours()).padStart(2, '0');
     const currentMins = String(now.getMinutes()).padStart(2, '0');
     const currentTimeStr = `${currentHours}:${currentMins}`;
-
     const dateDisplay = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
 
     container.classList.remove("hidden");
@@ -1337,14 +483,13 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             const endT = s.end_time || "11:00";
             const timeRange = formatTimeRange(startT, endT, s.time);
 
-            // Live status badge calculation
-            let timeBadge = "";
-            if (currentTimeStr >= startT && currentTimeStr <= endT) {
-              timeBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white animate-pulse"><i class="fa-solid fa-circle-dot mr-1"></i>HAPPENING NOW</span>`;
-            } else if (currentTimeStr < startT) {
-              timeBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200"><i class="fa-regular fa-clock mr-1"></i>Upcoming Today</span>`;
-            } else {
-              timeBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"><i class="fa-solid fa-flag-checkered mr-1"></i>Concluded</span>`;
+            let timeBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200 font-mono flex items-center"><i class="fa-solid fa-hourglass-start text-sky-600 mr-1"></i>Upcoming</span>`;
+            if (s.status === "completed") {
+              timeBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 font-mono flex items-center"><i class="fa-solid fa-check-circle text-emerald-600 mr-1"></i>Completed</span>`;
+            } else if (currentTimeStr >= startT && currentTimeStr <= endT) {
+              timeBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500 text-white animate-pulse font-mono flex items-center"><i class="fa-solid fa-circle-dot text-white mr-1"></i>HAPPENING NOW</span>`;
+            } else if (currentTimeStr > endT) {
+              timeBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300 font-mono">Concluded</span>`;
             }
 
             return `
@@ -1365,15 +510,13 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                   <div>${timeBadge}</div>
                 </div>
 
-                <!-- Salary CTC & Monthly Display -->
                 ${s.salary_ctc ? `
                   <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-100 text-[11px] font-bold text-emerald-900 flex items-center justify-between">
                     <span><i class="fa-solid fa-coins text-emerald-600 mr-1"></i>CTC: ${escapeHtml(s.salary_ctc)}</span>
-                    <span class="text-emerald-700 font-mono">(${escapeHtml(s.monthly_salary || '')})</span>
+                    ${s.monthly_salary ? `<span class="text-emerald-700 font-mono">(${escapeHtml(s.monthly_salary)})</span>` : ''}
                   </div>
                 ` : ''}
 
-                <!-- About Company & Role Preview if present -->
                 ${(s.about_company || s.role_info) ? `
                   <div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100 space-y-1">
                     ${s.about_company ? `<div><strong class="text-slate-800">Company:</strong> ${escapeHtml(s.about_company)}</div>` : ''}
@@ -1388,23 +531,20 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
                   <div class="flex items-center space-x-1.5">
                     ${s.meeting_link ? `
-                      <a href="${s.meeting_link}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200 text-[11px] flex items-center space-x-1">
+                      <a href="${escapeHtml(s.meeting_link)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200 text-[11px] flex items-center space-x-1">
                         <i class="fa-solid fa-video text-[10px]"></i>
                         <span>Join</span>
                       </a>
                     ` : ''}
                     ${s.recording_link ? `
-                      <a href="${s.recording_link}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold border border-rose-200 text-[11px] flex items-center space-x-1 transition-all" title="Watch YouTube Interview Recording">
+                      <a href="${escapeHtml(s.recording_link)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold border border-rose-200 text-[11px] flex items-center space-x-1 transition-all" title="Watch YouTube Interview Recording">
                         <i class="fa-brands fa-youtube text-red-600 text-xs"></i>
                         <span>Recording</span>
                       </a>
                     ` : ''}
-                    <button onclick="openUploadQaForSchedule('${s.id}')" class="px-2.5 py-1 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-[11px] flex items-center space-x-1 shadow-xs">
-                      <i class="fa-solid fa-cloud-arrow-up text-[10px]"></i>
-                      <span>Upload Q&A</span>
-                    </button>
-                    <button onclick="editSchedule('${s.id}')" class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px]">
-                      <i class="fa-solid fa-pen"></i>
+                    <button onclick="viewScheduleDetails('${s.id}')" class="px-2.5 py-1 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-bold text-[11px] flex items-center space-x-1 transition-all" title="View details & JD">
+                      <i class="fa-solid fa-circle-info text-[10px]"></i>
+                      <span>Details</span>
                     </button>
                   </div>
                 </div>
@@ -1416,7 +556,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     `;
   }
 
-  // --- INTERACTIVE STAT LIST MODAL ---
+  // --- INTERACTIVE STAT LIST MODAL (READ-ONLY) ---
   function showStatListModal(type) {
     const titleElem = document.getElementById("statListTitle");
     const iconElem = document.getElementById("statListIcon");
@@ -1431,16 +571,19 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
         container.innerHTML = `<div class="text-center py-10 text-slate-400">No completed interviews yet.</div>`;
       } else {
         container.innerHTML = list.map(s => `
-          <div class="p-3.5 rounded-2xl bg-white border border-emerald-100 shadow-xs space-y-1.5">
+          <div class="p-3.5 rounded-2xl bg-white border border-emerald-100 shadow-xs space-y-1.5 hover:border-emerald-300 transition-all">
             <div class="flex items-center justify-between">
               <div>
                 <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
                 <div class="text-xs text-sky-700 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')} (${escapeHtml(s.role || 'DevOps')})</div>
                 <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fa-regular fa-clock text-emerald-600 mr-1"></i>${formatDateCustom(s.date)} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
               </div>
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 font-mono">Completed</span>
+              <div class="flex items-center space-x-2">
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 font-mono">Completed</span>
+                <button onclick="closeStatListModal(); viewScheduleDetails('${s.id}')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">Details</button>
+              </div>
             </div>
-            ${s.salary_ctc ? `<div class="text-[11px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md"><i class="fa-solid fa-money-bill-wave mr-1"></i>CTC: ${escapeHtml(s.salary_ctc)} (~${escapeHtml(s.monthly_salary || '')})</div>` : ''}
+            ${s.salary_ctc ? `<div class="text-[11px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md"><i class="fa-solid fa-money-bill-wave mr-1"></i>CTC: ${escapeHtml(s.salary_ctc)} ${s.monthly_salary ? `(~${escapeHtml(s.monthly_salary)})` : ''}</div>` : ''}
             ${s.experience ? `<div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-xl"><i class="fa-solid fa-comment-dots text-indigo-500 mr-1"></i>${escapeHtml(s.experience)}</div>` : ''}
           </div>
         `).join("");
@@ -1448,59 +591,43 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     } else if (type === "companies") {
       titleElem.innerText = "Companies Interviewed With";
       iconElem.className = "w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold";
-      iconElem.innerHTML = `<i class="fa-solid fa-building-user text-xs"></i>`;
+      iconElem.innerHTML = `<i class="fa-solid fa-building text-xs"></i>`;
       const list = currentStats.companies_list || [];
       if (list.length === 0) {
         container.innerHTML = `<div class="text-center py-10 text-slate-400">No companies recorded yet.</div>`;
       } else {
-        container.innerHTML = list.map(c => {
-          const latestDate = c.rounds && c.rounds.length > 0 ? formatDateCustom(c.rounds[0].date) : '';
-          return `
-            <div class="p-3.5 rounded-2xl bg-white border border-sky-100 shadow-xs">
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center space-x-2">
-                  <span class="font-extrabold text-sm text-slate-900">${escapeHtml(c.company)}</span>
-                  ${latestDate ? `<span class="text-[11px] text-sky-700 font-mono font-bold bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">${latestDate}</span>` : ''}
-                </div>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-sky-100 text-sky-800">${c.rounds.length} Round(s)</span>
-              </div>
-              <div class="space-y-1.5">
-                ${c.rounds.map(r => `
-                  <div class="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-xl flex items-center justify-between border border-slate-100">
-                    <div>
-                      <span class="font-bold text-slate-900">${escapeHtml(r.round || 'Technical Round')}</span>
-                      <span class="text-[10px] text-slate-500 font-mono ml-2">(${formatDateCustom(r.date)} • ${formatTimeRange(r.start_time, r.end_time, r.time)})</span>
-                      ${r.salary_ctc ? `<span class="text-[10px] text-emerald-700 font-bold ml-2">• ${escapeHtml(r.salary_ctc)}</span>` : ''}
-                    </div>
-                    <div class="flex items-center space-x-1.5">
-                      ${r.recording_link ? `<a href="${escapeHtml(r.recording_link)}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 flex items-center space-x-1 hover:bg-rose-100" title="Watch YouTube Recording"><i class="fa-brands fa-youtube text-red-600"></i><span>Video</span></a>` : ''}
-                      <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 font-mono">${r.status}</span>
-                    </div>
-                  </div>
-                `).join("")}
-              </div>
+        container.innerHTML = list.map(c => `
+          <div class="p-3.5 rounded-2xl bg-white border border-sky-100 shadow-xs flex items-center justify-between hover:border-sky-300 transition-all">
+            <div>
+              <div class="font-extrabold text-sm text-slate-900">${escapeHtml(c.company)}</div>
+              <div class="text-xs text-slate-500 font-medium mt-0.5"><i class="fa-solid fa-briefcase text-slate-400 mr-1"></i>${escapeHtml(c.role || 'DevOps')}</div>
+              ${c.salary_ctc ? `<div class="text-[10px] text-emerald-700 font-bold font-mono mt-0.5"><i class="fa-solid fa-coins mr-1"></i>${escapeHtml(c.salary_ctc)}</div>` : ''}
             </div>
-          `;
-        }).join("");
+            <div class="text-right space-y-1">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-sky-100 text-sky-800 border border-sky-200 font-mono">${c.rounds_count} Round(s)</span>
+              <div class="text-[10px] text-slate-400 font-mono">Latest: ${formatDateCustom(c.latest_date)}</div>
+            </div>
+          </div>
+        `).join("");
       }
     } else if (type === "weekly") {
-      titleElem.innerText = "This Week's Interview Activity";
+      titleElem.innerText = "This Week's Activity";
       iconElem.className = "w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold";
       iconElem.innerHTML = `<i class="fa-solid fa-calendar-week text-xs"></i>`;
       const list = currentStats.weekly_list || [];
       if (list.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 text-slate-400">No interviews scheduled or conducted this week.</div>`;
+        container.innerHTML = `<div class="text-center py-10 text-slate-400">No interviews scheduled for this week.</div>`;
       } else {
         container.innerHTML = list.map(s => `
-          <div class="p-3.5 rounded-2xl bg-white border border-indigo-100 shadow-xs flex items-center justify-between">
+          <div class="p-3.5 rounded-2xl bg-white border border-indigo-100 shadow-xs flex items-center justify-between hover:border-indigo-300 transition-all">
             <div>
               <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
               <div class="text-xs text-indigo-700 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')}</div>
               <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fa-regular fa-clock text-indigo-600 mr-1"></i>${formatDateCustom(s.date)} • ${formatTimeRange(s.start_time, s.end_time, s.time)}</div>
             </div>
             <div class="flex items-center space-x-2">
-              ${s.recording_link ? `<a href="${escapeHtml(s.recording_link)}" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded-xl bg-rose-50 text-rose-700 font-bold border border-rose-200 text-xs flex items-center space-x-1 hover:bg-rose-100"><i class="fa-brands fa-youtube text-red-600"></i><span>Video</span></a>` : ''}
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 font-mono">${s.status}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono uppercase bg-slate-100 text-slate-700 border border-slate-200">${s.status}</span>
+              <button onclick="closeStatListModal(); viewScheduleDetails('${s.id}')" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold border border-indigo-200 text-xs">Details</button>
             </div>
           </div>
         `).join("");
@@ -1515,15 +642,12 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
           <div class="text-center py-10 text-slate-400">
             <i class="fa-solid fa-calendar-xmark text-3xl text-slate-300 mb-2 block"></i>
             <p class="font-bold text-slate-600">No upcoming interviews scheduled</p>
-            <p class="text-xs text-slate-400 mt-0.5">Click below to schedule your next interview round.</p>
-            <button onclick="closeStatListModal(); openScheduleModal();" class="mt-4 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs transition-all shadow-sm">
-              <i class="fa-solid fa-calendar-plus mr-1.5"></i> Schedule Interview
-            </button>
+            <p class="text-xs text-slate-400 mt-0.5">Check back later for newly scheduled rounds.</p>
           </div>
         `;
       } else {
         container.innerHTML = list.map(s => `
-          <div class="p-3.5 rounded-2xl bg-white border border-violet-100 shadow-xs flex items-center justify-between">
+          <div class="p-3.5 rounded-2xl bg-white border border-violet-100 shadow-xs flex items-center justify-between hover:border-violet-300 transition-all">
             <div>
               <div class="font-extrabold text-sm text-slate-900">${escapeHtml(s.company)}</div>
               <div class="text-xs text-violet-700 font-bold mt-0.5"><i class="fa-solid fa-bullseye text-[10px] mr-1"></i>${escapeHtml(s.round || 'Technical Round')}</div>
@@ -1532,7 +656,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             </div>
             <div class="flex items-center space-x-2">
               ${s.recording_link ? `<a href="${escapeHtml(s.recording_link)}" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded-xl bg-rose-50 text-rose-700 font-bold border border-rose-200 text-xs flex items-center space-x-1 hover:bg-rose-100"><i class="fa-brands fa-youtube text-red-600"></i><span>Video</span></a>` : ''}
-              <button onclick="closeStatListModal(); editSchedule('${s.id}')" class="px-3 py-1.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-800 font-bold border border-violet-200 text-xs">Edit</button>
+              <button onclick="closeStatListModal(); viewScheduleDetails('${s.id}')" class="px-3 py-1.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-800 font-bold border border-violet-200 text-xs">Details</button>
             </div>
           </div>
         `).join("");
@@ -1547,10 +671,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
           <div class="text-center py-10 text-slate-400">
             <i class="fa-solid fa-folder-open text-3xl text-slate-300 mb-2 block"></i>
             <p class="font-bold text-slate-600">No questions recorded yet</p>
-            <p class="text-xs text-slate-400 mt-0.5">Attend an interview and upload questions to build your repository.</p>
-            <button onclick="closeStatListModal(); openUploadQaModal();" class="mt-4 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all shadow-sm">
-              <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Upload Interview Q&A
-            </button>
+            <p class="text-xs text-slate-400 mt-0.5">Questions will appear here once published.</p>
           </div>
         `;
       } else {
@@ -1558,7 +679,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
           <div class="mb-3 flex items-center justify-between pb-2 border-b border-amber-100">
             <div>
               <span class="font-extrabold text-xs text-slate-800">${list.length} Questions Recorded</span>
-              <span class="text-[10px] text-slate-500 ml-1">in your question bank</span>
+              <span class="text-[10px] text-slate-500 ml-1">in the question bank</span>
             </div>
             <button onclick="closeStatListModal(); document.getElementById('qaSearchInput')?.scrollIntoView({behavior:'smooth'}); document.getElementById('qaSearchInput')?.focus();" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all flex items-center space-x-1">
               <span>Go to Explorer</span>
@@ -1570,19 +691,14 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
               <div class="p-3 rounded-2xl bg-white border border-amber-100 shadow-xs space-y-1 hover:border-amber-200 transition-all">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-2">
-                    <span class="text-xs font-mono font-bold text-amber-600">#${idx + 1}</span>
                     <span class="font-extrabold text-xs text-slate-900">${escapeHtml(q.company)}</span>
-                    ${q.round ? `<span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded">${escapeHtml(q.round)}</span>` : ''}
+                    <span class="text-[10px] text-slate-500 font-mono font-bold">${formatDateCustom(q.date)}</span>
                   </div>
-                  <span class="text-[10px] font-mono text-slate-400 font-bold">${q.date ? formatDateCustom(q.date) : ''}</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 font-mono">${escapeHtml(q.round || 'Round')}</span>
                 </div>
-                <div class="text-xs font-bold text-slate-800">${escapeHtml(q.question)}</div>
-                <div class="flex items-center space-x-1 flex-wrap gap-1 pt-1">
-                  ${(q.categories || []).map(c => `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-50 text-sky-700 border border-sky-100">${escapeHtml(c)}</span>`).join('')}
-                  ${q.recording_link ? `<a href="${escapeHtml(q.recording_link)}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-50 text-rose-700 border border-rose-200 flex items-center space-x-1 hover:bg-rose-100"><i class="fa-brands fa-youtube text-red-600 text-[10px]"></i><span>Recording</span></a>` : ''}
-                </div>
+                <div class="font-bold text-xs text-slate-800 pt-0.5">${escapeHtml(q.question)}</div>
               </div>
-            `).join('')}
+            `).join("")}
           </div>
         `;
       }
@@ -1602,148 +718,8 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       allSchedules = await res.json();
       renderWeekCalendar();
       renderTodayInterviews();
-      populateCompanyDropdown();
     } catch (err) {
       console.error("Failed to load schedules:", err);
-    }
-  }
-
-  // Populate Company Dropdown strictly with scheduled companies
-  function populateCompanyDropdown() {
-    const select = document.getElementById("qaCompanySelect");
-    if (!select) return;
-
-    if (allSchedules.length === 0) {
-      select.innerHTML = `<option value="">-- No scheduled interviews found (Add a schedule first) --</option>`;
-      const roundSelect = document.getElementById("qaRoundSelect");
-      if (roundSelect) roundSelect.innerHTML = `<option value="">-- No Rounds Available --</option>`;
-      return;
-    }
-
-    // Extract unique scheduled company names
-    const uniqueCompanies = Array.from(new Set(allSchedules.map(s => s.company.trim()).filter(Boolean)));
-
-    select.innerHTML = `<option value="">-- Choose from your scheduled companies --</option>` +
-      uniqueCompanies.map(comp => `
-        <option value="${escapeHtml(comp)}">${escapeHtml(comp)}</option>
-      `).join("");
-  }
-
-  // When company is selected, populate rounds ONLY with that company's scheduled rounds
-  function onCompanySelectChange() {
-    const select = document.getElementById("qaCompanySelect");
-    const roundSelect = document.getElementById("qaRoundSelect");
-    const selectedCompany = select.value.trim();
-
-    if (!selectedCompany) {
-      roundSelect.innerHTML = `<option value="">-- Select Company First --</option>`;
-      return;
-    }
-
-    // Filter schedules belonging to this specific company
-    const compSchedules = allSchedules.filter(s => s.company.trim().toLowerCase() === selectedCompany.toLowerCase());
-    const compRounds = Array.from(new Set(compSchedules.map(s => (s.round || '').trim()).filter(Boolean)));
-
-    if (compRounds.length === 0) {
-      roundSelect.innerHTML = `
-        <option value="Technical Round 1">Technical Round 1</option>
-        <option value="__custom__">+ Custom Round Name...</option>
-      `;
-    } else {
-      roundSelect.innerHTML = compRounds.map(r => `
-        <option value="${escapeHtml(r)}">${escapeHtml(r)}</option>
-      `).join("") + `<option value="__custom__">+ Other / Custom Round...</option>`;
-    }
-
-    // Set interview date to latest scheduled date for that company & prefill recording link
-    if (compSchedules.length > 0) {
-      document.getElementById("qaDateInput").value = compSchedules[0].date || new Date().toISOString().split("T")[0];
-      if (compSchedules[0].recording_link) {
-        document.getElementById("qaRecordingLink").value = compSchedules[0].recording_link;
-      }
-    }
-
-    document.getElementById("qaCustomRoundInput").classList.add("hidden");
-  }
-
-  function onRoundSelectChange() {
-    const roundSelect = document.getElementById("qaRoundSelect");
-    const customInput = document.getElementById("qaCustomRoundInput");
-    if (roundSelect.value === "__custom__") {
-      customInput.classList.remove("hidden");
-      customInput.required = true;
-      customInput.focus();
-    } else {
-      customInput.classList.add("hidden");
-      customInput.required = false;
-
-      const selectedCompany = document.getElementById("qaCompanySelect")?.value.trim() || "";
-      if (selectedCompany && roundSelect.value) {
-        const match = allSchedules.find(s => 
-          s.company.trim().toLowerCase() === selectedCompany.toLowerCase() &&
-          (s.round || '').trim().toLowerCase() === roundSelect.value.toLowerCase()
-        );
-        if (match && match.recording_link) {
-          document.getElementById("qaRecordingLink").value = match.recording_link;
-        }
-      }
-    }
-  }
-
-  // --- PAST & FUTURE TIME VALIDATION FOR SCHEDULE INTERVIEW MODAL ---
-  function validateScheduleTime() {
-    const dateInput = document.getElementById("schedDate").value;
-    const startTimeInput = document.getElementById("schedStartTime").value || "00:00";
-    const statusSelect = document.getElementById("schedStatus");
-    const optScheduled = document.getElementById("optStatusScheduled");
-    const optCompleted = document.getElementById("optStatusCompleted");
-    const pastNotice = document.getElementById("pastTimeNotice");
-
-    if (!dateInput) return;
-
-    const selectedDateTime = new Date(`${dateInput}T${startTimeInput}`);
-    const now = new Date();
-
-    if (selectedDateTime < now) {
-      // 1. PAST TIME: Cannot be 'Scheduled' -> disable/hide 'Scheduled', show 'Completed'
-      if (optScheduled) {
-        optScheduled.disabled = true;
-        optScheduled.classList.add("hidden");
-      }
-      if (optCompleted) {
-        optCompleted.disabled = false;
-        optCompleted.classList.remove("hidden");
-      }
-      if (statusSelect.value === "scheduled") {
-        statusSelect.value = "completed";
-      }
-      if (pastNotice) pastNotice.classList.remove("hidden");
-    } else {
-      // 2. FUTURE TIME: Cannot be 'Completed' yet -> disable/hide 'Completed', show 'Scheduled'
-      if (optScheduled) {
-        optScheduled.disabled = false;
-        optScheduled.classList.remove("hidden");
-      }
-      if (optCompleted) {
-        optCompleted.disabled = true;
-        optCompleted.classList.add("hidden");
-      }
-      if (statusSelect.value === "completed") {
-        statusSelect.value = "scheduled";
-      }
-      if (pastNotice) pastNotice.classList.add("hidden");
-    }
-  }
-
-  function onStartTimeChange() {
-    const startInput = document.getElementById("schedStartTime");
-    const endInput = document.getElementById("schedEndTime");
-    if (startInput.value && !endInput.value) {
-      const parts = startInput.value.split(":");
-      let h = parseInt(parts[0], 10) + 1;
-      let m = parts[1] || "00";
-      if (h < 10) h = "0" + h;
-      if (h <= 23) endInput.value = `${h}:${m}`;
     }
   }
 
@@ -1801,7 +777,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
           const timeRange = formatTimeRange(s.start_time, s.end_time, s.time);
 
           return `
-            <div onclick="editSchedule('${s.id}')" class="p-2.5 rounded-xl bg-white border border-sky-100 shadow-xs hover:border-sky-300 hover:shadow-sm cursor-pointer transition-all mb-2 group">
+            <div onclick="viewScheduleDetails('${s.id}')" class="p-2.5 rounded-xl bg-white border border-sky-100 shadow-xs hover:border-sky-300 hover:shadow-sm cursor-pointer transition-all mb-2 group" title="${escapeHtml(s.company)} • Click to view details">
               <!-- Company Name in Bold -->
               <div class="flex items-center justify-between gap-1 mb-1">
                 <span class="font-extrabold text-[11px] text-slate-900 group-hover:text-sky-700 truncate"><i class="fa-solid fa-building text-[10px] text-sky-500 mr-1"></i>${escapeHtml(s.company)}</span>
@@ -1839,85 +815,6 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
 
       grid.appendChild(dayCol);
     }
-  }
-
-  // --- SMART PENDING FOLLOW-UPS BANNER ---
-  async function loadPendingFollowups() {
-    try {
-      const res = await fetch("/api/interviews/pending-followups");
-      const pending = await res.json();
-      const container = document.getElementById("pendingFollowupsContainer");
-      
-      if (!pending || pending.length === 0) {
-        container.classList.add("hidden");
-        container.innerHTML = "";
-        return;
-      }
-
-      container.classList.remove("hidden");
-      container.innerHTML = pending.map(p => {
-        const timeRange = formatTimeRange(p.start_time, p.end_time, p.time);
-        return `
-          <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-indigo-500/10 border-2 border-amber-300/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 animate-pulse-subtle">
-            <div class="flex items-start space-x-3">
-              <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0 mt-0.5 shadow-md shadow-amber-500/30">
-                <i class="fa-solid fa-bell"></i>
-              </div>
-              <div>
-                <div class="flex items-center space-x-2 flex-wrap gap-1">
-                  <span class="font-extrabold text-sm text-slate-900">${escapeHtml(p.company)}</span>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-mono">${escapeHtml(p.round || 'Technical Round')}</span>
-                  <span class="text-xs text-slate-600 font-mono font-bold">(${formatDateCustom(p.date)} • ${timeRange})</span>
-                </div>
-                <p class="text-xs text-slate-600 mt-0.5">Your interview has concluded! Please record the questions, CTC, and experience from this round.</p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1.5 flex-wrap flex-shrink-0">
-              <button onclick="openUploadQaForSchedule('${p.id}')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-sky-600 hover:bg-sky-700 text-white shadow-sm transition-all flex items-center space-x-1">
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-                <span>Upload Q&A</span>
-              </button>
-              <button onclick="handleFollowupAction('${p.id}', 'reschedule')" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-amber-50 text-amber-800 border border-amber-200 transition-all" title="Reschedule for a new date">
-                <i class="fa-solid fa-arrows-rotate"></i>
-                <span>Reschedule</span>
-              </button>
-              <button onclick="handleFollowupAction('${p.id}', 'cancel')" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 transition-all" title="No interview happened / Cancelled">
-                <i class="fa-solid fa-ban"></i>
-                <span>Cancelled</span>
-              </button>
-              <button onclick="handleFollowupAction('${p.id}', 'skip')" class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-all" title="Skip reminder">
-                <span>Skip</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join("");
-    } catch (err) {
-      console.error("Failed to load follow-ups:", err);
-    }
-  }
-
-  async function handleFollowupAction(schedId, action) {
-    if (!ensurePatOrPrompt(() => handleFollowupAction(schedId, action))) return;
-    if (action === "reschedule") {
-      const newDate = prompt("Enter new interview date (YYYY-MM-DD):", new Date().toISOString().split("T")[0]);
-      if (!newDate) return;
-      const newStart = prompt("Enter new start time (HH:MM):", "10:00") || "10:00";
-      const newEnd = prompt("Enter new end time (HH:MM):", "11:00") || "11:00";
-      await fetch("/api/interviews/dismiss-followup", {
-        method: "POST",
-        headers: getInstructorHeaders(),
-        body: JSON.stringify({ schedule_id: schedId, action: "reschedule", new_date: newDate, new_time: newStart })
-      });
-    } else {
-      await fetch("/api/interviews/dismiss-followup", {
-        method: "POST",
-        headers: getInstructorHeaders(),
-        body: JSON.stringify({ schedule_id: schedId, action: action })
-      });
-    }
-    initInterviewHub();
   }
 
   // --- QUESTIONS REPOSITORY & REAL-TIME SEARCH ---
@@ -1998,12 +895,12 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
         console.warn("Marked parse error:", err);
       }
     }
-    // Safe resilient fallback if marked library is unavailable
     let safe = escapeHtml(text);
     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     safe = safe.replace(/\*(.*?)\*/g, '<em>$1</em>');
     safe = safe.replace(/`([^`]+)`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sky-700 font-mono text-[11px]">$1</code>');
-    safe = safe.replace(/\n/g, '<br>');
+    safe = safe.replace(/
+/g, '<br>');
     return safe;
   }
 
@@ -2023,78 +920,14 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     renderQuestionsList();
   }
 
-  function openUploadQaForCompany(companyName, roundName = "") {
-    if (!ensurePatOrPrompt(() => openUploadQaForCompany(companyName, roundName))) return;
-    openUploadQaModal();
-    const select = document.getElementById("qaCompanySelect");
-    if (select) {
-      select.value = companyName.trim();
-      onCompanySelectChange();
-      if (roundName) {
-        const roundSelect = document.getElementById("qaRoundSelect");
-        if (roundSelect) roundSelect.value = roundName.trim();
-      }
-    }
-  }
-
-  async function deleteCompany(companyName, questionCount) {
-    if (!ensurePatOrPrompt(() => deleteCompany(companyName, questionCount))) return;
-    const qMsg = questionCount > 0 ? ` and its ${questionCount} questions` : "";
-    if (!confirm(`Are you sure you want to permanently delete "${companyName}"${qMsg}?\n\nThis will remove all interview schedules, rounds, and recorded questions for this company.`)) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/interviews/company?company=${encodeURIComponent(companyName)}`, {
-        method: "DELETE",
-        headers: getInstructorHeaders()
-      });
-      if (res.ok) {
-        await loadStats();
-        await loadSchedules();
-        await loadQuestions();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        alert(err.detail || "Failed to delete company.");
-      }
-    } catch (err) {
-      console.error("Delete company error:", err);
-      alert("Error occurred while deleting company.");
-    }
-  }
-
-  async function deleteCompanyRound(companyName, roundName, questionCount) {
-    if (!ensurePatOrPrompt(() => deleteCompanyRound(companyName, roundName, questionCount))) return;
-    const qMsg = questionCount > 0 ? ` along with its ${questionCount} questions` : "";
-    if (!confirm(`Are you sure you want to delete round "${roundName}" for "${companyName}"${qMsg}?`)) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/interviews/company/round?company=${encodeURIComponent(companyName)}&round=${encodeURIComponent(roundName)}`, {
-        method: "DELETE",
-        headers: getInstructorHeaders()
-      });
-      if (res.ok) {
-        await loadStats();
-        await loadSchedules();
-        await loadQuestions();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        alert(err.detail || "Failed to delete round.");
-      }
-    } catch (err) {
-      console.error("Delete round error:", err);
-      alert("Error occurred while deleting round.");
-    }
-  }
-
-  function renderSingleQuestionItem(q, idx, isGrouped = false) {
-    const catsHtml = (q.categories || []).map(c => `
-      <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100/90 text-sky-800 border border-sky-200">${escapeHtml(c)}</span>
-    `).join("");
-
-    const renderedAnswer = renderMarkdownSafe(q.answer || "");
+  // --- RENDERING SINGLE QUESTION CARD (100% READ-ONLY) ---
+  function renderSingleQuestionItem(q, idx, isGrouped) {
+    const renderedAnswer = renderMarkdownSafe(q.answer);
+    const catsHtml = (q.categories || []).map(cat => `
+      <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-100">
+        ${escapeHtml(cat)}
+      </span>
+    `).join(" ");
 
     const difficultyBadges = {
       "Easy": "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -2129,10 +962,6 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             </div>
           </div>
           <div class="flex items-center space-x-2 flex-shrink-0">
-            <button onclick="event.preventDefault(); event.stopPropagation(); openEditQuestionModal('${q.id}')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white/90 hover:bg-amber-50 text-amber-700 border border-amber-200 transition-all flex items-center space-x-1 shadow-2xs" title="Edit Question & Re-categorize">
-              <i class="fa-solid fa-pen-to-square text-[10px]"></i>
-              <span class="hidden sm:inline">Edit</span>
-            </button>
             <i class="fa-solid fa-chevron-down text-xs text-sky-600 transition-transform duration-200 group-open:rotate-180"></i>
           </div>
         </summary>
@@ -2253,39 +1082,34 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       });
 
       compData.latestDate = latestDate || "1970-01-01";
-      compData.earliestDate = earliestDate === "9999-99-99" ? "1970-01-01" : earliestDate;
+      compData.earliestDate = earliestDate === "9999-99-99" ? "9999-99-99" : earliestDate;
     });
 
-    companiesList.sort((a, b) => {
-      if (sortMode === "latest_activity") {
-        if (b.latestDate !== a.latestDate) {
-          return b.latestDate.localeCompare(a.latestDate);
-        }
-        return a.company.localeCompare(b.company);
-      } else if (sortMode === "earliest_activity") {
-        if (a.earliestDate !== b.earliestDate) {
-          return a.earliestDate.localeCompare(b.earliestDate);
-        }
-        return a.company.localeCompare(b.company);
-      } else if (sortMode === "name_asc") {
-        return a.company.localeCompare(b.company);
-      } else if (sortMode === "questions_desc") {
-        return b.totalQuestions - a.totalQuestions;
-      }
-      return 0;
-    });
+    // Sort according to user preference
+    if (sortMode === "latest_activity") {
+      companiesList.sort((a, b) => b.latestDate.localeCompare(a.latestDate));
+    } else if (sortMode === "earliest_activity") {
+      companiesList.sort((a, b) => a.earliestDate.localeCompare(b.earliestDate));
+    } else if (sortMode === "name_asc") {
+      companiesList.sort((a, b) => a.company.localeCompare(b.company));
+    } else if (sortMode === "questions_desc") {
+      companiesList.sort((a, b) => b.totalQuestions - a.totalQuestions);
+    }
 
-    companiesList.forEach((compData) => {
-      const companyName = compData.company;
+    companiesList.forEach(compData => {
       compCounter++;
+      const companyName = compData.company;
       const roundsList = Array.from(compData.roundsMap.values());
 
+      // Auto-open first company by default or when searching
+      const isAutoOpen = isSearching || compCounter === 1;
+
       html += `
-        <details class="group/comp glass-card rounded-3xl border border-sky-200/90 shadow-md overflow-hidden bg-white/90 transition-all mb-6" ${isSearching ? 'open' : ''}>
-          <!-- 🏢 COMPANY MAIN HEADING (CLICKABLE TO COLLAPSE/EXPAND) -->
-          <summary class="p-4 sm:p-5 bg-gradient-to-r from-sky-100/70 via-indigo-50/50 to-white border-b border-sky-200/80 flex items-center justify-between flex-wrap gap-3 cursor-pointer select-none hover:bg-sky-50/90 transition-colors list-none [&::-webkit-details-marker]:hidden" title="Click to collapse or expand this company">
+        <details class="group/comp rounded-3xl border border-sky-200/80 bg-white shadow-sm overflow-hidden mb-4 transition-all duration-200 hover:border-sky-300" ${isAutoOpen ? 'open' : ''}>
+          <!-- 🏢 COMPANY MAIN HEADING SUMMARY (READ-ONLY) -->
+          <summary class="p-4 sm:p-5 bg-gradient-to-r from-sky-500/10 via-indigo-500/5 to-white border-b border-sky-100 flex items-center justify-between flex-wrap gap-3 cursor-pointer select-none hover:bg-sky-100/40 transition-colors list-none [&::-webkit-details-marker]:hidden" title="Click to collapse or expand all rounds for ${escapeHtml(companyName)}">
             <div class="flex items-center space-x-3.5">
-              <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md shadow-sky-500/25 font-black flex-shrink-0">
+              <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-md shadow-sky-500/20 flex-shrink-0">
                 <i class="fa-solid fa-building"></i>
               </div>
               <div>
@@ -2302,14 +1126,6 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
             </div>
 
             <div class="flex items-center space-x-2">
-              <button onclick="event.stopPropagation(); openUploadQaForCompany('${escapeHtml(companyName)}')" class="px-3 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-sky-700 font-bold text-xs border border-sky-200 shadow-xs flex items-center space-x-1.5 transition-all" title="Upload interview questions for this company">
-                <i class="fa-solid fa-cloud-arrow-up text-sky-600 text-xs"></i>
-                <span>Upload Q&A</span>
-              </button>
-              <button onclick="event.stopPropagation(); deleteCompany('${escapeHtml(companyName)}', ${compData.totalQuestions})" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 font-bold text-xs border border-rose-200 shadow-xs flex items-center space-x-1 transition-all" title="Delete this company, its rounds, and all recorded questions">
-                <i class="fa-solid fa-trash-can text-rose-500 text-xs"></i>
-                <span class="hidden sm:inline">Delete</span>
-              </button>
               <div class="w-8 h-8 rounded-xl bg-white/90 border border-sky-200 flex items-center justify-center text-slate-600 group-hover/comp:border-sky-300 transition-all shadow-2xs">
                 <i class="fa-solid fa-chevron-down text-sky-600 transition-transform duration-200 group-open/comp:rotate-180 text-xs"></i>
               </div>
@@ -2350,13 +1166,6 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
                         </a>
                       ` : ''}
                       <span class="text-[11px] font-extrabold text-slate-700 bg-sky-50 px-2.5 py-1 rounded-xl border border-sky-200 font-mono shadow-2xs">${rndData.questions.length} Question(s)</span>
-                      <button onclick="event.stopPropagation(); openUploadQaForCompany('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}')" class="p-1 px-2.5 text-[10px] font-bold rounded-lg bg-white text-sky-600 hover:bg-sky-50 border border-sky-200 shadow-2xs transition-all" title="Add question to this round">
-                        <i class="fa-solid fa-plus mr-1"></i>Add
-                      </button>
-                      <button onclick="event.stopPropagation(); deleteCompanyRound('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}', ${rndData.questions.length})" class="p-1 px-2 text-[10px] font-bold rounded-lg bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 shadow-2xs transition-all flex items-center space-x-1" title="Delete this round and its questions">
-                        <i class="fa-solid fa-trash-can text-rose-500 text-[10px]"></i>
-                        <span class="hidden sm:inline">Delete</span>
-                      </button>
                       <div class="w-7 h-7 rounded-lg bg-white border border-sky-200 flex items-center justify-center text-slate-600 transition-all shadow-2xs group-hover/round:border-indigo-300">
                         <i class="fa-solid fa-chevron-down text-sky-600 transition-transform duration-200 group-open/round:rotate-180 text-[10px]"></i>
                       </div>
@@ -2375,11 +1184,18 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       `;
     });
 
-    return html;
+    return html || `<div class="text-center py-12 text-slate-400">No interview questions found.</div>`;
   }
 
   function renderFlatQuestionsList(questions) {
-    return questions.map((q, idx) => renderSingleQuestionItem(q, idx, false)).join("");
+    if (!questions || questions.length === 0) {
+      return `<div class="text-center py-12 text-slate-400">No questions found matching your filter criteria.</div>`;
+    }
+    return `
+      <div class="space-y-3">
+        ${questions.map((q, idx) => renderSingleQuestionItem(q, idx, false)).join("")}
+      </div>
+    `;
   }
 
   function renderQuestionsList() {
@@ -2392,17 +1208,13 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
           <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl mx-auto mb-3">
             <i class="fa-solid fa-folder-open"></i>
           </div>
-          <h4 class="text-sm font-bold text-slate-800 mb-1">${isFiltered ? 'No matching questions found' : 'No interview questions uploaded yet'}</h4>
-          <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">${isFiltered ? (qInput ? `No results for "${escapeHtml(qInput)}" in category "${escapeHtml(activeCategory)}".` : `No questions recorded under "${escapeHtml(activeCategory)}" yet.`) : 'Once you attend an interview, click "Upload Interview Q&A" to record your questions, difficulty, and experience.'}</p>
+          <h4 class="text-sm font-bold text-slate-800 mb-1">${isFiltered ? 'No matching questions found' : 'No interview questions recorded yet'}</h4>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">${isFiltered ? (qInput ? `No results for "${escapeHtml(qInput)}" in category "${escapeHtml(activeCategory)}".` : `No questions recorded under "${escapeHtml(activeCategory)}" yet.`) : 'Interview questions and answers will appear here once published.'}</p>
           ${isFiltered ? `
             <button onclick="clearQaSearch(); filterCategoryPill('All');" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition-all">
               <i class="fa-solid fa-list mr-1.5"></i> Reset Filters & View All
             </button>
-          ` : `
-            <button onclick="openUploadQaModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition-all">
-              <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Upload Q&A
-            </button>
-          `}
+          ` : ''}
         </div>
       `;
       return;
@@ -2423,329 +1235,101 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
     document.querySelectorAll("#qaListContainer details").forEach(d => { d.open = openState; });
   }
 
-  // --- MODAL: SCHEDULE INTERVIEW ---
-  function openScheduleModal() {
-    if (!ensurePatOrPrompt(() => openScheduleModal())) return;
-
-    const delBtn = document.getElementById("btnDeleteCurrentSchedule");
-    if (delBtn) delBtn.classList.add("hidden");
-
-    const now = new Date();
-    let nextH = now.getHours() + 1;
-    let endH = nextH + 1;
-    let nextHStr = (nextH < 10 ? '0' : '') + (nextH > 23 ? '22' : nextH) + ":00";
-    let endHStr = (endH < 10 ? '0' : '') + (endH > 23 ? '23' : endH) + ":00";
-
-    document.getElementById("schedId").value = "";
-    document.getElementById("schedCompany").value = "";
-    document.getElementById("schedRole").value = "DevOps Engineer";
-    populateSchedRoundSelect("Technical Round 1");
-    document.getElementById("schedCustomRoundInput").value = "";
-    document.getElementById("schedDate").value = now.toISOString().split("T")[0];
-    document.getElementById("schedStartTime").value = nextHStr;
-    document.getElementById("schedEndTime").value = endHStr;
-    document.getElementById("schedSalaryCtc").value = "";
-    document.getElementById("schedAboutCompany").value = "";
-    document.getElementById("schedRoleInfo").value = "";
-    document.getElementById("schedJobDescription").value = "";
-    document.getElementById("schedMeetingLink").value = "";
-    document.getElementById("schedRecordingLink").value = "";
-    document.getElementById("schedStatus").value = "scheduled";
-    document.getElementById("scheduleModalTitle").innerText = "Schedule Interview";
-    
-    calculateMonthlySalary("");
-    validateScheduleTime();
-    document.getElementById("scheduleModal").classList.remove("hidden");
-  }
-
-  function closeScheduleModal() {
-    document.getElementById("scheduleModal").classList.add("hidden");
-  }
-
-  function editSchedule(id) {
-    if (!ensurePatOrPrompt(() => editSchedule(id))) return;
-
+  // --- MODAL: VIEW SCHEDULE DETAILS (READ-ONLY) ---
+  function viewScheduleDetails(id) {
     const s = allSchedules.find(x => x.id === id);
     if (!s) return;
 
-    const delBtn = document.getElementById("btnDeleteCurrentSchedule");
-    if (delBtn) delBtn.classList.remove("hidden");
-
-    document.getElementById("schedId").value = s.id;
-    document.getElementById("schedCompany").value = s.company || "";
-    document.getElementById("schedRole").value = s.role || "DevOps Engineer";
-    populateSchedRoundSelect(s.round || "Technical Round 1");
-    document.getElementById("schedDate").value = s.date || "";
-    document.getElementById("schedStartTime").value = s.start_time || s.time || "10:00";
-    document.getElementById("schedEndTime").value = s.end_time || "11:00";
-    document.getElementById("schedSalaryCtc").value = s.salary_ctc || "";
-    document.getElementById("schedAboutCompany").value = s.about_company || "";
-    document.getElementById("schedRoleInfo").value = s.role_info || "";
-    document.getElementById("schedJobDescription").value = s.job_description || "";
-    document.getElementById("schedMeetingLink").value = s.meeting_link || "";
-    document.getElementById("schedRecordingLink").value = s.recording_link || "";
-    document.getElementById("schedStatus").value = s.status || "scheduled";
-    document.getElementById("scheduleModalTitle").innerText = "Edit Schedule";
+    document.getElementById("viewModalCompany").innerText = s.company || "Interview";
+    document.getElementById("viewModalRound").innerText = s.round || "Technical Round";
+    document.getElementById("viewModalRole").innerText = s.role || "DevOps Engineer";
     
-    calculateMonthlySalary(s.salary_ctc || "");
-    validateScheduleTime();
-    document.getElementById("scheduleModal").classList.remove("hidden");
-  }
-
-  async function deleteCurrentSchedule() {
-    const id = document.getElementById("schedId").value;
-    if (!id) return;
-    if (!ensurePatOrPrompt(() => deleteCurrentSchedule())) return;
-    if (!confirm("Are you sure you want to delete this interview schedule?")) return;
-
-    try {
-      const res = await fetch(`/api/interviews/schedules/${id}`, {
-        method: "DELETE",
-        headers: getInstructorHeaders()
-      });
-      if (res.ok) {
-        closeScheduleModal();
-        initInterviewHub();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        alert(err.detail || "Failed to delete schedule");
-      }
-    } catch (e) {
-      alert("Failed to delete schedule: " + e);
-    }
-  }
-
-  async function submitSchedule(e) {
-    e.preventDefault();
-    if (!ensurePatOrPrompt()) return;
-
-    const id = document.getElementById("schedId").value;
-    const startTime = document.getElementById("schedStartTime").value || "10:00";
-    const endTime = document.getElementById("schedEndTime").value || "";
-    const salaryCtc = document.getElementById("schedSalaryCtc").value.trim();
-    const monthlySalary = calculateMonthlySalary(salaryCtc);
-
-    let roundName = document.getElementById("schedRoundSelect").value;
-    if (roundName === "__custom__") {
-      const customVal = document.getElementById("schedCustomRoundInput").value.trim();
-      if (!customVal) {
-        alert("Please enter a custom round name.");
-        return;
-      }
-      roundName = customVal;
-      // Also register as custom round
-      await fetch("/api/interviews/rounds", {
-        method: "POST",
-        headers: getInstructorHeaders(),
-        body: JSON.stringify({ name: customVal })
-      }).catch(() => {});
-    }
-
-    const payload = {
-      company: document.getElementById("schedCompany").value.trim(),
-      role: document.getElementById("schedRole").value.trim(),
-      round: roundName,
-      date: document.getElementById("schedDate").value,
-      time: startTime,
-      start_time: startTime,
-      end_time: endTime,
-      salary_ctc: salaryCtc,
-      monthly_salary: monthlySalary,
-      about_company: document.getElementById("schedAboutCompany").value.trim(),
-      role_info: document.getElementById("schedRoleInfo").value.trim(),
-      job_description: document.getElementById("schedJobDescription").value.trim(),
-      meeting_link: document.getElementById("schedMeetingLink").value.trim(),
-      recording_link: document.getElementById("schedRecordingLink").value.trim(),
-      status: document.getElementById("schedStatus").value
+    const statusElem = document.getElementById("viewModalStatus");
+    statusElem.innerText = s.status || "scheduled";
+    const statusColors = {
+      "completed": "bg-emerald-100 text-emerald-800 border-emerald-200",
+      "scheduled": "bg-sky-100 text-sky-800 border-sky-200",
+      "rescheduled": "bg-amber-100 text-amber-800 border-amber-200",
+      "cancelled": "bg-rose-100 text-rose-800 border-rose-200"
     };
+    statusElem.className = `px-2.5 py-1 rounded-full text-[10px] font-bold font-mono uppercase border ${statusColors[s.status] || 'bg-slate-100 text-slate-700 border-slate-200'}`;
 
-    let res;
-    if (id) {
-      res = await fetch(`/api/interviews/schedules/${id}`, {
-        method: "PUT",
-        headers: getInstructorHeaders(),
-        body: JSON.stringify(payload)
-      });
+    const timeRange = formatTimeRange(s.start_time, s.end_time, s.time);
+    document.getElementById("viewModalDateTime").innerHTML = `<i class="fa-regular fa-clock text-sky-600 mr-1.5"></i><span>${formatDateCustom(s.date)} • ${timeRange}</span>`;
+
+    // Salary CTC
+    const salaryBox = document.getElementById("viewModalSalaryBox");
+    const salaryVal = document.getElementById("viewModalSalaryVal");
+    if (s.salary_ctc) {
+      salaryBox.classList.remove("hidden");
+      salaryVal.innerText = s.salary_ctc + (s.monthly_salary ? ` (~${s.monthly_salary})` : '');
     } else {
-      res = await fetch("/api/interviews/schedules", {
-        method: "POST",
-        headers: getInstructorHeaders(),
-        body: JSON.stringify(payload)
-      });
+      salaryBox.classList.add("hidden");
     }
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Failed to save schedule" }));
-      alert(err.detail || "Failed to save schedule");
-      return;
+    // About Company
+    const compBox = document.getElementById("viewModalAboutCompBox");
+    const compText = document.getElementById("viewModalAboutComp");
+    if (s.about_company) {
+      compBox.classList.remove("hidden");
+      compText.innerText = s.about_company;
+    } else {
+      compBox.classList.add("hidden");
     }
 
-    closeScheduleModal();
-    initInterviewHub();
+    // Role Requirements
+    const roleBox = document.getElementById("viewModalRoleInfoBox");
+    const roleText = document.getElementById("viewModalRoleInfo");
+    if (s.role_info) {
+      roleBox.classList.remove("hidden");
+      roleText.innerText = s.role_info;
+    } else {
+      roleBox.classList.add("hidden");
+    }
+
+    // Job Description
+    const jdBox = document.getElementById("viewModalJdBox");
+    const jdText = document.getElementById("viewModalJd");
+    if (s.job_description) {
+      jdBox.classList.remove("hidden");
+      jdText.innerText = s.job_description;
+    } else {
+      jdBox.classList.add("hidden");
+    }
+
+    // Links
+    const linksBox = document.getElementById("viewModalLinksBox");
+    const recLink = document.getElementById("viewModalRecordingLink");
+    const meetLink = document.getElementById("viewModalMeetingLink");
+    let hasLinks = false;
+
+    if (s.recording_link) {
+      recLink.href = s.recording_link;
+      recLink.classList.remove("hidden");
+      hasLinks = true;
+    } else {
+      recLink.classList.add("hidden");
+    }
+
+    if (s.meeting_link) {
+      meetLink.href = s.meeting_link;
+      meetLink.classList.remove("hidden");
+      hasLinks = true;
+    } else {
+      meetLink.classList.add("hidden");
+    }
+
+    if (hasLinks) {
+      linksBox.classList.remove("hidden");
+    } else {
+      linksBox.classList.add("hidden");
+    }
+
+    document.getElementById("scheduleDetailsModal").classList.remove("hidden");
   }
 
-  // --- MODAL: UNIFIED UPLOAD Q&A ---
-  function openUploadQaModal() {
-    if (!ensurePatOrPrompt(() => openUploadQaModal())) return;
-
-    populateCompanyDropdown();
-    document.getElementById("uploadQaForm").reset();
-    document.getElementById("qaRecordingLink").value = "";
-    document.getElementById("qaCustomRoundInput").classList.add("hidden");
-    document.getElementById("uploadQaModal").classList.remove("hidden");
-  }
-
-  function openUploadQaForSchedule(schedId) {
-    if (!ensurePatOrPrompt(() => openUploadQaForSchedule(schedId))) return;
-
-    openUploadQaModal();
-    const s = allSchedules.find(x => x.id === schedId);
-    if (s) {
-      const select = document.getElementById("qaCompanySelect");
-      select.value = s.company.trim();
-      onCompanySelectChange();
-      const roundSelect = document.getElementById("qaRoundSelect");
-      roundSelect.value = s.round.trim();
-      document.getElementById("qaDateInput").value = s.date;
-      document.getElementById("qaRecordingLink").value = s.recording_link || "";
-    }
-  }
-
-  function closeUploadQaModal() {
-    document.getElementById("uploadQaModal").classList.add("hidden");
-  }
-
-  async function submitUploadQa(e) {
-    e.preventDefault();
-    const company = document.getElementById("qaCompanySelect").value.trim();
-    if (!company) {
-      alert("Please select a scheduled interview company.");
-      return;
-    }
-
-    const roundSelect = document.getElementById("qaRoundSelect");
-    let round = roundSelect.value;
-    if (round === "__custom__") {
-      round = document.getElementById("qaCustomRoundInput").value.trim() || "Technical Round";
-    }
-
-    const dateStr = document.getElementById("qaDateInput").value.trim() || new Date().toISOString().split("T")[0];
-    const difficulty = document.getElementById("qaDifficulty").value;
-    const experience = document.getElementById("qaExperience").value.trim();
-    const recordingLink = document.getElementById("qaRecordingLink").value.trim();
-    const rawText = document.getElementById("qaBulkText").value.trim();
-
-    // Intelligent server-side parsing & auto-categorization
-    const parseRes = await fetch("/api/interviews/parse-qa", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: rawText })
-    });
-    const parseData = await parseRes.json();
-    const parsedQuestions = parseData.questions || [];
-
-    if (parsedQuestions.length === 0) {
-      alert("Could not detect any questions. Please check the text format.");
-      return;
-    }
-
-    const saveRes = await fetch("/api/interviews/questions/bulk", {
-      method: "POST",
-      headers: getInstructorHeaders(),
-      body: JSON.stringify({
-        company: company,
-        round: round,
-        date: dateStr,
-        difficulty: difficulty,
-        experience: experience,
-        recording_link: recordingLink,
-        questions: parsedQuestions
-      })
-    });
-
-    if (!saveRes.ok) {
-      const err = await saveRes.json().catch(() => ({ detail: "Failed to upload questions" }));
-      alert(err.detail || "Failed to upload questions");
-      return;
-    }
-
-    closeUploadQaModal();
-    initInterviewHub();
-  }
-
-  // --- MODAL: EDIT QUESTION & RE-CATEGORIZE ---
-  function openEditQuestionModal(qId) {
-    if (!ensurePatOrPrompt(() => openEditQuestionModal(qId))) return;
-
-    const q = allQuestions.find(x => x.id === qId);
-    if (!q) return;
-
-    document.getElementById("editQId").value = q.id;
-    document.getElementById("editQText").value = q.question || "";
-    document.getElementById("editQAnswer").value = q.answer || "";
-    document.getElementById("editQRecordingLink").value = q.recording_link || "";
-
-    const assignedCats = q.categories || [];
-    document.querySelectorAll("input[name='editQCats']").forEach(cb => {
-      cb.checked = assignedCats.includes(cb.value);
-    });
-
-    document.getElementById("editQuestionModal").classList.remove("hidden");
-  }
-
-  function closeEditQuestionModal() {
-    document.getElementById("editQuestionModal").classList.add("hidden");
-  }
-
-  async function submitEditQuestion(e) {
-    e.preventDefault();
-    if (!ensurePatOrPrompt()) return;
-
-    const qId = document.getElementById("editQId").value;
-    const selectedCats = Array.from(document.querySelectorAll("input[name='editQCats']:checked")).map(cb => cb.value);
-
-    const payload = {
-      question: document.getElementById("editQText").value.trim(),
-      answer: document.getElementById("editQAnswer").value.trim(),
-      recording_link: document.getElementById("editQRecordingLink").value.trim(),
-      categories: selectedCats
-    };
-
-    const res = await fetch(`/api/interviews/questions/${qId}`, {
-      method: "PUT",
-      headers: getInstructorHeaders(),
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Failed to update question" }));
-      alert(err.detail || "Failed to update question");
-      return;
-    }
-
-    closeEditQuestionModal();
-    loadQuestions();
-  }
-
-  async function deleteCurrentQuestion() {
-    if (!ensurePatOrPrompt(() => deleteCurrentQuestion())) return;
-
-    const qId = document.getElementById("editQId").value;
-    if (!confirm("Are you sure you want to delete this question?")) return;
-
-    const res = await fetch(`/api/interviews/questions/${qId}`, {
-      method: "DELETE",
-      headers: getInstructorHeaders()
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Failed to delete question" }));
-      alert(err.detail || "Failed to delete question");
-      return;
-    }
-
-    closeEditQuestionModal();
-    initInterviewHub();
+  function closeScheduleDetailsModal() {
+    document.getElementById("scheduleDetailsModal").classList.add("hidden");
   }
 
   // --- FULL MONTH CALENDAR MODAL ---
@@ -2789,7 +1373,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       let badges = daySchedules.map(s => {
         const timeRange = formatTimeRange(s.start_time, s.end_time, s.time);
         return `
-          <div onclick="closeFullCalendarModal(); editSchedule('${s.id}')" class="p-1.5 rounded-lg bg-sky-50 border border-sky-200 text-[10px] cursor-pointer hover:bg-sky-100 transition-all mt-1" title="${escapeHtml(s.company)} • ${escapeHtml(s.round || '')} (${timeRange})">
+          <div onclick="closeFullCalendarModal(); viewScheduleDetails('${s.id}')" class="p-1.5 rounded-lg bg-sky-50 border border-sky-200 text-[10px] cursor-pointer hover:bg-sky-100 transition-all mt-1" title="${escapeHtml(s.company)} • ${escapeHtml(s.round || '')} (${timeRange}) - Click to view details">
             <div class="font-extrabold text-slate-900 truncate">${escapeHtml(s.company)}</div>
             <div class="text-[9px] text-indigo-700 font-bold truncate">${escapeHtml(s.round || 'Round')}</div>
             <div class="text-[9px] text-slate-500 font-mono font-bold">${timeRange}</div>
@@ -2809,6 +1393,7 @@ A: Install AWS Load Balancer Controller and create an Ingress manifest with inte
       `;
     }
   }
+
   function escapeHtml(text) {
     if (!text) return "";
     return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
