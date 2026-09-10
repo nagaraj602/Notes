@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     ports:
       - "80:8000"
+      - "8000:8000"
     environment:
       - REPO_URL=https://github.com/nagaraj602/Notes.git
       - REPO_BRANCH=main
@@ -22,7 +23,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 15s
+      start_period: 45s
 
 volumes:
   notes_data:
