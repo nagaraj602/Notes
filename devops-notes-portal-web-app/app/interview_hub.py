@@ -635,11 +635,13 @@ class InterviewManager:
                     rnd = s.get("round", "Technical Round")
                     status = (s.get("status") or "scheduled").capitalize()
                     diff = s.get("difficulty", "Moderate")
-                    notes = (s.get("notes") or "").replace("\n", " ").strip()
                     link = (s.get("meeting_link") or "").strip()
+                    rec_link = (s.get("recording_link") or "").strip()
                     extra = []
                     if link:
                         extra.append(f"[Meeting Link]({link})")
+                    if rec_link:
+                        extra.append(f"[▶️ YouTube Video]({rec_link})")
                     if notes:
                         extra.append(notes)
                     extra_str = " • ".join(extra) if extra else "-"
@@ -725,7 +727,13 @@ class InterviewManager:
                         c_diff = cs.get("difficulty", "Moderate")
                         c_role = cs.get("role", "DevOps Engineer")
                         c_link = cs.get("meeting_link", "")
-                        c_link_str = f"[Link]({c_link})" if c_link else "-"
+                        c_rec = cs.get("recording_link", "")
+                        c_links = []
+                        if c_link:
+                            c_links.append(f"[Meeting]({c_link})")
+                        if c_rec:
+                            c_links.append(f"[▶️ YouTube]({c_rec})")
+                        c_link_str = " • ".join(c_links) if c_links else "-"
                         lines.append(f"| {c_rnd} | {c_dt} | {c_t} | {c_st} | {c_diff} | {c_role} | {c_link_str} |")
 
                     lines.append("")
@@ -775,16 +783,30 @@ class InterviewManager:
                         lines.append(f"### 🎯 Round: {rnd_name}")
                         lines.append("")
 
+                        # Check for round-level recording link
+                        rnd_rec = ""
+                        matched_s = next((cs for cs in comp_scheds if cs.get("round", "").strip().lower() == rnd_name.strip().lower() and cs.get("recording_link")), None)
+                        if matched_s:
+                            rnd_rec = matched_s.get("recording_link", "").strip()
+                        if not rnd_rec:
+                            rnd_rec = next((q.get("recording_link", "").strip() for q in q_list if q.get("recording_link")), "")
+                        if rnd_rec:
+                            lines.append(f"- **📹 YouTube Interview Recording:** [{rnd_rec}]({rnd_rec})")
+                            lines.append("")
+
                         for q in q_list:
                             q_text = (q.get("question") or "").strip()
                             ans_text = (q.get("answer") or "").strip()
                             cats = q.get("categories", [])
                             diff = q.get("difficulty", "Moderate")
+                            q_rec_item = (q.get("recording_link") or "").strip()
                             
                             cats_str = " ".join([f"`{c}`" for c in cats]) if cats else "`General`"
 
                             lines.append(f"#### Q{q_counter}: {q_text}")
                             lines.append(f"**Tags:** {cats_str} | **Difficulty:** `{diff}`")
+                            if q_rec_item and q_rec_item != rnd_rec:
+                                lines.append(f"- **📹 YouTube Clip:** [{q_rec_item}]({q_rec_item})")
                             lines.append("")
 
                             if ans_text:
@@ -1078,6 +1100,7 @@ class InterviewManager:
             "end_time": end_t,
             "status": data.get("status", "scheduled"), # scheduled, completed, cancelled, rescheduled
             "meeting_link": data.get("meeting_link", "").strip(),
+            "recording_link": data.get("recording_link", "").strip(),
             "about_company": data.get("about_company", "").strip(),
             "role_info": data.get("role_info", "").strip(),
             "job_description": data.get("job_description", "").strip(),
@@ -1228,6 +1251,7 @@ class InterviewManager:
             "question": data.get("question", "").strip(),
             "answer": data.get("answer", "").strip(),
             "categories": cats,
+            "recording_link": data.get("recording_link", "").strip(),
             "created_at": datetime.utcnow().isoformat()
         }
         questions.append(new_q)
@@ -1240,6 +1264,8 @@ class InterviewManager:
             if s.get("company", "").strip().lower() == company_name.lower():
                 s["questions_uploaded"] = True
                 s["status"] = "completed"
+                if data.get("recording_link"):
+                    s["recording_link"] = data.get("recording_link", "").strip()
                 matched = True
                 break
 
@@ -1254,6 +1280,8 @@ class InterviewManager:
                 "start_time": "10:00",
                 "end_time": "11:00",
                 "status": "completed",
+                "meeting_link": "",
+                "recording_link": data.get("recording_link", "").strip(),
                 "questions_uploaded": True,
                 "created_at": datetime.utcnow().isoformat()
             }
@@ -1282,12 +1310,13 @@ class InterviewManager:
             return True
         return False
 
-    def add_bulk_questions(self, company: str, round_name: str, interview_date: str, qa_items: List[Dict[str, Any]], experience: str = "", notes: str = "", difficulty: str = "") -> int:
+    def add_bulk_questions(self, company: str, round_name: str, interview_date: str, qa_items: List[Dict[str, Any]], experience: str = "", notes: str = "", difficulty: str = "", recording_link: str = "") -> int:
         questions = self._read_json(self.questions_file)
         added_count = 0
         company_clean = company.strip()
         round_clean = round_name.strip() or "Technical Round 1"
         date_clean = interview_date.strip() or date.today().isoformat()
+        rec_clean = recording_link.strip()
 
         for item in qa_items:
             q_text = item.get("question", "").strip()
@@ -1297,6 +1326,8 @@ class InterviewManager:
             cats = item.get("categories", [])
             if not cats:
                 cats = detect_categories(q_text + " " + item.get("answer", ""))
+
+            q_rec = item.get("recording_link", "").strip() or rec_clean
 
             new_q = {
                 "id": f"q-{uuid.uuid4().hex[:8]}",
@@ -1309,6 +1340,7 @@ class InterviewManager:
                 "experience": experience.strip(),
                 "notes": notes.strip(),
                 "difficulty": difficulty.strip(),
+                "recording_link": q_rec,
                 "created_at": datetime.utcnow().isoformat()
             }
             questions.append(new_q)
@@ -1329,6 +1361,8 @@ class InterviewManager:
                     s["notes"] = notes.strip()
                 if difficulty:
                     s["difficulty"] = difficulty.strip()
+                if rec_clean:
+                    s["recording_link"] = rec_clean
                 matched = True
                 break
 
@@ -1343,6 +1377,8 @@ class InterviewManager:
                 "start_time": "10:00",
                 "end_time": "11:00",
                 "status": "completed",
+                "meeting_link": "",
+                "recording_link": rec_clean,
                 "questions_uploaded": True,
                 "experience": experience.strip(),
                 "notes": notes.strip(),

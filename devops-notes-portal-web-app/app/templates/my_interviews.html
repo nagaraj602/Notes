@@ -467,6 +467,14 @@
         <input type="url" id="schedLink" placeholder="https://meet.google.com/xyz or https://teams.microsoft.com/..." class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-mono">
       </div>
 
+      <!-- YouTube Recording Link -->
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-700 flex items-center">
+          <i class="fa-brands fa-youtube text-red-600 mr-1.5"></i>Interview Recording Link / YouTube URL (Optional)
+        </label>
+        <input type="url" id="schedRecordingLink" placeholder="https://www.youtube.com/watch?v=... or unlisted video" class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-mono">
+      </div>
+
       <!-- Notes / Preparation Checklist -->
       <div class="space-y-1">
         <label class="text-[11px] font-bold text-slate-700">Preparation Notes / Job Description Summary</label>
@@ -521,6 +529,14 @@
           <label class="text-[11px] font-bold text-slate-700">Interview Date *</label>
           <input type="date" id="qaDate" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium">
         </div>
+      </div>
+
+      <!-- YouTube Recording Link -->
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-700 flex items-center">
+          <i class="fa-brands fa-youtube text-red-600 mr-1.5"></i>Interview Recording Link / YouTube URL (Optional)
+        </label>
+        <input type="url" id="qaRecordingLink" placeholder="https://www.youtube.com/watch?v=... or unlisted video" class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-mono">
       </div>
 
       <!-- Raw Q&A Text Area -->
@@ -1076,8 +1092,10 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         const diff = s.difficulty || "Moderate";
         const notes = (s.notes || "").replace(/\n/g, " ").trim();
         const link = (s.meeting_link || "").trim();
+        const recLink = (s.recording_link || "").trim();
         let extra = [];
         if (link) extra.push(`[Meeting Link](${link})`);
+        if (recLink) extra.push(`[▶️ YouTube Video](${recLink})`);
         if (notes) extra.push(notes);
         lines.push(`| ${dt} | ${tStr} | ${compDisplay} | ${role} | ${rnd} | ${statusStr} | ${diff} | ${extra.join(" • ") || "-"} |`);
       });
@@ -1117,7 +1135,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     ];
 
     if (compScheds.length > 0) {
-      lines.push("| Round | Date | Time (IST) | Status | Difficulty | Role | Meeting Link |");
+      lines.push("| Round | Date | Time (IST) | Status | Difficulty | Role | Links |");
       lines.push("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
       compScheds.forEach(cs => {
         const cRnd = cs.round || "Technical Round";
@@ -1126,7 +1144,12 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         const cSt = (cs.status || "scheduled").toUpperCase();
         const cDiff = cs.difficulty || "Moderate";
         const cRole = cs.role || "DevOps Engineer";
-        const cLinkStr = cs.meeting_link ? `[Link](${cs.meeting_link})` : "-";
+        const cLink = (cs.meeting_link || "").trim();
+        const cRec = (cs.recording_link || "").trim();
+        let cLinks = [];
+        if (cLink) cLinks.push(`[Meeting](${cLink})`);
+        if (cRec) cLinks.push(`[▶️ YouTube](${cRec})`);
+        const cLinkStr = cLinks.join(" • ") || "-";
         lines.push(`| ${cRnd} | ${cDt} | ${cT} | ${cSt} | ${cDiff} | ${cRole} | ${cLinkStr} |`);
       });
     } else {
@@ -1154,6 +1177,13 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         lines.push(`<details open>`);
         lines.push(`<summary><h3>🎯 ${rnd} (${qList.length} Questions)</h3></summary>`);
         lines.push("");
+
+        const matchedSched = compScheds.find(cs => (cs.round || "").toLowerCase() === rnd.toLowerCase());
+        const rndRec = matchedSched?.recording_link || qList.find(q => q.recording_link)?.recording_link || "";
+        if (rndRec) {
+          lines.push(`- **📹 YouTube Interview Recording:** [${rndRec}](${rndRec})`);
+          lines.push("");
+        }
 
         qList.forEach((q, idx) => {
           const isIntro = isIntroQuestion(q.question);
@@ -1431,11 +1461,16 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
           end_time: sched?.end_time || "11:00",
           status: sched?.status || "completed",
           salary_ctc: sched?.salary_ctc || "",
+          recording_link: sched?.recording_link || q.recording_link || "",
           questions: []
         });
       }
 
-      compObj.roundsMap.get(roundKey).questions.push(q);
+      const rEntry = compObj.roundsMap.get(roundKey);
+      if (!rEntry.recording_link && q.recording_link) {
+        rEntry.recording_link = q.recording_link;
+      }
+      rEntry.questions.push(q);
     });
 
     // Also include companies with schedules but no questions yet
@@ -1460,6 +1495,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
           end_time: s.end_time || "11:00",
           status: s.status || "scheduled",
           salary_ctc: s.salary_ctc || "",
+          recording_link: s.recording_link || "",
           questions: []
         });
       }
@@ -1570,8 +1606,16 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
                       </div>
                     </div>
                   </div>
-                  <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
-                    <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-150 group-open/round:rotate-180"></i>
+                  <div class="flex items-center space-x-2">
+                    ${rndData.recording_link ? `
+                      <a href="${escapeHtml(rndData.recording_link)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold border border-rose-200 text-[11px] flex items-center space-x-1.5 shadow-xs transition-all hover:scale-105" title="Watch YouTube Interview Recording">
+                        <i class="fa-brands fa-youtube text-red-600 text-xs"></i>
+                        <span>Watch Recording</span>
+                      </a>
+                    ` : ''}
+                    <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                      <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-150 group-open/round:rotate-180"></i>
+                    </div>
                   </div>
                 </summary>
 
@@ -1622,7 +1666,15 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
             <span class="text-sky-600 font-black">•</span>
             <div>
               <span class="text-slate-900 font-bold text-xs">${escapeHtml(q.question)}</span>
-              <div class="mt-1 flex items-center space-x-1.5 flex-wrap">${catBadges}</div>
+              <div class="mt-1 flex items-center space-x-1.5 flex-wrap">
+                ${catBadges}
+                ${q.recording_link ? `
+                  <a href="${escapeHtml(q.recording_link)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center space-x-1" title="Watch YouTube Clip">
+                    <i class="fa-brands fa-youtube text-red-600"></i>
+                    <span>Watch Clip</span>
+                  </a>
+                ` : ''}
+              </div>
             </div>
           </div>
           <div class="flex items-center space-x-2 flex-shrink-0">
@@ -1640,6 +1692,18 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
             <i class="fa-solid fa-lightbulb text-amber-500 mr-1.5"></i>Answer / Solution:
           </div>
           <div class="whitespace-pre-wrap bg-white p-3 rounded-xl border border-slate-200 font-mono text-[11px]">${escapeHtml(q.answer || "To be reviewed / prepared.")}</div>
+          ${q.recording_link ? `
+            <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-900 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i class="fa-brands fa-youtube text-red-600 text-sm"></i>
+                <span class="font-mono truncate max-w-xs sm:max-w-md">${escapeHtml(q.recording_link)}</span>
+              </div>
+              <a href="${escapeHtml(q.recording_link)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] flex items-center space-x-1">
+                <i class="fa-solid fa-play text-[9px]"></i>
+                <span>YouTube</span>
+              </a>
+            </div>
+          ` : ''}
         </div>
       </details>
     `;
@@ -1684,6 +1748,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     document.getElementById("schedEndTime").value = "11:00";
     document.getElementById("schedCtc").value = "";
     document.getElementById("schedLink").value = "";
+    document.getElementById("schedRecordingLink").value = "";
     document.getElementById("schedNotes").value = "";
     document.getElementById("schedStatus").value = "scheduled";
     document.getElementById("scheduleModal").classList.remove("hidden");
@@ -1702,6 +1767,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     document.getElementById("schedEndTime").value = s.end_time || "11:00";
     document.getElementById("schedCtc").value = s.salary_ctc || "";
     document.getElementById("schedLink").value = s.meeting_link || "";
+    document.getElementById("schedRecordingLink").value = s.recording_link || "";
     document.getElementById("schedNotes").value = s.notes || "";
     document.getElementById("schedStatus").value = s.status || "scheduled";
     document.getElementById("scheduleModal").classList.remove("hidden");
@@ -1722,6 +1788,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     const endTime = document.getElementById("schedEndTime").value;
     const salaryCtc = document.getElementById("schedCtc").value.trim();
     const link = document.getElementById("schedLink").value.trim();
+    const recordingLink = document.getElementById("schedRecordingLink").value.trim();
     const notes = document.getElementById("schedNotes").value.trim();
     const status = document.getElementById("schedStatus").value;
 
@@ -1737,6 +1804,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
       end_time: endTime,
       salary_ctc: salaryCtc,
       meeting_link: link,
+      recording_link: recordingLink,
       notes: notes,
       status: status,
       created_at: new Date().toISOString()
@@ -1757,6 +1825,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   function openUploadQaModal() {
     document.getElementById("qaCompany").value = "";
     document.getElementById("qaDate").value = new Date().toISOString().split("T")[0];
+    document.getElementById("qaRecordingLink").value = "";
     document.getElementById("qaRawText").value = "";
     document.getElementById("uploadQaModal").classList.remove("hidden");
   }
@@ -1764,6 +1833,10 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   function openUploadQaForCompany(companyName) {
     openUploadQaModal();
     document.getElementById("qaCompany").value = companyName;
+    const matchedSched = mySchedules.find(s => (s.company || "").toLowerCase() === companyName.toLowerCase() && s.recording_link);
+    if (matchedSched) {
+      document.getElementById("qaRecordingLink").value = matchedSched.recording_link;
+    }
   }
 
   function closeUploadQaModal() {
@@ -1828,6 +1901,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     const company = document.getElementById("qaCompany").value.trim();
     const round = document.getElementById("qaRound").value;
     const date = document.getElementById("qaDate").value;
+    const recordingLink = document.getElementById("qaRecordingLink")?.value.trim() || "";
     const rawText = document.getElementById("qaRawText").value.trim();
 
     if (!rawText) return;
@@ -1842,6 +1916,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
       p.company = company;
       p.round = round;
       p.date = date;
+      p.recording_link = recordingLink;
       p.created_at = new Date().toISOString();
       myQuestions.push(p);
     });
@@ -1851,7 +1926,10 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
       (s.company || "").toLowerCase() === company.toLowerCase() &&
       (s.round || "").toLowerCase() === round.toLowerCase()
     );
-    if (!match) {
+    if (match) {
+      if (recordingLink) match.recording_link = recordingLink;
+      saveSchedules();
+    } else {
       mySchedules.push({
         id: "sched-" + Math.random().toString(36).substr(2, 9),
         company: company,
@@ -1862,6 +1940,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         start_time: "10:00",
         end_time: "11:00",
         status: "completed",
+        recording_link: recordingLink,
         questions_uploaded: true,
         created_at: new Date().toISOString()
       });

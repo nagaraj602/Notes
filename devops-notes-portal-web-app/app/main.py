@@ -421,6 +421,7 @@ class ScheduleCreateRequest(BaseModel):
     end_time: Optional[str] = "11:00"
     status: Optional[str] = "scheduled"
     meeting_link: Optional[str] = ""
+    recording_link: Optional[str] = ""
     about_company: Optional[str] = ""
     role_info: Optional[str] = ""
     job_description: Optional[str] = ""
@@ -438,6 +439,7 @@ class ScheduleUpdateRequest(BaseModel):
     end_time: Optional[str] = None
     status: Optional[str] = None
     meeting_link: Optional[str] = None
+    recording_link: Optional[str] = None
     about_company: Optional[str] = None
     role_info: Optional[str] = None
     job_description: Optional[str] = None
@@ -453,6 +455,7 @@ class QuestionCreateRequest(BaseModel):
     question: str
     answer: str
     categories: Optional[List[str]] = []
+    recording_link: Optional[str] = ""
 
 class QuestionUpdateRequest(BaseModel):
     company: Optional[str] = None
@@ -461,6 +464,7 @@ class QuestionUpdateRequest(BaseModel):
     question: Optional[str] = None
     answer: Optional[str] = None
     categories: Optional[List[str]] = None
+    recording_link: Optional[str] = None
 
 class DetectCategoriesRequest(BaseModel):
     text: str
@@ -469,6 +473,7 @@ class BulkQuestionItem(BaseModel):
     question: str
     answer: str
     categories: Optional[List[str]] = []
+    recording_link: Optional[str] = ""
 
 class BulkQuestionsRequest(BaseModel):
     company: str
@@ -477,6 +482,7 @@ class BulkQuestionsRequest(BaseModel):
     experience: Optional[str] = ""
     notes: Optional[str] = ""
     difficulty: Optional[str] = ""
+    recording_link: Optional[str] = ""
     questions: List[BulkQuestionItem]
 
 class FollowupActionRequest(BaseModel):
@@ -606,7 +612,8 @@ async def api_add_bulk_questions(req: BulkQuestionsRequest):
         qa_items=qa_list,
         experience=req.experience or "",
         notes=req.notes or "",
-        difficulty=req.difficulty or ""
+        difficulty=req.difficulty or "",
+        recording_link=req.recording_link or ""
     )
     return JSONResponse({"status": "success", "count": count})
 
