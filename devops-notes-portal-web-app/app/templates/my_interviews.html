@@ -304,8 +304,8 @@
 <!-- ========================================================================================= -->
 <!-- MODAL 1: Personal GitHub Settings Modal (Saved strictly in browser localStorage) -->
 <!-- ========================================================================================= -->
-<div id="githubSettingsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+<div id="githubSettingsModal" onclick="if(event.target === this) closeGitHubSettingsModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100">
       <div class="flex items-center space-x-2.5">
         <div class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center text-sm">
@@ -319,6 +319,8 @@
       <button onclick="closeGitHubSettingsModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
         <i class="fa-solid fa-xmark text-sm"></i>
       </button>
+    </div>
+
     <!-- Required Alert Banner when opening actions without PAT -->
     <div id="ghPatRequiredNotice" class="hidden p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-900 flex items-start space-x-2.5">
       <i class="fa-solid fa-lock text-amber-600 mt-0.5 text-base flex-shrink-0"></i>
@@ -397,8 +399,8 @@
 <!-- ========================================================================================= -->
 <!-- MODAL 2: Schedule Interview Modal -->
 <!-- ========================================================================================= -->
-<div id="scheduleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto">
+<div id="scheduleModal" onclick="if(event.target === this) closeScheduleModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100">
       <div class="flex items-center space-x-2.5">
         <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
@@ -508,8 +510,8 @@
 <!-- ========================================================================================= -->
 <!-- MODAL 3: Upload Interview Q&A Modal -->
 <!-- ========================================================================================= -->
-<div id="uploadQaModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto">
+<div id="uploadQaModal" onclick="if(event.target === this) closeUploadQaModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100">
       <div class="flex items-center space-x-2.5">
         <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
@@ -588,8 +590,8 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
 <!-- ========================================================================================= -->
 <!-- MODAL 4: Manage Round Types Modal -->
 <!-- ========================================================================================= -->
-<div id="manageRoundsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-  <div class="bg-white rounded-3xl max-w-md w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+<div id="manageRoundsModal" onclick="if(event.target === this) closeManageRoundsModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-md w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 cursor-default">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-sliders text-sky-600"></i>
@@ -694,6 +696,16 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     const todayStr = new Date().toISOString().split("T")[0];
     if (document.getElementById("schedDate")) document.getElementById("schedDate").value = todayStr;
     if (document.getElementById("qaDate")) document.getElementById("qaDate").value = todayStr;
+
+    // Close open modals on Escape key press
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeGitHubSettingsModal();
+        closeScheduleModal();
+        closeUploadQaModal();
+        closeManageRoundsModal();
+      }
+    });
   });
 
   // --- LocalStorage Data Load/Save ---

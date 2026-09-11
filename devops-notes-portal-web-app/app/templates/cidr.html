@@ -45,6 +45,179 @@
   <!-- Scrollable Main Application Container -->
   <div id="mainScrollContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full scroll-smooth">
 
+    <!-- 🎓 BEGINNER GUIDE & CHEAT SHEET ACCORDION -->
+    <div class="glass-card rounded-3xl border-2 border-sky-200/90 bg-white/95 shadow-lg overflow-hidden transition-all">
+      <div onclick="toggleBeginnerGuide()" class="p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-gradient-to-r from-sky-50/80 via-white to-indigo-50/50 hover:bg-sky-100/50 transition-all group">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-sky-700 transition-colors">
+                Beginner's Guide & Cheat Sheet: How CIDR & Subnets Work
+              </h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase">
+                Networking 101
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 font-sans mt-0.5">
+              Confused by /16, /24, or AWS Reserved IPs? Click here to understand the core concepts in plain English.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <span id="guideToggleText" class="text-xs font-bold text-sky-700 hidden sm:inline">Show Guide</span>
+          <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-500 group-hover:text-sky-700 flex items-center justify-center transition-all">
+            <i id="guideChevron" class="fa-solid fa-chevron-down text-xs transition-transform duration-300"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Beginner Guide Body (Collapsible) -->
+      <div id="beginnerGuideBody" class="p-5 sm:p-6 border-t border-sky-100 space-y-6 bg-slate-50/30 text-xs hidden">
+        
+        <!-- 3 Core Concept Cards: The Analogy, The Math, and Multi-AZ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          <!-- Card 1: The Real-World Analogy -->
+          <div class="p-4 rounded-2xl bg-white border border-sky-100 shadow-2xs space-y-2">
+            <div class="flex items-center space-x-2 text-sky-700 font-bold text-xs uppercase tracking-wide">
+              <i class="fa-solid fa-building-user text-sm"></i>
+              <span>1. The Tech Campus Analogy</span>
+            </div>
+            <p class="text-slate-600 leading-relaxed">
+              Think of a <strong>VPC (<code class="bg-sky-50 text-sky-700 px-1 py-0.5 rounded font-mono">10.0.0.0/16</code>)</strong> as an entire gated corporate campus with <strong>65,536 total room numbers (IPs)</strong>.
+            </p>
+            <p class="text-slate-600 leading-relaxed">
+              <strong>Subnets (<code class="bg-indigo-50 text-indigo-700 px-1 py-0.5 rounded font-mono">/24</code>)</strong> are individual buildings on that campus with <strong>256 rooms each</strong>:
+            </p>
+            <ul class="list-disc pl-4 space-y-1 text-slate-700 font-medium">
+              <li><strong class="text-sky-600">Public Subnet:</strong> The campus lobby where external visitors (internet traffic) enter through the Application Load Balancer.</li>
+              <li><strong class="text-indigo-600">Private Subnet:</strong> Secure employee office floors (EC2 / EKS worker nodes) with no direct internet door.</li>
+              <li><strong class="text-emerald-600">Database Subnet:</strong> An underground high-security bank vault with zero internet access, reachable only from the private office floors.</li>
+            </ul>
+          </div>
+
+          <!-- Card 2: What Does the Slash Number (/16, /24) Mean? -->
+          <div class="p-4 rounded-2xl bg-white border border-indigo-100 shadow-2xs space-y-2">
+            <div class="flex items-center space-x-2 text-indigo-700 font-bold text-xs uppercase tracking-wide">
+              <i class="fa-solid fa-calculator text-sm"></i>
+              <span>2. Understanding The Slash (/16 vs /24)</span>
+            </div>
+            <p class="text-slate-600 leading-relaxed">
+              Every IPv4 address has exactly <strong>32 binary bits</strong>. The slash number (prefix) tells you how many bits are <strong>locked for the network name</strong>:
+            </p>
+            <div class="p-2.5 rounded-xl bg-slate-900 text-slate-200 font-mono text-[11px] space-y-1">
+              <div><span class="text-sky-400">10.0.0.0/16:</span> 16 bits locked</div>
+              <div class="text-slate-400">Remaining host bits = 32 - 16 = 16</div>
+              <div class="text-emerald-400 font-bold">Capacity: 2¹⁶ = 65,536 Total IPs</div>
+              <div class="pt-1 border-t border-slate-800"><span class="text-indigo-400">10.0.1.0/24:</span> 24 bits locked</div>
+              <div class="text-slate-400">Remaining host bits = 32 - 24 = 8</div>
+              <div class="text-emerald-400 font-bold">Capacity: 2⁸ = 256 Total IPs</div>
+            </div>
+            <p class="text-[11px] text-slate-500 italic">
+              <strong>Rule of Thumb:</strong> Smaller slash number = Huge network (many IPs). Larger slash number = Smaller subnet (fewer IPs).
+            </p>
+          </div>
+
+          <!-- Card 3: Why Multi-AZ (AZ-1a & AZ-1b)? -->
+          <div class="p-4 rounded-2xl bg-white border border-emerald-100 shadow-2xs space-y-2">
+            <div class="flex items-center space-x-2 text-emerald-700 font-bold text-xs uppercase tracking-wide">
+              <i class="fa-solid fa-server text-sm"></i>
+              <span>3. Why Always 2 Availability Zones?</span>
+            </div>
+            <p class="text-slate-600 leading-relaxed">
+              In AWS, an <strong>Availability Zone (AZ)</strong> is an isolated physical data center.
+            </p>
+            <p class="text-slate-600 leading-relaxed">
+              A single subnet <strong>cannot span multiple AZs</strong>. Therefore, for High Availability (HA) and Disaster Recovery:
+            </p>
+            <div class="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-emerald-900 space-y-1 font-medium">
+              <div>• <strong>AZ-1a:</strong> 1 Public, 1 Private, 1 DB Subnet</div>
+              <div>• <strong>AZ-1b:</strong> 1 Public, 1 Private, 1 DB Subnet</div>
+              <div class="font-bold text-emerald-950 pt-1 border-t border-emerald-200/60">Total: 6 Subnets (The Standard 3-Tier Architecture)</div>
+            </div>
+            <p class="text-[11px] text-slate-500">
+              If a physical power failure hits AZ-1a, AWS immediately reroutes traffic to AZ-1b with zero customer downtime!
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Quick CIDR Cheat Sheet Reference Table -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-table text-sky-600"></i>
+              <span>DevOps CIDR Sizing Cheat Sheet</span>
+            </span>
+            <span class="text-[10px] text-slate-500 font-mono">Standard AWS Cloud Allocation</span>
+          </div>
+          
+          <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-100 text-slate-700 font-extrabold text-[10px] uppercase tracking-wider">
+                <tr>
+                  <th class="p-2.5">Prefix</th>
+                  <th class="p-2.5">Subnet Mask</th>
+                  <th class="p-2.5">Total IPs</th>
+                  <th class="p-2.5">AWS Usable (-5)</th>
+                  <th class="p-2.5">Real-World DevOps Architecture Purpose</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-mono">
+                <tr class="hover:bg-sky-50/40">
+                  <td class="p-2.5 font-black text-sky-700">/16</td>
+                  <td class="p-2.5 text-slate-600">255.255.0.0</td>
+                  <td class="p-2.5 font-bold">65,536</td>
+                  <td class="p-2.5 font-bold text-emerald-700">65,531</td>
+                  <td class="p-2.5 font-sans text-slate-700 font-medium"><strong>VPC Master Network:</strong> The standard root network recommended for entire AWS VPCs.</td>
+                </tr>
+                <tr class="hover:bg-sky-50/40">
+                  <td class="p-2.5 font-black text-indigo-700">/20</td>
+                  <td class="p-2.5 text-slate-600">255.255.240.0</td>
+                  <td class="p-2.5 font-bold">4,096</td>
+                  <td class="p-2.5 font-bold text-emerald-700">4,091</td>
+                  <td class="p-2.5 font-sans text-slate-700 font-medium"><strong>EKS / Large Clusters:</strong> Amazon VPC CNI assigns a real VPC IP to every Kubernetes pod, requiring large pools.</td>
+                </tr>
+                <tr class="hover:bg-sky-50/40">
+                  <td class="p-2.5 font-black text-indigo-700">/22</td>
+                  <td class="p-2.5 text-slate-600">255.255.252.0</td>
+                  <td class="p-2.5 font-bold">1,024</td>
+                  <td class="p-2.5 font-bold text-emerald-700">1,019</td>
+                  <td class="p-2.5 font-sans text-slate-700 font-medium"><strong>Medium Clusters / App Tier:</strong> Heavy workloads requiring dozens of microservice replicas.</td>
+                </tr>
+                <tr class="hover:bg-sky-50/40 bg-sky-50/20">
+                  <td class="p-2.5 font-black text-sky-600">/24</td>
+                  <td class="p-2.5 text-slate-600">255.255.255.0</td>
+                  <td class="p-2.5 font-bold">256</td>
+                  <td class="p-2.5 font-bold text-emerald-700">251</td>
+                  <td class="p-2.5 font-sans text-slate-700 font-medium"><strong class="text-sky-700">Industry Standard Subnet:</strong> Perfect size for Public Web, Private App, and RDS database subnets.</td>
+                </tr>
+                <tr class="hover:bg-sky-50/40">
+                  <td class="p-2.5 font-black text-amber-600">/28</td>
+                  <td class="p-2.5 text-slate-600">255.255.255.240</td>
+                  <td class="p-2.5 font-bold">16</td>
+                  <td class="p-2.5 font-bold text-emerald-700">11</td>
+                  <td class="p-2.5 font-sans text-slate-700 font-medium"><strong>Small Utilities:</strong> Dedicated subnets for NAT Gateways, Bastion jump hosts, or Transit Gateway attachments.</td>
+                </tr>
+                <tr class="hover:bg-sky-50/40">
+                  <td class="p-2.5 font-black text-purple-700">/32</td>
+                  <td class="p-2.5 text-slate-600">255.255.255.255</td>
+                  <td class="p-2.5 font-bold">1</td>
+                  <td class="p-2.5 font-bold text-emerald-700">1</td>
+                  <td class="p-2.5 font-sans text-slate-700 font-medium"><strong>Single Host / Client IP:</strong> Used strictly in Security Group ingress rules to allow a developer's specific laptop IP.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- 🌟 CORE PLANNER CARD: STEP 1 (VPC) -> STEP 2 (SUBNET MASK) -> STEP 3 (COUNT) -->
     <div class="glass-card p-6 rounded-3xl border-2 border-sky-200/90 bg-white/95 shadow-xl shadow-sky-900/5 space-y-5">
       
@@ -212,6 +385,46 @@
         </div>
       </div>
 
+      <!-- 🗺️ VISUAL SUBNET ALLOCATION MAP (VPC Partition Bar) -->
+      <div class="p-4 rounded-2xl bg-slate-50 border border-sky-100 space-y-2.5">
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie text-sky-600"></i>
+              <span>VPC Address Space Allocation Map</span>
+            </span>
+            <span id="vpcAllocatedPercentBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800">
+              Allocated: 3.9%
+            </span>
+          </div>
+          <span class="text-[10px] text-slate-500 font-sans hidden sm:inline">
+            Click any block to jump to that subnet • Hover to see IP range
+          </span>
+        </div>
+
+        <!-- Horizontal Visualization Bar -->
+        <div id="subnetVisualBar" class="h-9 w-full bg-slate-200/80 rounded-xl overflow-hidden flex border border-slate-300 p-0.5 gap-0.5 shadow-inner">
+          <!-- Populated dynamically with colored slices -->
+        </div>
+
+        <!-- Legend / Stats -->
+        <div class="flex items-center justify-between text-[11px] text-slate-500 flex-wrap gap-2 pt-1">
+          <div class="flex items-center gap-3 font-mono">
+            <span class="flex items-center gap-1">
+              <span class="w-2.5 h-2.5 rounded bg-sky-500 inline-block"></span>
+              <span class="font-semibold text-slate-700" id="allocatedIpCountText">Allocated</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="w-2.5 h-2.5 rounded bg-slate-300 inline-block"></span>
+              <span class="font-semibold text-slate-500" id="unallocatedIpCountText">Free / Available</span>
+            </span>
+          </div>
+          <span class="text-slate-400 text-[10px] font-sans hidden md:inline">
+            <i class="fa-solid fa-circle-info mr-1 text-sky-500"></i>Prevents overlapping CIDRs in VPC Peering & Transit Gateways
+          </span>
+        </div>
+      </div>
+
       <!-- VIEW 1: Subnet Cards Grid View (Default) -->
       <div id="subnetsCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
         <!-- Rendered dynamically -->
@@ -274,6 +487,35 @@
     { role: "Spare / Future Expansion (AZ-1a)", tier: "Spare", badge: "bg-slate-100 text-slate-700 border-slate-200" },
     { role: "Spare / Future Expansion (AZ-1b)", tier: "Spare", badge: "bg-slate-100 text-slate-700 border-slate-200" }
   ];
+
+  function toggleBeginnerGuide() {
+    const body = document.getElementById("beginnerGuideBody");
+    const text = document.getElementById("guideToggleText");
+    const chevron = document.getElementById("guideChevron");
+    if (!body) return;
+    const isHidden = body.classList.toggle("hidden");
+    if (isHidden) {
+      if (text) text.innerText = "Show Guide";
+      if (chevron) chevron.classList.remove("rotate-180");
+    } else {
+      if (text) text.innerText = "Hide Guide";
+      if (chevron) chevron.classList.add("rotate-180");
+    }
+  }
+
+  function scrollToSubnet(index) {
+    if (currentViewMode !== 'cards') {
+      toggleViewMode('cards');
+    }
+    const card = document.getElementById(`subnet-card-${index}`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add("ring-4", "ring-sky-400", "scale-[1.02]");
+      setTimeout(() => {
+        card.classList.remove("ring-4", "ring-sky-400", "scale-[1.02]");
+      }, 1500);
+    }
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     renderCalculatedSubnets();
@@ -431,12 +673,80 @@
     renderCardsView();
     renderTableView();
     renderReservedIpsSection();
+    renderVisualSubnetBar(totalVpcIps, totalSubnetIps, requestedCount, totalPossibleSubnets);
+  }
+
+  function renderVisualSubnetBar(totalVpcIps, totalSubnetIps, requestedCount, totalPossibleSubnets) {
+    const bar = document.getElementById("subnetVisualBar");
+    const percentBadge = document.getElementById("vpcAllocatedPercentBadge");
+    const allocText = document.getElementById("allocatedIpCountText");
+    const freeText = document.getElementById("unallocatedIpCountText");
+    if (!bar) return;
+
+    const allocatedIps = requestedCount * totalSubnetIps;
+    const freeIps = Math.max(0, totalVpcIps - allocatedIps);
+    const freeSubnets = Math.max(0, totalPossibleSubnets - requestedCount);
+    const percentAllocated = ((allocatedIps / totalVpcIps) * 100).toFixed(1);
+
+    if (percentBadge) percentBadge.innerText = `Allocated: ${percentAllocated}% (${allocatedIps.toLocaleString()} / ${totalVpcIps.toLocaleString()} IPs)`;
+    if (allocText) allocText.innerText = `${allocatedIps.toLocaleString()} IPs Allocated (${requestedCount} Subnets)`;
+    if (freeText) freeText.innerText = `${freeIps.toLocaleString()} IPs Free (${freeSubnets.toLocaleString()} Available)`;
+
+    const colors = [
+      "bg-sky-500 hover:bg-sky-600",
+      "bg-indigo-500 hover:bg-indigo-600",
+      "bg-emerald-500 hover:bg-emerald-600",
+      "bg-teal-500 hover:bg-teal-600",
+      "bg-amber-500 hover:bg-amber-600",
+      "bg-purple-500 hover:bg-purple-600",
+      "bg-rose-500 hover:bg-rose-600",
+      "bg-cyan-500 hover:bg-cyan-600",
+      "bg-blue-600 hover:bg-blue-700",
+      "bg-violet-600 hover:bg-violet-700"
+    ];
+
+    let html = "";
+    const displayCount = Math.min(requestedCount, 32);
+    
+    for (let i = 0; i < displayCount; i++) {
+      const sub = generatedSubnets[i];
+      const colorClass = colors[i % colors.length];
+      html += `
+        <div onclick="scrollToSubnet(${sub.index})" 
+             title="${sub.name}: ${sub.cidr} (${sub.usableIps.toLocaleString()} usable hosts) — ${sub.role}" 
+             class="${colorClass} cursor-pointer flex-1 h-full rounded-md text-white text-[10px] font-mono font-bold flex items-center justify-center transition-all hover:brightness-110 active:scale-95 select-none relative group"
+             style="min-width: 24px;">
+          <span class="truncate px-0.5">${sub.index}</span>
+        </div>
+      `;
+    }
+
+    if (requestedCount > 32) {
+      html += `
+        <div class="bg-indigo-700 text-white text-[10px] font-mono font-bold px-2 flex items-center justify-center rounded-md" title="${requestedCount - 32} more subnets generated">
+          +${requestedCount - 32}
+        </div>
+      `;
+    }
+
+    if (freeSubnets > 0) {
+      html += `
+        <div class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-[10px] font-mono font-semibold flex items-center justify-center px-3 rounded-md transition-all flex-[2] select-none"
+             title="${freeSubnets.toLocaleString()} more /${document.getElementById('subnetMaskSelect').value} subnets can be carved out without overlapping (${freeIps.toLocaleString()} IPs free)">
+          <i class="fa-solid fa-plus text-[9px] mr-1"></i>
+          <span class="hidden md:inline">${freeSubnets.toLocaleString()} Free Subnets (${freeIps.toLocaleString()} IPs)</span>
+          <span class="md:hidden">Free</span>
+        </div>
+      `;
+    }
+
+    bar.innerHTML = html;
   }
 
   function renderCardsView() {
     const container = document.getElementById("subnetsCardsContainer");
     container.innerHTML = generatedSubnets.map(s => `
-      <div class="p-4 rounded-2xl bg-white border border-sky-200/90 shadow-2xs hover:border-sky-400 hover:shadow-md transition-all space-y-2.5 group">
+      <div id="subnet-card-${s.index}" class="p-4 rounded-2xl bg-white border border-sky-200/90 shadow-2xs hover:border-sky-400 hover:shadow-md transition-all space-y-2.5 group">
         <!-- Subnet Header & Name -->
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">

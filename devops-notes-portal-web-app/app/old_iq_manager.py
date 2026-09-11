@@ -48,6 +48,98 @@ def normalize_category(cat: str) -> str:
     cleaned = cat.strip().lower()
     return CATEGORY_NORMALIZE_MAP.get(cleaned, cat.strip())
 
+def detect_category_from_text(text: str) -> str:
+    tl = text.lower()
+    if any(w in tl for w in ["k8s", "kubernetes", "pod", "pods", "ingress", "clusterip", "nodeport", "hpa", "daemonset", "statefulset", "kubelet", "kubectl"]):
+        return "Kubernetes"
+    if any(w in tl for w in ["jenkins", "jenkinsfile", "pipeline", "ci/cd", "ci pipeline", "sonarqube", "quality gate"]):
+        return "Jenkins"
+    if any(w in tl for w in ["docker", "dockerfile", "container", "containers", "image", "multistage", "entrypoint", "cmd"]):
+        return "Docker"
+    if any(w in tl for w in ["terraform", "tfstate", "iac", "hcl", "state lock"]):
+        return "Terraform / IaC"
+    if any(w in tl for w in ["aws", "ec2", "s3", "vpc", "nacl", "security group", "route 53", "route53", "dynamodb", "cloudwatch", "iam", "eks", "fargate", "ecs"]):
+        return "AWS / Cloud"
+    if any(w in tl for w in ["ansible", "playbook", "inventory"]):
+        return "Ansible"
+    if any(w in tl for w in ["linux", "bash", "shell", "script", "grep", "awk", "sed", "systemd", "cpu 100", "top", "htop"]):
+        return "Linux"
+    if any(w in tl for w in ["git", "github", "gitlab", "branch", "merge", "pull request", "rebase"]):
+        return "Git / GitHub"
+    if any(w in tl for w in ["database", "rds", "postgres", "mysql", "mongodb"]):
+        return "AWS / Cloud"
+    if any(w in tl for w in ["prometheus", "grafana", "monitoring", "alert", "datadog", "pagerduty"]):
+        return "Monitoring"
+    if any(w in tl for w in ["team size", "developer", "hire you", "mistake", "conflict", "behavioral", "candidate introduction", "introduce yourself"]):
+        return "Behavioral"
+    return "General"
+
+def get_fallback_answer_for_question(q_text: str, c_name: str, r_name: str) -> str:
+    ql = q_text.lower()
+    if any(w in ql for w in ["introduce yourself", "brief introduction", "walk me through", "tell me about yourself"]):
+        return (
+            "\"I am a DevOps Engineer with 5 years of practical IT experience, primarily focusing on CI/CD automation, "
+            "AWS cloud infrastructure, and containerized deployments with Docker and Kubernetes.\n\n"
+            "### 1. Core Technical Skills\n"
+            "- **CI/CD & Source Control:** Jenkins (Declarative Pipelines), Git/GitHub (branching strategies, merge conflict resolution), Maven build tool, SonarQube code quality gates.\n"
+            "- **Cloud & Networking (AWS):** VPC (public and private subnets, Internet Gateway, NAT Gateway, Route Tables), EC2, Auto Scaling Groups, Application Load Balancer (ALB), S3, IAM, and CloudWatch.\n"
+            "- **Containers & Orchestration:** Docker (writing Dockerfiles, multi-stage builds, image optimization), AWS ECR, and Kubernetes (Deployments, Services, ConfigMaps, Secrets, Ingress, and HPA).\n"
+            "- **Infrastructure as Code (IaC) & Automation:** Terraform (modular code, remote S3 state backend with DynamoDB locking), Ansible playbooks, and Shell/Bash scripting for routine OS tasks.\n\n"
+            "### 2. Day-to-Day Responsibilities\n"
+            "- Managing and troubleshooting CI/CD build and deployment pipelines in Jenkins.\n"
+            "- Provisioning and updating AWS infrastructure resources using Terraform modules.\n"
+            "- Containerizing applications and managing Kubernetes workloads across DEV, QA, UAT, and PROD.\n"
+            "- Resolving Jira tickets related to build failures, deployments, Git merges, and infrastructure monitoring.\""
+        )
+    if "role" in ql and ("responsibility" in ql or "responsibilities" in ql):
+        return (
+            "\"In my current role as a DevOps Engineer, my primary responsibilities include:\n\n"
+            "1. **CI/CD Pipeline Management:** Creating and maintaining declarative Jenkins pipelines for our microservices, automating build, test, SonarQube scans, Docker packaging, and deployment.\n"
+            "2. **Cloud Infrastructure (IaC):** Writing and maintaining Terraform configurations to provision AWS resources like VPCs, subnets, EC2 instances, and security groups with S3 and DynamoDB remote state locking.\n"
+            "3. **Containerization & Deployment:** Building Docker images using multi-stage builds, pushing to Amazon ECR, and deploying applications onto Kubernetes clusters.\n"
+            "4. **Configuration & Scripting:** Writing Bash scripts and Ansible playbooks for system configuration, log rotation, and server maintenance.\n"
+            "5. **Production Support & Troubleshooting:** Monitoring application and infrastructure health using CloudWatch, debugging deployment failures, and working closely with development and QA teams.\""
+        )
+    if any(w in ql for w in ["years of", "total experience", "relevant experience"]):
+        return (
+            "\"I have 5 years of professional IT experience, with hands-on work across DevOps practices, AWS cloud infrastructure, "
+            "CI/CD pipeline automation (Jenkins), Docker containerization, Kubernetes, and Terraform Infrastructure as Code.\""
+        )
+    if any(w in ql for w in ["domain", "fintech", "e-commerce", "banking", "retail", "healthcare"]):
+        return (
+            "\"In my projects, I have supported high-availability web applications:\n\n"
+            "- **Security & Isolation:** Applications run inside private subnets behind an Application Load Balancer. Database and backend services are never directly exposed to the public internet.\n"
+            "- **High Availability & Scalability:** EC2 Auto Scaling Groups and Kubernetes Horizontal Pod Autoscaling (HPA) automatically scale workloads based on CPU and memory metrics.\n"
+            "- **Environment Flow:** Strict environment separation across DEV, QA, UAT, and PROD, with automated deployments to lower environments and approval gates for production releases.\""
+        )
+    if "contribution" in ql or "specific contribution" in ql:
+        return (
+            "\"My key contributions in the project include:\n\n"
+            "1. **End-to-End Pipeline Setup:** Built declarative Jenkins pipelines that automated the build, test, SonarQube quality analysis, and Docker image deployment to Amazon ECR.\n"
+            "2. **Docker Image Optimization:** Implemented multi-stage Docker builds for our services, reducing image sizes from ~700MB down to under 150MB, speeding up deployments significantly.\n"
+            "3. **Terraform Infrastructure Automation:** Codified manual AWS configurations into reusable Terraform modules with S3 remote state and DynamoDB locking to prevent state conflicts.\n"
+            "4. **Deployment Reliability:** Implemented Kubernetes rolling updates with readiness and liveness probes to achieve zero downtime during application releases.\""
+        )
+    if any(w in ql for w in ["job description", "role requires", "looking for", "understand this role"]):
+        return (
+            "\"Based on the job description, this role requires a hands-on DevOps Engineer who can independently manage CI/CD pipelines, "
+            "maintain cloud infrastructure on AWS, support Docker and Kubernetes container workloads, and collaborate closely with developers "
+            "to ensure smooth, automated, and reliable software releases.\""
+        )
+    if any(w in ql for w in ["notice period", "working day", "offer in hand", "last working day"]):
+        return (
+            "\"My official notice period is 30 days (negotiable based on company requirements). I am actively interviewing for DevOps Engineer roles.\""
+        )
+    if any(w in ql for w in ["relocate", "location", "in person", "travel"]):
+        return (
+            "\"I am open and flexible to relocate or work in hybrid/on-site setups based on the company's requirements.\""
+        )
+    return (
+        f"\"In {c_name} ({r_name}), the interviewer is looking for practical hands-on understanding. "
+        "In production, I ensure reliability by following infrastructure best practices, verifying changes in DEV/QA before PROD, "
+        "and automating repetitive tasks through CI/CD and scripts.\""
+    )
+
 def total_q_count_helper(companies_map: Dict[str, Any]) -> int:
     return sum(c.get("total_questions", 0) for c in companies_map.values())
 
@@ -180,14 +272,32 @@ class OldIQManager:
             nonlocal current_q_text, current_answer_lines, in_answer, is_sub_q, current_category
             if not current_q_text:
                 return
+            
+            # Clean question display text (remove trailing asterisks and bullet symbols)
+            q_clean = re.sub(r'^\*+\s*(.*?)\s*\*+:', r'\1:', current_q_text.strip())
+            q_clean = re.sub(r'^\*+|\*+$', '', q_clean).strip()
+            q_clean = re.sub(r'^[●↳\s]+', '', q_clean).strip()
+            q_clean = q_clean.replace('**', '').strip()
+            if not q_clean:
+                q_clean = current_q_text.strip()
+
             ans_clean = "\n".join(current_answer_lines).strip()
             ans_clean = re.sub(r'^(?:\*{0,2}Answer:\*{0,2}\s*)', '', ans_clean).strip()
             
-            norm_cat = normalize_category(current_category)
-            category_counts[norm_cat] = category_counts.get(norm_cat, 0) + 1
-            
             c_name = current_company_name or "General Company Interviews"
             r_name = current_round_name or "Technical Round"
+
+            # If question has no answer or < 15 chars, supply structured, production-grade DevOps answer
+            if not ans_clean or len(ans_clean) < 15:
+                ans_clean = get_fallback_answer_for_question(q_clean, c_name, r_name)
+
+            norm_cat = normalize_category(current_category)
+            if norm_cat == "General":
+                detected = detect_category_from_text(q_clean + " " + ans_clean)
+                if detected != "General":
+                    norm_cat = detected
+
+            category_counts[norm_cat] = category_counts.get(norm_cat, 0) + 1
             
             if c_name not in companies_map:
                 companies_map[c_name] = {
@@ -206,7 +316,7 @@ class OldIQManager:
                 
             q_entry = {
                 "id": f"q_{len(category_counts)}_{total_q_count_helper(companies_map)}",
-                "question": current_q_text,
+                "question": q_clean,
                 "answer": ans_clean,
                 "has_answer": bool(ans_clean),
                 "is_sub_q": is_sub_q,
@@ -324,12 +434,18 @@ class OldIQManager:
                 return
             ans_clean = "\n".join(current_answer_lines).strip()
             ans_clean = re.sub(r'^(?:\*{0,2}Answer:\*{0,2}\s*)', '', ans_clean).strip()
-            norm_cat = normalize_category(current_cat)
+            
+            # Clean question title
+            q_clean = re.sub(r'^\*+|\*+$', '', current_q_text.strip()).strip()
+            if not ans_clean or len(ans_clean) < 15:
+                ans_clean = get_fallback_answer_for_question(q_clean, comp_name, current_round)
+
+            norm_cat = detect_category_from_text(q_clean + " " + ans_clean)
             category_counts[norm_cat] = category_counts.get(norm_cat, 0) + 1
             
             q_entry = {
                 "id": f"gen_{len(category_counts)}_{total_q_count_helper(companies_map)}",
-                "question": current_q_text,
+                "question": q_clean,
                 "answer": ans_clean,
                 "has_answer": bool(ans_clean),
                 "is_sub_q": False,
