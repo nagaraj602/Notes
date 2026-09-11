@@ -213,7 +213,7 @@
               {% for q in round.questions %}
               <div id="card-q-{{ q.id }}" class="question-card rounded-2xl border border-slate-200/90 bg-white hover:border-sky-300 hover:shadow-xs transition-all overflow-hidden shadow-2xs" data-cat="{{ q.category }}" data-q-id="{{ q.id }}" data-has-answer="{{ 'true' if q.has_answer else 'false' }}">
                 <!-- Question Header (Click to toggle answer) -->
-                <div onclick="toggleQuestionAnswer('{{ q.id }}')" class="p-3.5 sm:p-4 flex items-start justify-between gap-3 cursor-pointer select-none transition-all group bg-gradient-to-r from-white via-slate-50/30 to-white hover:bg-sky-50/40">
+                <div onclick="toggleQuestionAnswer('{{ q.id }}')" class="p-3.5 sm:p-4 flex items-start justify-between gap-3 cursor-pointer transition-all group bg-gradient-to-r from-white via-slate-50/30 to-white hover:bg-sky-50/40">
                   <div class="flex items-start space-x-3 flex-1 min-w-0">
                     {% if q.is_sub_q %}
                     <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 font-black text-xs flex items-center justify-center select-none flex-shrink-0 mt-0.5 border border-indigo-100 shadow-2xs">↳</span>
@@ -223,7 +223,7 @@
                     </span>
                     {% endif %}
                     <div class="space-y-1.5 flex-1 min-w-0">
-                      <div class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-sky-700 transition-colors q-text leading-relaxed">
+                      <div id="q-text-{{ q.id }}" class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-sky-700 transition-colors q-text leading-relaxed select-text cursor-text">
                         {{ q.question }}
                       </div>
                       <div class="flex items-center gap-2 flex-wrap">
@@ -239,13 +239,20 @@
                     </div>
                   </div>
 
-                  <!-- Distinguishable Interactive Accordion Toggle Badge -->
-                  {% if q.has_answer %}
-                  <div id="badge-q-{{ q.id }}" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-sky-100 text-slate-700 group-hover:text-sky-800 border border-slate-200/80 group-hover:border-sky-300 text-xs font-bold transition-all flex-shrink-0 shadow-2xs" title="Click to view detailed answer">
-                    <span id="badge-text-{{ q.id }}">Answer</span>
-                    <i id="icon-q-{{ q.id }}" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300"></i>
+                  <!-- Actions: Copy Question & Toggle Answer Badge -->
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <button type="button" onclick="copyQuestionOnly('{{ q.id }}', event)" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-500 hover:text-sky-700 border border-slate-200/80 hover:border-sky-300 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs" title="Copy Question Text">
+                      <i id="copy-q-icon-{{ q.id }}" class="fa-regular fa-copy text-[11px]"></i>
+                      <span class="text-[11px] font-bold hidden sm:inline">Copy Q</span>
+                    </button>
+
+                    {% if q.has_answer %}
+                    <div id="badge-q-{{ q.id }}" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-sky-100 text-slate-700 group-hover:text-sky-800 border border-slate-200/80 group-hover:border-sky-300 text-xs font-bold transition-all flex-shrink-0 shadow-2xs" title="Click to view detailed answer">
+                      <span id="badge-text-{{ q.id }}">Answer</span>
+                      <i id="icon-q-{{ q.id }}" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300"></i>
+                    </div>
+                    {% endif %}
                   </div>
-                  {% endif %}
                 </div>
 
                 <!-- Answer Body (Collapsed by Default) -->
@@ -416,6 +423,9 @@
 
   // Toggle individual question answer
   function toggleQuestionAnswer(qId) {
+    if (window.getSelection && window.getSelection().toString().trim().length > 0) {
+      return; // User was highlighting or selecting text, do not toggle accordion
+    }
     const ans = document.getElementById(`ans-${qId}`);
     const icon = document.getElementById(`icon-q-${qId}`);
     const badge = document.getElementById(`badge-q-${qId}`);
@@ -523,6 +533,26 @@
         if (badgeText) badgeText.innerText = "Answer";
         if (card) card.classList.remove('border-sky-400', 'ring-2', 'ring-sky-100');
       }
+    });
+  }
+
+  // Copy Question Text Only
+  function copyQuestionOnly(qId, event) {
+    if (event) event.stopPropagation();
+    const qTextEl = document.getElementById(`q-text-${qId}`);
+    const copyIcon = document.getElementById(`copy-q-icon-${qId}`);
+    if (!qTextEl) return;
+    const text = qTextEl.innerText.trim();
+
+    navigator.clipboard.writeText(text).then(() => {
+      if (copyIcon) {
+        copyIcon.className = 'fa-solid fa-check text-emerald-600';
+        setTimeout(() => {
+          copyIcon.className = 'fa-regular fa-copy text-[11px]';
+        }, 2000);
+      }
+    }).catch(err => {
+      console.error('Failed to copy question:', err);
     });
   }
 
