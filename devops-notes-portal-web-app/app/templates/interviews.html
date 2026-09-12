@@ -99,35 +99,80 @@
       </div>
     </div>
 
-    <!-- 1-Week Interactive Calendar Strip (Shows Company Name, Round Name, Timings & Salary) -->
+    <!-- Interactive Interview Calendar (Week View & Full Month Schedule) -->
     <div class="glass-card rounded-2xl border border-sky-100 overflow-hidden shadow-sm">
       <div class="p-4 bg-white/60 border-b border-sky-100 flex items-center justify-between flex-wrap gap-3">
-        <div class="flex items-center space-x-3">
+        <!-- Left: Navigation Controls -->
+        <div class="flex items-center space-x-3 flex-wrap gap-2">
           <div class="flex items-center space-x-1.5">
-            <button onclick="navigateWeek(-1)" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs" title="Previous Week">
+            <button onclick="navigateCalendar(-1)" id="calPrevBtn" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs cursor-pointer" title="Previous">
               <i class="fa-solid fa-chevron-left"></i>
             </button>
-            <button onclick="navigateWeek(0)" class="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 text-xs font-bold transition-all shadow-xs" title="Go to Current Week">
-              Today
+            <button onclick="navigateCalendar(0)" id="calTodayBtn" class="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 text-xs font-bold transition-all shadow-xs cursor-pointer" title="Jump to current date/month">
+              This Month
             </button>
-            <button onclick="navigateWeek(1)" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs" title="Next Week">
+            <button onclick="navigateCalendar(1)" id="calNextBtn" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs cursor-pointer" title="Next">
               <i class="fa-solid fa-chevron-right"></i>
             </button>
           </div>
-          <div id="weekRangeLabel" class="text-xs font-bold text-slate-800 font-mono">--</div>
+          <div id="weekRangeLabel" class="text-xs font-extrabold text-slate-800 tracking-tight font-mono flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar text-sky-600"></i>
+            <span>Calendar</span>
+          </div>
         </div>
 
-        <div class="flex items-center space-x-2">
-          <button onclick="openFullCalendarModal()" class="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold transition-all flex items-center space-x-1.5 shadow-xs">
-            <i class="fa-solid fa-expand text-[10px]"></i>
-            <span>Full Month View</span>
-          </button>
+        <!-- Right: View Switcher (Week / Month) & Legend -->
+        <div class="flex items-center space-x-3 flex-wrap gap-2">
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="flex items-center space-x-1 text-slate-500 text-[11px]">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+              <span>Completed</span>
+            </span>
+            <span class="flex items-center space-x-1 text-slate-500 text-[11px]">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>
+              <span>Scheduled</span>
+            </span>
+            <span class="flex items-center space-x-1 text-slate-500 text-[11px]">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+              <span>Rescheduled</span>
+            </span>
+          </div>
+
+          <!-- Segmented View Toggle: Week vs Month -->
+          <div class="flex items-center p-1 bg-slate-100/90 rounded-xl border border-sky-200/60 shadow-inner">
+            <button id="calViewWeekBtn" onclick="setCalendarView('week')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer">
+              <i class="fa-solid fa-calendar-week text-[11px]"></i>
+              <span>Week</span>
+            </button>
+            <button id="calViewMonthBtn" onclick="setCalendarView('month')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer">
+              <i class="fa-solid fa-calendar-days text-[11px]"></i>
+              <span>Month</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- 7-Day Grid -->
-      <div id="weekDaysGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40 min-h-[160px]">
+      <!-- 7-Day Grid (Week View) -->
+      <div id="weekDaysGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40 min-h-[160px]">
         <!-- Rendered via JS -->
+      </div>
+
+      <!-- Full Month Calendar View (Multi-week grid with Mon-Sun headers) -->
+      <div id="monthDaysContainer" class="p-3 bg-white/30 space-y-2">
+        <!-- Weekday Headers -->
+        <div class="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 py-1 bg-sky-50/50 rounded-xl border border-sky-100">
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
+          <div>Sun</div>
+        </div>
+        <!-- Days Grid -->
+        <div id="monthDaysGrid" class="grid grid-cols-7 gap-1.5">
+          <!-- Rendered via JS -->
+        </div>
       </div>
     </div>
 
@@ -720,12 +765,66 @@
     document.getElementById("statListModal").classList.add("hidden");
   }
 
-  // --- SCHEDULES & 1-WEEK CALENDAR ---
+  // --- SCHEDULES & INTERACTIVE CALENDAR (WEEK & MONTH VIEWS) ---
+  let currentCalendarView = localStorage.getItem("nagaraj_calendar_view") || "month"; // Defaults to full month view
+  let currentWeekOffset = 0;
+  let currentMonthOffset = 0;
+
+  function setCalendarView(view) {
+    currentCalendarView = view;
+    localStorage.setItem("nagaraj_calendar_view", view);
+    updateCalendarViewUI();
+  }
+
+  function updateCalendarViewUI() {
+    const weekBtn = document.getElementById("calViewWeekBtn");
+    const monthBtn = document.getElementById("calViewMonthBtn");
+    const todayBtn = document.getElementById("calTodayBtn");
+    const weekGrid = document.getElementById("weekDaysGrid");
+    const monthContainer = document.getElementById("monthDaysContainer");
+
+    if (!weekBtn || !monthBtn || !weekGrid || !monthContainer) return;
+
+    if (currentCalendarView === "week") {
+      weekBtn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer";
+      monthBtn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer";
+      if (todayBtn) todayBtn.textContent = "Today";
+      weekGrid.classList.remove("hidden");
+      monthContainer.classList.add("hidden");
+      renderWeekCalendar();
+    } else {
+      monthBtn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer";
+      weekBtn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer";
+      if (todayBtn) todayBtn.textContent = "This Month";
+      weekGrid.classList.add("hidden");
+      monthContainer.classList.remove("hidden");
+      renderMonthCalendar();
+    }
+  }
+
+  function navigateCalendar(direction) {
+    if (currentCalendarView === "week") {
+      if (direction === 0) currentWeekOffset = 0;
+      else currentWeekOffset += direction;
+      renderWeekCalendar();
+    } else {
+      if (direction === 0) currentMonthOffset = 0;
+      else currentMonthOffset += direction;
+      renderMonthCalendar();
+    }
+  }
+
+  function navigateWeek(direction) {
+    navigateCalendar(direction);
+  }
+
   async function loadSchedules() {
     try {
       const res = await fetch("/api/interviews/schedules");
       allSchedules = await res.json();
       renderWeekCalendar();
+      renderMonthCalendar();
+      updateCalendarViewUI();
       renderTodayInterviews();
     } catch (err) {
       console.error("Failed to load schedules:", err);
@@ -739,12 +838,6 @@
     return new Date(d.setDate(diff));
   }
 
-  function navigateWeek(direction) {
-    if (direction === 0) currentWeekOffset = 0;
-    else currentWeekOffset += direction;
-    renderWeekCalendar();
-  }
-
   function renderWeekCalendar() {
     const today = new Date();
     const currMonday = getMonday(today);
@@ -754,10 +847,13 @@
     sunday.setDate(sunday.getDate() + 6);
 
     const options = { month: 'short', day: 'numeric', year: 'numeric' };
-    document.getElementById("weekRangeLabel").innerText = 
-      `${currMonday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sunday.toLocaleDateString('en-US', options)}`;
+    const label = document.getElementById("weekRangeLabel");
+    if (label) {
+      label.innerHTML = `<i class="fa-regular fa-calendar text-sky-600"></i><span>${currMonday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sunday.toLocaleDateString('en-US', options)}</span>`;
+    }
 
     const grid = document.getElementById("weekDaysGrid");
+    if (!grid) return;
     grid.innerHTML = "";
 
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -768,7 +864,7 @@
       const dateStr = dayDate.toISOString().split("T")[0];
       const isToday = dateStr === today.toISOString().split("T")[0];
 
-      const daySchedules = allSchedules.filter(s => s.date === dateStr);
+      const daySchedules = (allSchedules || []).filter(s => s.date === dateStr);
 
       const dayCol = document.createElement("div");
       dayCol.className = `p-3 flex flex-col min-h-[160px] transition-all ${isToday ? 'bg-sky-50/70 ring-1 ring-inset ring-sky-300' : 'hover:bg-slate-50/80'}`;
@@ -824,6 +920,90 @@
 
       grid.appendChild(dayCol);
     }
+  }
+
+  function renderMonthCalendar() {
+    const container = document.getElementById("monthDaysGrid");
+    const label = document.getElementById("weekRangeLabel");
+    if (!container || !label) return;
+
+    const now = new Date();
+    const targetMonth = new Date(now.getFullYear(), now.getMonth() + currentMonthOffset, 1);
+    const monthName = targetMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+    label.innerHTML = `<i class="fa-regular fa-calendar text-sky-600"></i><span>${monthName}</span>`;
+
+    const firstDayIndex = (targetMonth.getDay() + 6) % 7;
+    const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+    const prevMonthDays = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 0).getDate();
+
+    const todayIso = new Date().toISOString().split("T")[0];
+    const cellsHtml = [];
+
+    // Previous month trailing days
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      const prevDay = prevMonthDays - i;
+      cellsHtml.push(`
+        <div class="p-2 rounded-xl bg-slate-50/50 border border-slate-100/60 min-h-[95px] opacity-40 select-none">
+          <div class="text-[10px] font-mono text-slate-400 font-bold">${prevDay}</div>
+        </div>
+      `);
+    }
+
+    // Days in current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${targetMonth.getFullYear()}-${String(targetMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const isToday = dateStr === todayIso;
+      const daySchedules = (allSchedules || []).filter(s => s.date === dateStr);
+
+      let badges = daySchedules.map(s => {
+        const timeRange = formatTimeRange(s.start_time, s.end_time, s.time);
+        const statusColors = {
+          "completed": "bg-emerald-100 text-emerald-800 border-emerald-200",
+          "scheduled": "bg-sky-100 text-sky-800 border-sky-200",
+          "rescheduled": "bg-amber-100 text-amber-800 border-amber-200",
+          "cancelled": "bg-rose-100 text-rose-800 border-rose-200"
+        };
+        const badgeClass = statusColors[s.status] || "bg-slate-100 text-slate-800";
+
+        return `
+          <div onclick="viewScheduleDetails('${s.id}')" class="p-1.5 rounded-lg bg-sky-50 border border-sky-200 text-[10px] cursor-pointer hover:bg-sky-100 transition-all shadow-2xs space-y-0.5" title="${escapeHtml(s.company)} • ${escapeHtml(s.round || '')} (${timeRange}) - Click to view details">
+            <div class="font-extrabold text-[11px] truncate text-slate-900 flex items-center justify-between">
+              <span class="truncate"><i class="fa-solid fa-building text-[9px] text-sky-600 mr-1"></i>${escapeHtml(s.company)}</span>
+              <span class="text-[8px] font-mono font-bold px-1 rounded ${badgeClass}">${s.status}</span>
+            </div>
+            <div class="text-[9px] font-semibold text-indigo-700 truncate">${escapeHtml(s.round || 'Round')}</div>
+            <div class="text-[9px] text-slate-600 font-mono font-medium flex items-center">
+              <i class="fa-regular fa-clock text-sky-500 mr-1 text-[8px]"></i>${timeRange}
+            </div>
+            ${s.salary_ctc ? `<div class="text-[8px] text-emerald-700 font-bold font-mono truncate"><i class="fa-solid fa-coins mr-1 text-[8px]"></i>${escapeHtml(s.salary_ctc)}</div>` : ''}
+          </div>
+        `;
+      }).join("");
+
+      cellsHtml.push(`
+        <div class="p-2 rounded-xl border transition-all flex flex-col justify-between min-h-[95px] ${isToday ? 'bg-sky-50/70 border-sky-400 ring-2 ring-sky-400/20 shadow-xs' : 'bg-white border-sky-100 hover:border-sky-300'}">
+          <div class="flex items-center justify-between mb-1">
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${isToday ? 'bg-sky-600 text-white shadow-2xs' : 'text-slate-700'}">${day}</span>
+            ${daySchedules.length > 0 ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-sky-100 text-sky-800 border border-sky-200">${daySchedules.length}</span>` : ''}
+          </div>
+          <div class="space-y-1 flex-1 overflow-y-auto max-h-24">
+            ${badges || '<div class="text-[9px] text-slate-300 italic">No events</div>'}
+          </div>
+        </div>
+      `);
+    }
+
+    const totalRendered = firstDayIndex + daysInMonth;
+    const remaining = (7 - (totalRendered % 7)) % 7;
+    for (let i = 1; i <= remaining; i++) {
+      cellsHtml.push(`
+        <div class="p-2 rounded-xl bg-slate-50/50 border border-slate-100/60 min-h-[95px] opacity-40 select-none">
+          <div class="text-[10px] font-mono text-slate-400 font-bold">${i}</div>
+        </div>
+      `);
+    }
+
+    container.innerHTML = cellsHtml.join("");
   }
 
   // --- QUESTIONS REPOSITORY & REAL-TIME SEARCH ---

@@ -25,12 +25,6 @@
 
     <!-- Quick Action Buttons -->
     <div class="flex items-center gap-2 flex-wrap">
-      <div id="geminiStatusBadgeContainer" class="px-3 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 text-slate-800 border border-sky-300 flex items-center space-x-1.5 shadow-xs" title="Powered by Google Gemini 3.8 Flash High (managed server-wide by instructor)">
-        <i class="fa-solid fa-wand-magic-sparkles text-sky-600"></i>
-        <span>AI: Gemini 3.8 Flash High</span>
-        <span id="geminiStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Server Active</span>
-      </div>
-
       <button onclick="openGitHubSettingsModal()" id="ghStatusBtn" class="px-3 py-2 text-xs font-bold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-all flex items-center space-x-1.5 shadow-xs animate-pulse" title="Configure your personal GitHub PAT and Repository">
         <i class="fa-brands fa-github text-slate-900"></i>
         <span id="ghStatusBtnText">Connect GitHub PAT (Required)</span>
@@ -188,39 +182,76 @@
       </div>
     </div>
 
-    <!-- 1-Week Interactive Calendar Strip -->
+    <!-- Interactive Interview Calendar (Week View & Full Month Schedule) -->
     <div class="glass-card rounded-2xl border border-sky-100 overflow-hidden shadow-sm">
       <div class="p-4 bg-white/60 border-b border-sky-100 flex items-center justify-between flex-wrap gap-3">
-        <div class="flex items-center space-x-3">
+        <!-- Left: Navigation Controls -->
+        <div class="flex items-center space-x-3 flex-wrap gap-2">
           <div class="flex items-center space-x-1.5">
-            <button onclick="navigateWeek(-1)" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs" title="Previous Week">
+            <button onclick="navigateCalendar(-1)" id="calPrevBtn" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs cursor-pointer" title="Previous">
               <i class="fa-solid fa-chevron-left"></i>
             </button>
-            <button onclick="navigateWeek(0)" class="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 text-xs font-bold transition-all shadow-xs" title="Go to Current Week">
-              Today
+            <button onclick="navigateCalendar(0)" id="calTodayBtn" class="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 text-xs font-bold transition-all shadow-xs cursor-pointer" title="Jump to current date/month">
+              This Month
             </button>
-            <button onclick="navigateWeek(1)" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs" title="Next Week">
+            <button onclick="navigateCalendar(1)" id="calNextBtn" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs cursor-pointer" title="Next">
               <i class="fa-solid fa-chevron-right"></i>
             </button>
           </div>
-          <div id="calendarWeekLabel" class="text-xs font-extrabold text-slate-800 tracking-tight">Week View</div>
+          <div id="calendarWeekLabel" class="text-xs font-extrabold text-slate-800 tracking-tight font-mono flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar text-sky-600"></i>
+            <span>Calendar</span>
+          </div>
         </div>
 
-        <div class="flex items-center space-x-3 text-xs">
-          <span class="flex items-center space-x-1.5 text-slate-500">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-            <span>Completed</span>
-          </span>
-          <span class="flex items-center space-x-1.5 text-slate-500">
-            <span class="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block"></span>
-            <span>Scheduled</span>
-          </span>
+        <!-- Right: View Switcher (Week / Month) & Legend -->
+        <div class="flex items-center space-x-3 flex-wrap gap-2">
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="flex items-center space-x-1 text-slate-500 text-[11px]">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+              <span>Completed</span>
+            </span>
+            <span class="flex items-center space-x-1 text-slate-500 text-[11px]">
+              <span class="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block"></span>
+              <span>Scheduled</span>
+            </span>
+          </div>
+
+          <!-- Segmented View Toggle: Week vs Month -->
+          <div class="flex items-center p-1 bg-slate-100/90 rounded-xl border border-sky-200/60 shadow-inner">
+            <button id="calViewWeekBtn" onclick="setCalendarView('week')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer">
+              <i class="fa-solid fa-calendar-week text-[11px]"></i>
+              <span>Week</span>
+            </button>
+            <button id="calViewMonthBtn" onclick="setCalendarView('month')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer">
+              <i class="fa-solid fa-calendar-days text-[11px]"></i>
+              <span>Month</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- 7 Day Calendar Grid -->
-      <div id="calendarGrid" class="grid grid-cols-1 sm:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40">
+      <!-- 7 Day Calendar Grid (Week View) -->
+      <div id="calendarGrid" class="hidden grid grid-cols-1 sm:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40">
         <!-- Generated via JS -->
+      </div>
+
+      <!-- Full Month Calendar View (Multi-week grid with Mon-Sun headers) -->
+      <div id="calendarMonthContainer" class="p-3 bg-white/30 space-y-2">
+        <!-- Weekday Headers -->
+        <div class="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 py-1 bg-sky-50/50 rounded-xl border border-sky-100">
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
+          <div>Sun</div>
+        </div>
+        <!-- Days Grid -->
+        <div id="calendarMonthGrid" class="grid grid-cols-7 gap-1.5">
+          <!-- Generated via JS -->
+        </div>
       </div>
     </div>
 
@@ -732,10 +763,6 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     <!-- Modal Footer Actions -->
     <div class="pt-3 flex items-center justify-between border-t border-sky-100 flex-wrap gap-2">
       <div class="flex items-center space-x-2">
-        <div class="text-[11px] font-bold text-slate-600 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-xl">
-          <i class="fa-solid fa-wand-magic-sparkles text-sky-600 text-[10px]"></i>
-          <span>AI: Gemini 3.8 Flash High (Server Active)</span>
-        </div>
       </div>
       <div class="flex items-center space-x-2">
         <button type="button" onclick="closeUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">Cancel</button>
@@ -1005,7 +1032,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     renderGitHubBanner();
     updateGeminiStatusBadge();
     renderStats();
-    renderCalendar();
+    updateCalendarViewUI();
     renderCompanyFilterDropdown();
     renderQuestionsList();
 
@@ -1053,7 +1080,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   function saveSchedules() {
     localStorage.setItem(STORAGE_KEY_SCHEDULES, JSON.stringify(mySchedules));
     renderStats();
-    renderCalendar();
+    if (currentCalendarView === "week") renderCalendar(); else renderMonthCalendar();
     renderCompanyFilterDropdown();
     renderQuestionsList();
   }
@@ -1666,19 +1693,63 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     document.getElementById("statQuestionsSub").textContent = `${myQuestions.length} questions banked`;
   }
 
-  // --- Calendar Strip ---
-  function navigateWeek(direction) {
-    if (direction === 0) {
-      currentWeekOffset = 0;
+  // --- Interactive Calendar (Week & Full Month Views) ---
+  let currentCalendarView = localStorage.getItem("my_calendar_view") || "month"; // Defaults to full month view
+  let currentWeekOffset = 0;
+  let currentMonthOffset = 0;
+
+  function setCalendarView(view) {
+    currentCalendarView = view;
+    localStorage.setItem("my_calendar_view", view);
+    updateCalendarViewUI();
+  }
+
+  function updateCalendarViewUI() {
+    const weekBtn = document.getElementById("calViewWeekBtn");
+    const monthBtn = document.getElementById("calViewMonthBtn");
+    const todayBtn = document.getElementById("calTodayBtn");
+    const weekGrid = document.getElementById("calendarGrid");
+    const monthContainer = document.getElementById("calendarMonthContainer");
+
+    if (!weekBtn || !monthBtn || !weekGrid || !monthContainer) return;
+
+    if (currentCalendarView === "week") {
+      weekBtn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer";
+      monthBtn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer";
+      if (todayBtn) todayBtn.textContent = "Today";
+      weekGrid.classList.remove("hidden");
+      monthContainer.classList.add("hidden");
+      renderCalendar();
     } else {
-      currentWeekOffset += direction;
+      monthBtn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer";
+      weekBtn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer";
+      if (todayBtn) todayBtn.textContent = "This Month";
+      weekGrid.classList.add("hidden");
+      monthContainer.classList.remove("hidden");
+      renderMonthCalendar();
     }
-    renderCalendar();
+  }
+
+  function navigateCalendar(direction) {
+    if (currentCalendarView === "week") {
+      if (direction === 0) currentWeekOffset = 0;
+      else currentWeekOffset += direction;
+      renderCalendar();
+    } else {
+      if (direction === 0) currentMonthOffset = 0;
+      else currentMonthOffset += direction;
+      renderMonthCalendar();
+    }
+  }
+
+  function navigateWeek(direction) {
+    navigateCalendar(direction);
   }
 
   function renderCalendar() {
     const container = document.getElementById("calendarGrid");
     const label = document.getElementById("calendarWeekLabel");
+    if (!container || !label) return;
 
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -1693,7 +1764,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
 
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    label.textContent = `${monthNames[firstDayOfWeek.getMonth()]} ${firstDayOfWeek.getDate()} - ${monthNames[lastDayOfWeek.getMonth()]} ${lastDayOfWeek.getDate()}, ${firstDayOfWeek.getFullYear()}`;
+    label.innerHTML = `<i class="fa-regular fa-calendar text-sky-600"></i><span>${monthNames[firstDayOfWeek.getMonth()]} ${firstDayOfWeek.getDate()} - ${monthNames[lastDayOfWeek.getMonth()]} ${lastDayOfWeek.getDate()}, ${firstDayOfWeek.getFullYear()}</span>`;
 
     const daysHtml = [];
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -1705,7 +1776,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
       const isToday = d.getTime() === today.getTime();
 
       // Find schedules for this day
-      const dayScheds = mySchedules.filter(s => s.date === isoStr);
+      const dayScheds = (mySchedules || []).filter(s => s.date === isoStr);
 
       let eventsHtml = "";
       dayScheds.forEach(s => {
@@ -1713,30 +1784,117 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         const badgeBg = isComp ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-violet-50 text-violet-800 border-violet-200";
         const timeStr = `${s.start_time || s.time || "10:00"}`;
         eventsHtml += `
-          <div onclick="editSchedule('${s.id}')" class="p-1.5 rounded-lg border text-[10px] cursor-pointer hover:shadow-xs transition-all ${badgeBg} space-y-0.5">
+          <div onclick="editSchedule('${s.id}')" class="p-1.5 rounded-lg border text-[10px] cursor-pointer hover:shadow-xs transition-all ${badgeBg} space-y-0.5" title="${escapeHtml(s.company)} • ${escapeHtml(s.round || '')} (${timeStr}) - Click to edit">
             <div class="font-bold truncate flex items-center justify-between">
-              <span class="truncate">${escapeHtml(s.company)}</span>
+              <span class="truncate font-extrabold"><i class="fa-solid fa-building text-[8px] text-sky-600 mr-1"></i>${escapeHtml(s.company)}</span>
               <span class="font-mono text-[9px]">${timeStr}</span>
             </div>
             <div class="text-[9px] text-slate-500 truncate">${escapeHtml(s.round)}</div>
+            ${s.salary_ctc ? `<div class="text-[8px] text-emerald-700 font-bold font-mono truncate"><i class="fa-solid fa-coins text-[8px] mr-1"></i>${escapeHtml(s.salary_ctc)}</div>` : ''}
           </div>
         `;
       });
 
       daysHtml.push(`
-        <div class="p-2.5 min-h-[110px] flex flex-col justify-between ${isToday ? 'bg-sky-50/60 font-semibold' : 'bg-transparent'}">
+        <div onclick="openScheduleModalWithDate('${isoStr}')" class="p-2.5 min-h-[110px] flex flex-col justify-between cursor-pointer group transition-all ${isToday ? 'bg-sky-50/60 font-semibold ring-1 ring-inset ring-sky-300' : 'bg-transparent hover:bg-sky-50/20'}">
           <div class="flex items-center justify-between text-xs mb-1.5">
             <span class="text-[10px] font-bold uppercase text-slate-400">${dayNames[i]}</span>
             <span class="w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${isToday ? 'bg-sky-600 text-white font-bold' : 'text-slate-700'}">${d.getDate()}</span>
           </div>
           <div class="space-y-1 flex-1 overflow-y-auto max-h-24">
-            ${eventsHtml || '<div class="text-[10px] text-slate-300 italic">No events</div>'}
+            ${eventsHtml || '<div class="text-[10px] text-slate-300 italic group-hover:text-sky-400 transition-all">+ Schedule</div>'}
           </div>
         </div>
       `);
     }
 
     container.innerHTML = daysHtml.join("");
+  }
+
+  function renderMonthCalendar() {
+    const container = document.getElementById("calendarMonthGrid");
+    const label = document.getElementById("calendarWeekLabel");
+    if (!container || !label) return;
+
+    const now = new Date();
+    const targetMonth = new Date(now.getFullYear(), now.getMonth() + currentMonthOffset, 1);
+    const monthName = targetMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+    label.innerHTML = `<i class="fa-regular fa-calendar text-sky-600"></i><span>${monthName}</span>`;
+
+    // Monday as first day of week: (day + 6) % 7
+    const firstDayIndex = (targetMonth.getDay() + 6) % 7;
+    const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+    const prevMonthDays = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 0).getDate();
+
+    const todayIso = new Date().toISOString().split("T")[0];
+    const cellsHtml = [];
+
+    // Previous month trailing days
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      const prevDay = prevMonthDays - i;
+      cellsHtml.push(`
+        <div class="p-2 rounded-xl bg-slate-50/50 border border-slate-100/60 min-h-[95px] opacity-40 select-none">
+          <div class="text-[10px] font-mono text-slate-400 font-bold">${prevDay}</div>
+        </div>
+      `);
+    }
+
+    // Days in current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${targetMonth.getFullYear()}-${String(targetMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const isToday = dateStr === todayIso;
+      const dayScheds = (mySchedules || []).filter(s => s.date === dateStr);
+
+      let eventsHtml = "";
+      dayScheds.forEach(s => {
+        const isComp = s.status === "completed";
+        const badgeBg = isComp ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-violet-50 text-violet-800 border-violet-200";
+        const timeStr = `${s.start_time || s.time || "10:00"}`;
+        eventsHtml += `
+          <div onclick="event.stopPropagation(); editSchedule('${s.id}')" class="p-1.5 rounded-lg border text-[10px] cursor-pointer hover:shadow-xs transition-all ${badgeBg} space-y-0.5" title="${escapeHtml(s.company)} • ${escapeHtml(s.round || '')} (${timeStr}) - Click to edit">
+            <div class="font-bold truncate flex items-center justify-between">
+              <span class="truncate font-extrabold"><i class="fa-solid fa-building text-[8px] text-sky-600 mr-1"></i>${escapeHtml(s.company)}</span>
+              <span class="font-mono text-[8px] font-bold">${timeStr}</span>
+            </div>
+            <div class="text-[9px] text-slate-600 truncate font-semibold">${escapeHtml(s.round || 'Round')}</div>
+            ${s.salary_ctc ? `<div class="text-[8px] text-emerald-700 font-bold font-mono truncate"><i class="fa-solid fa-coins text-[8px] mr-1"></i>${escapeHtml(s.salary_ctc)}</div>` : ''}
+          </div>
+        `;
+      });
+
+      cellsHtml.push(`
+        <div onclick="openScheduleModalWithDate('${dateStr}')" class="p-2 rounded-xl border transition-all flex flex-col justify-between min-h-[95px] cursor-pointer group ${isToday ? 'bg-sky-50/70 border-sky-400 ring-2 ring-sky-400/20 shadow-xs' : 'bg-white hover:bg-sky-50/30 border-sky-100 hover:border-sky-300'}">
+          <div class="flex items-center justify-between mb-1">
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${isToday ? 'bg-sky-600 text-white shadow-2xs' : 'text-slate-700 group-hover:text-sky-700'}">${day}</span>
+            ${dayScheds.length > 0 ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-sky-100 text-sky-800 border border-sky-200">${dayScheds.length}</span>` : ''}
+          </div>
+          <div class="space-y-1 flex-1 overflow-y-auto max-h-24">
+            ${eventsHtml || '<div class="text-[9px] text-slate-300 italic group-hover:text-sky-400/80 transition-all">+ Add</div>'}
+          </div>
+        </div>
+      `);
+    }
+
+    // Next month trailing days to complete grid
+    const totalRendered = firstDayIndex + daysInMonth;
+    const remaining = (7 - (totalRendered % 7)) % 7;
+    for (let i = 1; i <= remaining; i++) {
+      cellsHtml.push(`
+        <div class="p-2 rounded-xl bg-slate-50/50 border border-slate-100/60 min-h-[95px] opacity-40 select-none">
+          <div class="text-[10px] font-mono text-slate-400 font-bold">${i}</div>
+        </div>
+      `);
+    }
+
+    container.innerHTML = cellsHtml.join("");
+  }
+
+  function openScheduleModalWithDate(dateStr) {
+    openScheduleModal();
+    const dateInput = document.getElementById("schedDate");
+    if (dateInput) {
+      dateInput.value = dateStr;
+    }
   }
 
   // --- Dynamic Company Sorting & Grouping ---
