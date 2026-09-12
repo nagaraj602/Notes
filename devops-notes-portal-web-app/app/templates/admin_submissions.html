@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Candidate Submissions - Instructor Private Hub{% endblock %}
 
 {% block content %}
@@ -99,7 +99,7 @@
     <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
 
       <!-- Summary Telemetry Cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         <div class="glass-card p-4 rounded-2xl border border-sky-100">
           <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Submissions</div>
           <div id="statTotalSubmissions" class="text-2xl font-black text-slate-900 mt-0.5">0</div>
@@ -128,6 +128,12 @@
           <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Recordings</div>
           <div id="statTotalRecordings" class="text-2xl font-black text-rose-600 mt-0.5">0</div>
           <div class="text-[10px] text-slate-500 mt-1">YouTube links attached</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border border-sky-100">
+          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Transcripts</div>
+          <div id="statTotalTranscripts" class="text-2xl font-black text-purple-600 mt-0.5">0</div>
+          <div class="text-[10px] text-slate-500 mt-1">Transcripts attached</div>
         </div>
       </div>
 
@@ -314,6 +320,8 @@
     document.getElementById("statTotalCompanies").innerText = adminStats.total_companies || 0;
     document.getElementById("statTotalQuestions").innerText = adminStats.total_questions || 0;
     document.getElementById("statTotalRecordings").innerText = adminStats.total_recordings || 0;
+    const transEl = document.getElementById("statTotalTranscripts");
+    if (transEl) transEl.innerText = adminStats.total_transcripts || 0;
   }
 
   function populateFilters() {
@@ -379,6 +387,8 @@
       const fullTimeStr = s.end_time ? `${timeStr} - ${s.end_time}` : timeStr;
       const dateStr = s.date || "N/A";
       const isApproved = s.status === "approved";
+      const hasTrans = !!(s.transcript || s.has_transcript);
+      const hasRaw = !!s.original_raw_text;
 
       return `
         <div class="glass-card p-5 sm:p-6 rounded-3xl border ${isApproved ? 'border-emerald-200 bg-emerald-50/20' : 'border-sky-100 hover:border-sky-300'} transition-all space-y-4 shadow-sm">
@@ -393,6 +403,7 @@
                 <div class="flex items-center space-x-2 flex-wrap">
                   <span class="text-sm sm:text-base font-black text-slate-900">${escapeHtml(s.candidate_name || 'Anonymous')}</span>
                   <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">Candidate</span>
+                  ${s.source_type ? `<span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase">${escapeHtml(s.source_type)}</span>` : ''}
                   ${isApproved ? `<span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i class="fa-solid fa-circle-check mr-1"></i>Approved to Hub</span>` : ''}
                 </div>
                 <div class="flex items-center space-x-2 text-xs font-mono text-slate-500 mt-0.5 flex-wrap">
@@ -405,6 +416,20 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center space-x-2 flex-wrap">
+              ${hasTrans ? `
+                <button onclick="openAdminTranscriptModal('${s.id}')" class="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200 text-xs transition-all shadow-xs flex items-center space-x-1.5" title="View Full Verbatim Transcript">
+                  <i class="fa-solid fa-file-lines text-indigo-600"></i>
+                  <span>Transcript</span>
+                </button>
+              ` : ''}
+
+              ${hasRaw ? `
+                <button onclick="openAdminRawTextModal('${s.id}')" class="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border border-slate-200 text-xs transition-all shadow-xs flex items-center space-x-1" title="View Original Raw Input">
+                  <i class="fa-solid fa-clock-rotate-left"></i>
+                  <span>Raw Text</span>
+                </button>
+              ` : ''}
+
               ${!isApproved ? `
                 <button onclick="approveSubmission('${s.id}')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold shadow-sm shadow-emerald-500/20 flex items-center space-x-1.5 transition-all" title="Add this schedule and questions directly into Nagaraj's Main Interview Hub">
                   <i class="fa-solid fa-circle-check text-xs"></i>
@@ -475,9 +500,9 @@
                 </span>
                 <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200 group-open/qa:rotate-180"></i>
               </summary>
-              <div class="p-4 space-y-3 divide-y divide-slate-100">
+              <div class="p-4 space-y-3.5 divide-y divide-slate-100">
                 ${qList.map((q, qIdx) => `
-                  <div class="${qIdx > 0 ? 'pt-3' : ''} space-y-2 text-xs">
+                  <div class="${qIdx > 0 ? 'pt-3.5' : ''} space-y-2 text-xs">
                     <div class="flex items-start justify-between gap-2">
                       <div class="font-bold text-slate-900">
                         <span class="text-sky-600 mr-1">Q${qIdx + 1}:</span>
@@ -488,12 +513,30 @@
                         <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 font-mono font-bold text-[10px]">${escapeHtml(q.difficulty || 'Moderate')}</span>
                       </div>
                     </div>
+
+                    ${(q.sub_questions && q.sub_questions.length > 0) ? `
+                      <div class="p-2.5 rounded-xl bg-sky-50/80 border border-sky-200 text-xs space-y-1">
+                        <strong class="text-sky-900 block font-sans"><i class="fa-solid fa-diagram-project mr-1 text-sky-600"></i>Sub-Questions:</strong>
+                        <ul class="list-disc pl-4 space-y-0.5 text-slate-800 font-medium">
+                          ${q.sub_questions.map(sq => `<li>${escapeHtml(sq)}</li>`).join('')}
+                        </ul>
+                      </div>
+                    ` : ''}
+
+                    ${q.suggestions ? `
+                      <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-0.5">
+                        <strong class="text-amber-900 block font-sans"><i class="fa-solid fa-user-graduate mr-1 text-amber-600"></i>Interviewer / Instructor Advice:</strong>
+                        <div class="whitespace-pre-wrap leading-relaxed font-sans">${escapeHtml(q.suggestions)}</div>
+                      </div>
+                    ` : ''}
+
                     ${q.recording_link ? `
                       <div class="text-[11px] text-rose-600 font-mono flex items-center space-x-1">
                         <i class="fa-brands fa-youtube"></i>
                         <a href="${escapeHtml(q.recording_link)}" target="_blank" class="hover:underline">Clip Link: ${escapeHtml(q.recording_link)}</a>
                       </div>
                     ` : ''}
+
                     ${q.answer ? `
                       <div class="p-3 rounded-xl bg-slate-50/90 border border-slate-200 text-slate-700 font-mono text-[11px] whitespace-pre-wrap leading-relaxed">
                         <strong class="text-emerald-700 block mb-1 font-sans">💡 Answer / Solution:</strong>
@@ -552,5 +595,216 @@
     if (!text) return "";
     return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
+
+  let activeAdminTranscript = "";
+  let activeAdminTranscriptTitle = "";
+
+  function openAdminTranscriptModal(subId) {
+    const sub = allSubmissions.find(s => s.id === subId);
+    if (!sub || !sub.transcript) {
+      alert("No transcript found for this submission.");
+      return;
+    }
+    activeAdminTranscript = sub.transcript;
+    activeAdminTranscriptTitle = `${sub.candidate_name || 'Candidate'} - ${sub.company} (${sub.round || 'Interview'})`;
+    document.getElementById("adminTranscriptModalTitle").textContent = activeAdminTranscriptTitle;
+    const wordCount = activeAdminTranscript.trim().split(/\s+/).filter(Boolean).length;
+    document.getElementById("adminTranscriptWordCount").textContent = `${wordCount.toLocaleString()} words`;
+    document.getElementById("adminTranscriptContentDisplay").textContent = activeAdminTranscript;
+    document.getElementById("adminTranscriptModal").classList.remove("hidden");
+  }
+
+  function closeAdminTranscriptModal() {
+    document.getElementById("adminTranscriptModal").classList.add("hidden");
+  }
+
+  function copyAdminTranscript() {
+    if (!activeAdminTranscript) return;
+    navigator.clipboard.writeText(activeAdminTranscript).then(() => {
+      alert("Transcript copied to clipboard!");
+    });
+  }
+
+  function downloadAdminTranscript() {
+    if (!activeAdminTranscript) return;
+    const blob = new Blob([activeAdminTranscript], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = (activeAdminTranscriptTitle.replace(/[^a-zA-Z0-9_\-]/g, "_") || "transcript") + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  let activeAdminRawText = "";
+  let activeAdminRawTextTitle = "";
+
+  function openAdminRawTextModal(subId) {
+    const sub = allSubmissions.find(s => s.id === subId);
+    if (!sub || !sub.original_raw_text) {
+      alert("No original raw input found for this submission.");
+      return;
+    }
+    activeAdminRawText = sub.original_raw_text;
+    activeAdminRawTextTitle = `${sub.candidate_name || 'Candidate'} - ${sub.company} (Raw Input)`;
+    document.getElementById("adminRawTextModalTitle").textContent = activeAdminRawTextTitle;
+    document.getElementById("adminRawTextContentDisplay").textContent = activeAdminRawText;
+    document.getElementById("adminRawTextModal").classList.remove("hidden");
+  }
+
+  function closeAdminRawTextModal() {
+    document.getElementById("adminRawTextModal").classList.add("hidden");
+  }
+
+  function copyAdminRawText() {
+    if (!activeAdminRawText) return;
+    navigator.clipboard.writeText(activeAdminRawText).then(() => {
+      alert("Raw text copied to clipboard!");
+    });
+  }
+
+  function downloadAdminRawText() {
+    if (!activeAdminRawText) return;
+    const blob = new Blob([activeAdminRawText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = (activeAdminRawTextTitle.replace(/[^a-zA-Z0-9_\-]/g, "_") || "raw_input") + "_raw.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function exportAdminRawTextPdf() {
+    if (!activeAdminRawText) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Popup blocked! Please allow popups to export PDF.");
+      return;
+    }
+    const safeTitle = escapeHtml(activeAdminRawTextTitle || "Candidate Raw Interview Notes");
+    const safeContent = escapeHtml(activeAdminRawText);
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${safeTitle}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 32px; color: #1e293b; }
+            h1 { font-size: 20px; border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 16px; color: #0f172a; }
+            .meta { font-size: 11px; color: #64748b; margin-bottom: 20px; }
+            pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; line-height: 1.6; }
+          </style>
+        </head>
+        <body>
+          <h1>${safeTitle}</h1>
+          <div class="meta">Candidate Submission • Exported: ${new Date().toLocaleString()}</div>
+          <pre>${safeContent}</pre>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 300);
+  }
 </script>
+
+<!-- ========================================================================================= -->
+<!-- MODAL: Candidate Full Transcript Viewer Modal                                            -->
+<!-- ========================================================================================= -->
+<div id="adminTranscriptModal" onclick="if(event.target === this) closeAdminTranscriptModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-file-lines"></i>
+        </div>
+        <div>
+          <h3 id="adminTranscriptModalTitle" class="text-sm font-extrabold text-slate-900">Candidate Interview Transcript</h3>
+          <p id="adminTranscriptModalSubtitle" class="text-[10px] text-slate-500">Audio/video transcript generated by Gemini AI</p>
+        </div>
+      </div>
+      <button onclick="closeAdminTranscriptModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <div class="space-y-2">
+      <div class="flex items-center justify-between text-xs text-slate-500">
+        <span id="adminTranscriptWordCount" class="font-mono text-[10px]">0 words</span>
+        <div class="flex items-center space-x-2">
+          <button onclick="copyAdminTranscript()" class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-[11px] flex items-center space-x-1 border border-sky-200 transition-all">
+            <i class="fa-regular fa-copy"></i>
+            <span>Copy</span>
+          </button>
+          <button onclick="downloadAdminTranscript()" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold text-[11px] flex items-center space-x-1 border border-indigo-200 transition-all">
+            <i class="fa-solid fa-download"></i>
+            <span>Download .txt</span>
+          </button>
+        </div>
+      </div>
+      <div id="adminTranscriptContentDisplay" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 font-mono text-xs leading-relaxed max-h-96 overflow-y-auto whitespace-pre-wrap select-text"></div>
+    </div>
+
+    <div class="pt-3 border-t border-sky-100 flex justify-end">
+      <button onclick="closeAdminTranscriptModal()" class="px-4 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================================= -->
+<!-- MODAL: Candidate Original Raw Text Viewer Modal                                          -->
+<!-- ========================================================================================= -->
+<div id="adminRawTextModal" onclick="if(event.target === this) closeAdminRawTextModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h3 id="adminRawTextModalTitle" class="text-sm font-extrabold text-slate-900">Original Raw Input Text</h3>
+          <p class="text-[10px] text-slate-500">Preserved original text prior to AI grammar polishing or editing</p>
+        </div>
+      </div>
+      <button onclick="closeAdminRawTextModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <div class="space-y-2">
+      <div class="flex items-center justify-between text-xs text-slate-500 flex-wrap gap-2">
+        <span class="text-[11px] font-bold text-slate-700">Export & Copy Options:</span>
+        <div class="flex items-center space-x-2">
+          <button onclick="copyAdminRawText()" class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-[11px] flex items-center space-x-1 border border-sky-200 transition-all">
+            <i class="fa-regular fa-copy"></i>
+            <span>Copy</span>
+          </button>
+          <button onclick="downloadAdminRawText()" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-[11px] flex items-center space-x-1 border border-emerald-200 transition-all">
+            <i class="fa-solid fa-download"></i>
+            <span>Download RAW (.txt)</span>
+          </button>
+          <button onclick="exportAdminRawTextPdf()" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold text-[11px] flex items-center space-x-1 border border-indigo-200 transition-all">
+            <i class="fa-solid fa-file-pdf text-rose-600"></i>
+            <span>Export as PDF</span>
+          </button>
+        </div>
+      </div>
+      <div id="adminRawTextContentDisplay" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 font-mono text-xs leading-relaxed max-h-96 overflow-y-auto whitespace-pre-wrap select-text"></div>
+    </div>
+
+    <div class="pt-3 border-t border-sky-100 flex justify-end">
+      <button onclick="closeAdminRawTextModal()" class="px-4 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
 {% endblock %}

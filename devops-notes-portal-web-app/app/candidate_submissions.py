@@ -105,6 +105,10 @@ class CandidateSubmissionsManager:
         rec_link = (data.get("recording_link") or "").strip()
         exp = (data.get("experience") or "").strip()
         notes = (data.get("notes") or "").strip()
+        transcript = (data.get("transcript") or "").strip()
+        has_transcript = bool(transcript) or bool(data.get("has_transcript"))
+        original_raw_text = (data.get("original_raw_text") or "").strip()
+        source_type = (data.get("source_type") or ("youtube" if rec_link else "manual")).strip()
 
         raw_questions = data.get("questions") or []
         clean_questions = []
@@ -112,10 +116,16 @@ class CandidateSubmissionsManager:
             q_text = (q.get("question") or "").strip()
             if not q_text:
                 continue
+            sub_qs = q.get("sub_questions") or []
+            if isinstance(sub_qs, str):
+                sub_qs = [s.strip() for s in sub_qs.split("\n") if s.strip()]
+            suggestions = (q.get("suggestions") or q.get("instructor_suggestions") or "").strip()
             clean_questions.append({
                 "id": f"cq-{uuid.uuid4().hex[:8]}",
                 "question": q_text,
+                "sub_questions": sub_qs,
                 "answer": (q.get("answer") or "").strip(),
+                "suggestions": suggestions,
                 "categories": q.get("categories") or ["General"],
                 "difficulty": q.get("difficulty") or "Moderate",
                 "recording_link": (q.get("recording_link") or rec_link or "").strip()
@@ -147,6 +157,13 @@ class CandidateSubmissionsManager:
                 existing["notes"] = notes
             if exp:
                 existing["experience"] = exp
+            if transcript:
+                existing["transcript"] = transcript
+                existing["has_transcript"] = True
+            if original_raw_text:
+                existing["original_raw_text"] = original_raw_text
+            if source_type:
+                existing["source_type"] = source_type
 
             existing_q_texts = {q.get("question", "").lower().strip() for q in existing.get("questions", [])}
             for q in clean_questions:
@@ -173,6 +190,10 @@ class CandidateSubmissionsManager:
             "recording_link": rec_link,
             "experience": exp,
             "notes": notes,
+            "transcript": transcript,
+            "has_transcript": has_transcript,
+            "original_raw_text": original_raw_text,
+            "source_type": source_type,
             "questions": clean_questions,
             "question_count": len(clean_questions),
             "created_at": datetime.utcnow().isoformat(),
@@ -229,6 +250,7 @@ class CandidateSubmissionsManager:
         companies = set()
         total_questions = 0
         total_videos = 0
+        total_transcripts = 0
 
         for s in submissions:
             c = (s.get("candidate_name") or "").strip()
@@ -240,6 +262,8 @@ class CandidateSubmissionsManager:
             total_questions += len(s.get("questions") or [])
             if s.get("recording_link"):
                 total_videos += 1
+            if s.get("transcript"):
+                total_transcripts += 1
 
         return {
             "total_submissions": len(submissions),
@@ -247,6 +271,7 @@ class CandidateSubmissionsManager:
             "total_companies": len(companies),
             "total_questions": total_questions,
             "total_recordings": total_videos,
+            "total_transcripts": total_transcripts,
             "candidates_list": sorted(list(candidates)),
             "companies_list": sorted(list(companies))
         }
@@ -269,6 +294,10 @@ class CandidateSubmissionsManager:
             "salary_ctc": target.get("salary_ctc") or "",
             "monthly_salary": target.get("monthly_salary") or "",
             "recording_link": target.get("recording_link") or "",
+            "transcript": target.get("transcript") or "",
+            "has_transcript": bool(target.get("transcript")),
+            "original_raw_text": target.get("original_raw_text") or "",
+            "source_type": target.get("source_type") or "manual",
             "notes": f"Candidate Submission by: {target.get('candidate_name')}. {target.get('notes', '')}".strip(),
             "experience": target.get("experience") or "",
             "status": "completed"
@@ -284,7 +313,10 @@ class CandidateSubmissionsManager:
                 experience=target.get("experience") or "",
                 notes=f"Candidate: {target.get('candidate_name')}",
                 difficulty="Moderate",
-                recording_link=target.get("recording_link") or ""
+                recording_link=target.get("recording_link") or "",
+                transcript=target.get("transcript") or "",
+                original_raw_text=target.get("original_raw_text") or "",
+                source_type=target.get("source_type") or "manual"
             )
 
         target["status"] = "approved"

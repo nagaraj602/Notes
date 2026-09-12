@@ -4,7 +4,7 @@ import asyncio
 from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
-from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi import FastAPI, Request, Form, HTTPException, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -492,7 +492,9 @@ class DetectCategoriesRequest(BaseModel):
 
 class BulkQuestionItem(BaseModel):
     question: str
+    sub_questions: Optional[List[str]] = []
     answer: str
+    suggestions: Optional[str] = ""
     categories: Optional[List[str]] = []
     recording_link: Optional[str] = ""
 
@@ -504,6 +506,10 @@ class BulkQuestionsRequest(BaseModel):
     notes: Optional[str] = ""
     difficulty: Optional[str] = ""
     recording_link: Optional[str] = ""
+    transcript: Optional[str] = ""
+    has_transcript: Optional[bool] = False
+    original_raw_text: Optional[str] = ""
+    source_type: Optional[str] = ""
     questions: List[BulkQuestionItem]
 
 class FollowupActionRequest(BaseModel):
@@ -694,7 +700,10 @@ async def api_add_bulk_questions(req: BulkQuestionsRequest, request: Request):
         experience=req.experience or "",
         notes=req.notes or "",
         difficulty=req.difficulty or "",
-        recording_link=req.recording_link or ""
+        recording_link=req.recording_link or "",
+        transcript=req.transcript or "",
+        original_raw_text=req.original_raw_text or "",
+        source_type=req.source_type or ""
     )
     return JSONResponse({"status": "success", "count": count})
 
@@ -790,6 +799,10 @@ class CandidateSubmissionCreateRequest(BaseModel):
     recording_link: Optional[str] = ""
     experience: Optional[str] = ""
     notes: Optional[str] = ""
+    transcript: Optional[str] = ""
+    has_transcript: Optional[bool] = False
+    original_raw_text: Optional[str] = ""
+    source_type: Optional[str] = ""
     questions: Optional[List[Dict[str, Any]]] = []
 
 class AdminVerifyRequest(BaseModel):
@@ -858,4 +871,104 @@ async def api_approve_candidate_submission(sub_id: str, request: Request):
         res = candidate_manager.import_to_hub(sub_id)
         return JSONResponse(res)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
+# --- GEMINI AI TRANSCRIPTION, YOUTUBE & Q&A EXTRACTION APIS ---
+from app.ai_engine import (
+    resolve_gemini_api_key, save_gemini_api_key, normalize_model_name,
+    test_gemini_connection, polish_and_review_text,
+    extract_qa_from_transcript_text, process_youtube_interview,
+    process_ephemeral_media
+)
+
+class AiTestRequest(BaseModel):
+    api_key: Optional[str] = ""
+    model: Optional[str] = "gemini-2.5-flash"
+
+class AiPolishRequest(BaseModel):
+    text: str
+    api_key: Optional[str] = ""
+    model: Optional[str] = ""
+
+class AiTranscriptRequest(BaseModel):
+    transcript: str
+    api_key: Optional[str] = ""
+    model: Optional[str] = ""
+
+class AiYoutubeRequest(BaseModel):
+    url: str
+    api_key: Optional[str] = ""
+    model: Optional[str] = ""
+
+class AiKeySaveRequest(BaseModel):
+    api_key: str
+
+@app.get("/api/ai/config")
+async def api_ai_config(request: Request):
+    hdr_key = request.headers.get("x-gemini-api-key", "")
+    key = resolve_gemini_api_key(hdr_key)
+    masked = f"{key[:4]}...{key[-4:]}" if len(key) > 8 else ("****" if key else "")
+    return JSONResponse({
+        "has_key": bool(key),
+        "key_masked": masked,
+        "default_model": os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    })
+
+@app.post("/api/ai/save-key")
+async def api_ai_save_key(req: AiKeySaveRequest, request: Request):
+    tok = extract_admin_token(request)
+    if not verify_admin_access(tok):
+        raise HTTPException(status_code=403, detail="Instructor authorization required to save server-wide key.")
+    ok = save_gemini_api_key(req.api_key)
+    return JSONResponse({"status": "saved" if ok else "failed"})
+
+@app.post("/api/ai/test")
+async def api_ai_test(req: AiTestRequest, request: Request):
+    key = req.api_key or request.headers.get("x-gemini-api-key", "")
+    res = test_gemini_connection(api_key=key, model=req.model or "gemini-2.5-flash")
+    return JSONResponse(res)
+
+@app.post("/api/ai/polish")
+async def api_ai_polish(req: AiPolishRequest, request: Request):
+    key = req.api_key or request.headers.get("x-gemini-api-key", "")
+    try:
+        res = polish_and_review_text(raw_text=req.text, api_key=key, model=req.model or "")
+        return JSONResponse(res)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/ai/extract-transcript")
+async def api_ai_extract_transcript(req: AiTranscriptRequest, request: Request):
+    key = req.api_key or request.headers.get("x-gemini-api-key", "")
+    try:
+        res = extract_qa_from_transcript_text(transcript_text=req.transcript, api_key=key, model=req.model or "")
+        return JSONResponse(res)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/ai/process-youtube")
+async def api_ai_process_youtube(req: AiYoutubeRequest, request: Request):
+    key = req.api_key or request.headers.get("x-gemini-api-key", "")
+    try:
+        res = process_youtube_interview(youtube_url=req.url, api_key=key, model=req.model or "")
+        return JSONResponse(res)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/ai/process-media")
+async def api_ai_process_media(
+    request: Request,
+    file: UploadFile = File(...),
+    model: str = Form("gemini-2.5-flash"),
+    api_key: str = Form("")
+):
+    key = api_key or request.headers.get("x-gemini-api-key", "")
+    content = await file.read()
+    mime = file.content_type or "audio/webm"
+    try:
+        res = process_ephemeral_media(media_bytes=content, mime_type=mime, api_key=key, model=model)
+        return JSONResponse(res)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        del content

@@ -175,10 +175,12 @@ deploy_docker_desktop_k8s() {
 
     read -p "Do you want to rebuild and push the Docker image before deploying? (y/N): " do_rebuild
     if [[ "$do_rebuild" =~ ^[Yy]$ ]]; then
-        echo -e "\n${CYAN}==> Building Docker images...${RESET}"
-        docker build -t "$DEFAULT_IMAGE_NAME:$DEFAULT_TAG" -t "$DEFAULT_IMAGE_NAME:v6.6.3" .
+        # Dynamically detect image tag from Kubernetes manifest or fallback to v6.7.9
+        MANIFEST_TAG=$(grep -oP 'image:\s*nagarajkamath602/[^:]+:\K(v[0-9]+\.[0-9]+\.[0-9]+)' "$K8S_MANIFEST" 2>/dev/null || echo "v6.7.9")
+        echo -e "\n${CYAN}==> Building Docker images (tags: ${YELLOW}$DEFAULT_TAG${CYAN} and ${YELLOW}$MANIFEST_TAG${CYAN})...${RESET}"
+        docker build -t "$DEFAULT_IMAGE_NAME:$DEFAULT_TAG" -t "$DEFAULT_IMAGE_NAME:$MANIFEST_TAG" .
         push_with_auth_check "$DEFAULT_IMAGE_NAME:$DEFAULT_TAG"
-        push_with_auth_check "$DEFAULT_IMAGE_NAME:v6.6.3"
+        push_with_auth_check "$DEFAULT_IMAGE_NAME:$MANIFEST_TAG"
     fi
 
     echo -e "\n${CYAN}==> Applying Kubernetes manifests from $K8S_MANIFEST...${RESET}"

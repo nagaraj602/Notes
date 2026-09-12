@@ -25,6 +25,12 @@
 
     <!-- Quick Action Buttons -->
     <div class="flex items-center gap-2 flex-wrap">
+      <button onclick="openGeminiModal()" id="geminiStatusBtn" class="px-3 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 hover:from-sky-100 hover:to-indigo-100 text-slate-800 border border-sky-300 transition-all flex items-center space-x-1.5 shadow-xs" title="Configure Gemini 3.8 Flash / 2.5 Flash AI Key & Settings">
+        <i class="fa-solid fa-wand-magic-sparkles text-sky-600"></i>
+        <span id="geminiStatusBtnText">Gemini AI Setup</span>
+        <span id="geminiStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold bg-slate-200 text-slate-700">Free</span>
+      </button>
+
       <button onclick="openGitHubSettingsModal()" id="ghStatusBtn" class="px-3 py-2 text-xs font-bold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-all flex items-center space-x-1.5 shadow-xs animate-pulse" title="Configure your personal GitHub PAT and Repository">
         <i class="fa-brands fa-github text-slate-900"></i>
         <span id="ghStatusBtnText">Connect GitHub PAT (Required)</span>
@@ -302,6 +308,90 @@
 </div>
 
 <!-- ========================================================================================= -->
+<!-- MODAL 0: Google Gemini AI Settings Modal (Saved strictly in browser localStorage) -->
+<!-- ========================================================================================= -->
+<div id="geminiModal" onclick="if(event.target === this) closeGeminiModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-sm shadow-sm">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900">Google Gemini AI Configuration</h3>
+          <p class="text-[10px] text-slate-500">Powers automatic interview transcription, YouTube parsing & Q&A extraction</p>
+        </div>
+      </div>
+      <button onclick="closeGeminiModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Security & Privacy Guarantee -->
+    <div class="p-3 rounded-2xl bg-sky-50/80 border border-sky-200 text-xs text-slate-700 flex items-start space-x-2.5">
+      <i class="fa-solid fa-shield-halved text-sky-600 text-sm mt-0.5 flex-shrink-0"></i>
+      <div class="text-[11px] leading-relaxed">
+        <strong>Client-Safe Storage:</strong> Your Gemini API Key is stored safely in your browser (<code>localStorage</code>). It is never written to public repos and is used solely to transcribe interviews and extract questions.
+      </div>
+    </div>
+
+    <form id="geminiSettingsForm" onsubmit="saveGeminiSettings(event)" class="space-y-3.5">
+      <!-- Gemini API Key Input -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <label class="text-[11px] font-bold text-slate-700">Gemini API Key</label>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-[10px] text-sky-600 hover:text-sky-800 font-bold flex items-center space-x-1">
+            <span>Get Free API Key</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+          </a>
+        </div>
+        <div class="relative">
+          <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." class="w-full text-xs font-mono rounded-xl px-3 py-2 pr-10 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
+          <button type="button" onclick="toggleGeminiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+            <i id="geminiKeyEyeIcon" class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+        <p class="text-[10px] text-slate-400">Google provides generous free tier quotas for Gemini Flash models.</p>
+      </div>
+
+      <!-- Model Selection -->
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-700">AI Model Selection</label>
+        <select id="geminiModelSelect" class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 bg-white font-medium focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended - Ultra-fast, Audio/Video & Transcripts)</option>
+          <option value="gemini-1.5-flash">Gemini 1.5 Flash (Lightweight, High Rate Limit)</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          <option value="gemini-3.8-flash-high">Gemini 3.8 Flash High (Auto-fallback to 2.5 Flash)</option>
+        </select>
+      </div>
+
+      <!-- Test Connection Result Alert -->
+      <div id="geminiTestAlert" class="hidden p-3 rounded-xl text-xs font-mono"></div>
+
+      <!-- Action Buttons -->
+      <div class="pt-3 flex items-center justify-between border-t border-sky-100 flex-wrap gap-2">
+        <div class="flex items-center space-x-2">
+          <button type="button" onclick="testGeminiConnectionUi()" id="btnTestGemini" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center space-x-1.5 shadow-xs">
+            <i class="fa-solid fa-bolt text-amber-500"></i>
+            <span>Test Connection</span>
+          </button>
+          <button type="button" onclick="clearGeminiKey()" class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all" title="Remove saved API key">
+            Clear
+          </button>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button type="button" onclick="closeGeminiModal()" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">Cancel</button>
+          <button type="submit" class="px-4 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-sm transition-all flex items-center space-x-1.5">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span>Save Settings</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================================================= -->
 <!-- MODAL 1: Personal GitHub Settings Modal (Saved strictly in browser localStorage) -->
 <!-- ========================================================================================= -->
 <div id="githubSettingsModal" onclick="if(event.target === this) closeGitHubSettingsModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
@@ -508,18 +598,18 @@
 </div>
 
 <!-- ========================================================================================= -->
-<!-- MODAL 3: Upload Interview Q&A Modal -->
+<!-- MODAL 3: Multimodal Upload Interview Q&A Modal -->
 <!-- ========================================================================================= -->
 <div id="uploadQaModal" onclick="if(event.target === this) closeUploadQaModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
   <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
     <div class="flex items-center justify-between pb-3 border-b border-sky-100">
       <div class="flex items-center space-x-2.5">
-        <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-sm">
           <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
         </div>
         <div>
-          <h3 class="text-sm font-extrabold text-slate-900">Upload Interview Q&A</h3>
-          <p class="text-[10px] text-slate-500">Auto-detects DevOps categories (Kubernetes, AWS, Terraform, Docker, etc.)</p>
+          <h3 class="text-sm font-extrabold text-slate-900">Upload & Bank Interview Q&A</h3>
+          <p class="text-[10px] text-slate-500">Multimodal: Manual Q&A, YouTube Link, Direct Video/Audio, or Full Transcript</p>
         </div>
       </div>
       <button onclick="closeUploadQaModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
@@ -527,8 +617,28 @@
       </button>
     </div>
 
-    <form id="uploadQaForm" onsubmit="saveInterviewQa(event)" class="space-y-3.5">
-      <!-- Target Company & Round -->
+    <!-- Mode Switcher Tabs -->
+    <div class="flex items-center bg-slate-100 p-1 rounded-2xl gap-1 text-xs font-bold">
+      <button type="button" onclick="switchQaUploadTab('manual')" id="qaTabBtn-manual" class="flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 bg-white text-sky-700 shadow-xs">
+        <i class="fa-solid fa-font text-xs"></i>
+        <span>Text / Q&A</span>
+      </button>
+      <button type="button" onclick="switchQaUploadTab('youtube')" id="qaTabBtn-youtube" class="flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900">
+        <i class="fa-brands fa-youtube text-red-600 text-xs"></i>
+        <span>YouTube Link</span>
+      </button>
+      <button type="button" onclick="switchQaUploadTab('video')" id="qaTabBtn-video" class="flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900">
+        <i class="fa-solid fa-video text-indigo-600 text-xs"></i>
+        <span>Device Video/Audio</span>
+      </button>
+      <button type="button" onclick="switchQaUploadTab('transcript')" id="qaTabBtn-transcript" class="flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900">
+        <i class="fa-solid fa-file-lines text-emerald-600 text-xs"></i>
+        <span>Paste Transcript</span>
+      </button>
+    </div>
+
+    <!-- Common Metadata Inputs (Company, Round, Date, Candidate) -->
+    <div class="space-y-3 pt-1">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="space-y-1">
           <label class="text-[11px] font-bold text-slate-700">Candidate / Your Name</label>
@@ -536,7 +646,7 @@
         </div>
         <div class="space-y-1">
           <label class="text-[11px] font-bold text-slate-700">Company *</label>
-          <input type="text" id="qaCompany" placeholder="e.g. Cisco" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium">
+          <input type="text" id="qaCompany" placeholder="e.g. Cisco, Microsoft, TCS" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium">
         </div>
       </div>
 
@@ -552,22 +662,18 @@
           <input type="date" id="qaDate" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium">
         </div>
       </div>
+    </div>
 
-      <!-- YouTube Recording Link -->
-      <div class="space-y-1">
-        <label class="text-[11px] font-bold text-slate-700 flex items-center">
-          <i class="fa-brands fa-youtube text-red-600 mr-1.5"></i>Interview Recording Link / YouTube URL (Optional)
-        </label>
-        <input type="url" id="qaRecordingLink" placeholder="https://www.youtube.com/watch?v=... or unlisted video" class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-mono">
-      </div>
-
-      <!-- Raw Q&A Text Area -->
+    <!-- ============================================================== -->
+    <!-- TAB 1 CONTENT: Direct Text / Manual Q&A Input                  -->
+    <!-- ============================================================== -->
+    <div id="qaTabContent-manual" class="space-y-3">
       <div class="space-y-1">
         <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
-          <span>Paste Interview Questions / Transcript *</span>
-          <span class="text-[10px] text-slate-400 font-normal">Supports markdown, bullet points, and Q&A formats</span>
+          <span>Paste Interview Questions & Answers *</span>
+          <span class="text-[10px] text-slate-400 font-normal">Supports 1. / Q: / Ans: or raw discussion notes</span>
         </label>
-        <textarea id="qaRawText" rows="10" required placeholder="Paste interview questions, answers, and scenario questions here. Example:
+        <textarea id="qaRawText" rows="9" placeholder="Paste interview questions, answers, and scenario questions here. Example:
 
 1. What happens when a pod enters CrashLoopBackOff?
 Ans: The pod starts, crashes, and kubelet restarts it with exponential backoff delay...
@@ -576,14 +682,132 @@ Ans: The pod starts, crashes, and kubelet restarts it with exponential backoff d
 Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-mono leading-relaxed"></textarea>
       </div>
 
-      <div class="pt-3 flex items-center justify-end space-x-2 border-t border-sky-100">
-        <button type="button" onclick="closeUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">Cancel</button>
-        <button type="submit" class="px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all flex items-center space-x-1.5">
-          <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
-          <span>Process & Bank Q&A</span>
+      <!-- AI Grammar Polish Option -->
+      <div class="p-3 rounded-xl bg-gradient-to-r from-sky-50/70 to-indigo-50/50 border border-sky-200 flex items-center justify-between">
+        <label class="flex items-center space-x-2 cursor-pointer text-xs font-bold text-slate-800">
+          <input type="checkbox" id="qaAiPolishCheckbox" checked class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500">
+          <span>✨ Review & Polish with Gemini AI (Correct grammar, keep original text safe)</span>
+        </label>
+        <span class="text-[10px] font-mono bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full font-bold">Auto-Fix</span>
+      </div>
+
+      <!-- Optional Transcript Attachment -->
+      <details class="group/trans rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden text-xs">
+        <summary class="p-2.5 cursor-pointer font-bold text-slate-700 flex items-center justify-between hover:bg-slate-100/70 transition-colors">
+          <span class="flex items-center space-x-1.5">
+            <i class="fa-solid fa-paperclip text-slate-500 text-xs"></i>
+            <span>Attach Full Transcript (Optional)</span>
+          </span>
+          <span class="text-[10px] font-normal text-slate-500">Leave empty if no transcript exists</span>
+        </summary>
+        <div class="p-3 border-t border-slate-200 bg-white space-y-1">
+          <textarea id="qaManualTranscript" rows="4" placeholder="If you have an audio transcript for this interview, paste it here..." class="w-full text-xs rounded-xl p-2.5 border border-sky-200 focus:outline-none font-mono"></textarea>
+        </div>
+      </details>
+
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-700 flex items-center">
+          <i class="fa-brands fa-youtube text-red-600 mr-1.5"></i>Interview Recording Link / YouTube URL (Optional)
+        </label>
+        <input type="url" id="qaRecordingLink" placeholder="https://www.youtube.com/watch?v=..." class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none font-mono">
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2 CONTENT: YouTube Video Link                              -->
+    <!-- ============================================================== -->
+    <div id="qaTabContent-youtube" class="hidden space-y-3">
+      <div class="p-3 rounded-2xl bg-rose-50/80 border border-rose-200 text-xs text-rose-900 flex items-start space-x-2.5">
+        <i class="fa-brands fa-youtube text-red-600 text-lg flex-shrink-0 mt-0.5"></i>
+        <div class="text-[11px] leading-relaxed">
+          <strong>Automatic Subtitle & Q&A Extraction:</strong> Provide a public or unlisted YouTube video link. Gemini will fetch the transcript, extract all interview questions, follow-up sub-questions, and instructor advice!
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-700">YouTube Video URL *</label>
+        <input type="url" id="qaYoutubeUrlInput" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." class="w-full text-xs font-mono rounded-xl px-3 py-2.5 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3 CONTENT: Direct Device Video / Audio Upload              -->
+    <!-- ============================================================== -->
+    <div id="qaTabContent-video" class="hidden space-y-3">
+      <!-- Client-Side Storage Guarantee Banner -->
+      <div class="p-3 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-xs text-emerald-900 flex items-start space-x-2.5">
+        <i class="fa-solid fa-shield-check text-emerald-600 text-lg flex-shrink-0 mt-0.5"></i>
+        <div class="text-[11px] leading-relaxed">
+          <strong>100% Local Device Storage:</strong> Your video file stays strictly inside your browser's local storage (IndexedDB). It is <strong>NEVER saved to the server's disk</strong>. Only the generated transcript and extracted questions are saved!
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-700">Select Video or Audio File from Laptop / Mobile *</label>
+        <input type="file" id="qaVideoFileInput" accept="video/*,audio/*,.mp4,.webm,.mov,.mkv,.avi,.mp3,.wav,.m4a" onchange="handleLocalVideoSelected(event)" class="w-full text-xs p-2 rounded-xl border border-sky-200 bg-slate-50 font-medium">
+        <p class="text-[10px] text-slate-400">Supported: MP4, WebM, MOV, MKV, MP3, WAV, M4A.</p>
+      </div>
+
+      <!-- Local Video Preview -->
+      <div id="localVideoPreviewContainer" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-black aspect-video max-h-48 flex items-center justify-center">
+        <video id="localVideoPreview" controls class="w-full h-full max-h-48 object-contain"></video>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4 CONTENT: Direct Transcript Paste                         -->
+    <!-- ============================================================== -->
+    <div id="qaTabContent-transcript" class="hidden space-y-3">
+      <div class="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-200 text-xs text-indigo-900 flex items-start space-x-2.5">
+        <i class="fa-solid fa-file-lines text-indigo-600 text-base flex-shrink-0 mt-0.5"></i>
+        <div class="text-[11px] leading-relaxed">
+          <strong>Comprehensive Question Extraction:</strong> Gemini will analyze this transcript with strict instructions:
+          <em>"Extract all questions asked by instructor and any suggestions/answers. Don't miss any questions, even sub-questions."</em>
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <label class="text-[11px] font-bold text-slate-700">Transcript Text *</label>
+          <label class="text-[10px] text-sky-600 hover:text-sky-800 font-bold cursor-pointer">
+            <i class="fa-solid fa-upload mr-1"></i>Upload .txt / .srt / .vtt
+            <input type="file" accept=".txt,.srt,.vtt" onchange="handleTranscriptFileUpload(event)" class="hidden">
+          </label>
+        </div>
+        <textarea id="qaDirectTranscriptText" rows="10" placeholder="Paste full interview transcript here with speaker names or timestamps..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outline-none font-mono leading-relaxed"></textarea>
+      </div>
+    </div>
+
+    <!-- Processing Progress Bar & Status -->
+    <div id="qaProcessingStatus" class="hidden p-3 rounded-2xl bg-sky-50 border border-sky-200 space-y-2">
+      <div class="flex items-center justify-between text-xs font-bold text-sky-900">
+        <span id="qaProcessingText" class="flex items-center gap-2">
+          <i class="fa-solid fa-spinner fa-spin text-sky-600"></i>
+          <span>Analyzing with Gemini AI...</span>
+        </span>
+        <span id="qaProcessingPercent" class="font-mono text-[11px]">Processing</span>
+      </div>
+      <div class="w-full bg-sky-200/60 rounded-full h-1.5 overflow-hidden">
+        <div id="qaProgressBar" class="bg-gradient-to-r from-sky-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300 w-1/3 animate-pulse"></div>
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="pt-3 flex items-center justify-between border-t border-sky-100 flex-wrap gap-2">
+      <div class="flex items-center space-x-2">
+        <button type="button" onclick="openGeminiModal()" class="text-[11px] font-bold text-slate-500 hover:text-sky-700 flex items-center gap-1">
+          <i class="fa-solid fa-gear text-[10px]"></i>
+          <span>AI Settings</span>
         </button>
       </div>
-    </form>
+      <div class="flex items-center space-x-2">
+        <button type="button" onclick="closeUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">Cancel</button>
+        <button type="button" id="btnSubmitQa" onclick="executeUploadQa()" class="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-sm transition-all flex items-center space-x-1.5 cursor-pointer">
+          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+          <span id="btnSubmitQaText">Process & Bank Q&A</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -627,6 +851,159 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
 </div>
 
 <!-- ========================================================================================= -->
+<!-- MODAL 5: Full Transcript Viewer Modal                                                     -->
+<!-- ========================================================================================= -->
+<div id="viewTranscriptModal" onclick="if(event.target === this) closeViewTranscriptModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-file-lines"></i>
+        </div>
+        <div>
+          <h3 id="transcriptModalTitle" class="text-sm font-extrabold text-slate-900">Interview Transcript</h3>
+          <p id="transcriptModalSubtitle" class="text-[10px] text-slate-500">Verbatim audio/video transcript generated by Gemini AI</p>
+        </div>
+      </div>
+      <button onclick="closeViewTranscriptModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <div class="space-y-2">
+      <div class="flex items-center justify-between text-xs text-slate-500">
+        <span id="transcriptWordCount" class="font-mono text-[10px]">0 words</span>
+        <div class="flex items-center space-x-2">
+          <button onclick="copyCurrentTranscript()" class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-[11px] flex items-center space-x-1 border border-sky-200 transition-all">
+            <i class="fa-regular fa-copy"></i>
+            <span>Copy</span>
+          </button>
+          <button onclick="downloadCurrentTranscript()" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold text-[11px] flex items-center space-x-1 border border-indigo-200 transition-all">
+            <i class="fa-solid fa-download"></i>
+            <span>Download .txt</span>
+          </button>
+        </div>
+      </div>
+      <div id="transcriptContentDisplay" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 font-mono text-xs leading-relaxed max-h-96 overflow-y-auto whitespace-pre-wrap select-text"></div>
+    </div>
+
+    <div class="pt-3 border-t border-sky-100 flex justify-end">
+      <button onclick="closeViewTranscriptModal()" class="px-4 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================================= -->
+<!-- MODAL 6: Add / Update Transcript Modal                                                    -->
+<!-- ========================================================================================= -->
+<div id="addTranscriptModal" onclick="if(event.target === this) closeAddTranscriptModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-lg w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-file-pen"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900">Attach Interview Transcript</h3>
+          <p id="addTranscriptModalSubtitle" class="text-[10px] text-slate-500">Add or edit transcript for this interview round</p>
+        </div>
+      </div>
+      <button onclick="closeAddTranscriptModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <form id="addTranscriptForm" onsubmit="saveAttachedTranscript(event)" class="space-y-3">
+      <input type="hidden" id="addTranscriptTargetId">
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-700">Paste Transcript Text *</label>
+        <textarea id="addTranscriptTextInput" rows="8" required placeholder="Paste full interview transcript here..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outline-none font-mono leading-relaxed"></textarea>
+      </div>
+
+      <div class="pt-3 border-t border-sky-100 flex items-center justify-end space-x-2">
+        <button type="button" onclick="closeAddTranscriptModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">Cancel</button>
+        <button type="submit" class="px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all flex items-center space-x-1.5">
+          <i class="fa-solid fa-check text-xs"></i>
+          <span>Save Transcript</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================================================= -->
+<!-- MODAL 7: Original Raw Text Viewer & Export Modal                                         -->
+<!-- ========================================================================================= -->
+<div id="viewOriginalTextModal" onclick="if(event.target === this) closeViewOriginalTextModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
+    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h3 id="origTextModalTitle" class="text-sm font-extrabold text-slate-900">Original Raw Input Text</h3>
+          <p class="text-[10px] text-slate-500">Preserved original text prior to any AI grammar polishing or editing</p>
+        </div>
+      </div>
+      <button onclick="closeViewOriginalTextModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <div class="space-y-2">
+      <div class="flex items-center justify-between text-xs text-slate-500 flex-wrap gap-2">
+        <span class="text-[11px] font-bold text-slate-700">Export & Copy Options:</span>
+        <div class="flex items-center space-x-2">
+          <button onclick="copyCurrentOriginalText()" class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-[11px] flex items-center space-x-1 border border-sky-200 transition-all">
+            <i class="fa-regular fa-copy"></i>
+            <span>Copy</span>
+          </button>
+          <button onclick="downloadCurrentOriginalText()" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-[11px] flex items-center space-x-1 border border-emerald-200 transition-all">
+            <i class="fa-solid fa-download"></i>
+            <span>Download RAW (.txt)</span>
+          </button>
+          <button onclick="exportCurrentOriginalTextPdf()" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold text-[11px] flex items-center space-x-1 border border-indigo-200 transition-all">
+            <i class="fa-solid fa-file-pdf text-rose-600"></i>
+            <span>Export as PDF</span>
+          </button>
+        </div>
+      </div>
+      <div id="originalTextContentDisplay" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 font-mono text-xs leading-relaxed max-h-96 overflow-y-auto whitespace-pre-wrap select-text"></div>
+    </div>
+
+    <div class="pt-3 border-t border-sky-100 flex justify-end">
+      <button onclick="closeViewOriginalTextModal()" class="px-4 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================================= -->
+<!-- MODAL 8: Local Device Video Player Modal (IndexedDB)                                      -->
+<!-- ========================================================================================= -->
+<div id="playVideoModal" onclick="if(event.target === this) closePlayVideoModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-black rounded-3xl max-w-3xl w-full border border-slate-800 shadow-2xl overflow-hidden p-4 space-y-3 cursor-default">
+    <div class="flex items-center justify-between text-white pb-2 border-b border-slate-800">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-circle-play text-sky-400"></i>
+        <h4 id="playVideoTitle" class="text-xs font-bold">Local Device Video</h4>
+        <span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">Local Only • Zero Server Storage</span>
+      </div>
+      <button onclick="closePlayVideoModal()" class="text-slate-400 hover:text-white text-sm">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="aspect-video w-full bg-black flex items-center justify-center">
+      <video id="activeModalVideoPlayer" controls class="w-full h-full max-h-[70vh] object-contain"></video>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================================= -->
 <!-- JAVASCRIPT LOGIC: Client-Side localStorage Storage & Direct GitHub Sync Engine -->
 <!-- ========================================================================================= -->
 <script>
@@ -639,6 +1016,8 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   const STORAGE_KEY_GH_BRANCH = "my_interviews_gh_branch";
   const STORAGE_KEY_GH_FOLDER = "my_interviews_gh_folder";
   const STORAGE_KEY_GH_DISMISSED = "my_interviews_gh_dismissed";
+  const STORAGE_KEY_GEMINI_KEY = "my_interviews_gemini_key";
+  const STORAGE_KEY_GEMINI_MODEL = "my_interviews_gemini_model";
 
   // Standard DevOps Rounds List
   const DEFAULT_ROUNDS = [
@@ -687,6 +1066,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     loadLocalData();
     initRoundsDropdowns();
     renderGitHubBanner();
+    updateGeminiStatusBadge();
     renderStats();
     renderCalendar();
     renderCompanyFilterDropdown();
@@ -704,6 +1084,11 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         closeScheduleModal();
         closeUploadQaModal();
         closeManageRoundsModal();
+        closeGeminiModal();
+        closeViewTranscriptModal();
+        closeAddTranscriptModal();
+        closeViewOriginalTextModal();
+        closePlayVideoModal();
       }
     });
   });
@@ -1563,6 +1948,12 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
           status: sched?.status || "completed",
           salary_ctc: sched?.salary_ctc || "",
           recording_link: sched?.recording_link || q.recording_link || "",
+          transcript: sched?.transcript || q.transcript || "",
+          has_transcript: !!(sched?.transcript || sched?.has_transcript || q.transcript),
+          original_raw_text: sched?.original_raw_text || q.original_raw_text || "",
+          source_type: sched?.source_type || q.source_type || "",
+          local_video_key: sched?.local_video_key || q.local_video_key || "",
+          sched_id: sched?.id || "",
           questions: []
         });
       }
@@ -1570,6 +1961,16 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
       const rEntry = compObj.roundsMap.get(roundKey);
       if (!rEntry.recording_link && q.recording_link) {
         rEntry.recording_link = q.recording_link;
+      }
+      if (!rEntry.transcript && q.transcript) {
+        rEntry.transcript = q.transcript;
+        rEntry.has_transcript = true;
+      }
+      if (!rEntry.original_raw_text && q.original_raw_text) {
+        rEntry.original_raw_text = q.original_raw_text;
+      }
+      if (!rEntry.local_video_key && q.local_video_key) {
+        rEntry.local_video_key = q.local_video_key;
       }
       rEntry.questions.push(q);
     });
@@ -1597,6 +1998,12 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
           status: s.status || "scheduled",
           salary_ctc: s.salary_ctc || "",
           recording_link: s.recording_link || "",
+          transcript: s.transcript || "",
+          has_transcript: !!(s.transcript || s.has_transcript),
+          original_raw_text: s.original_raw_text || "",
+          source_type: s.source_type || "",
+          local_video_key: s.local_video_key || "",
+          sched_id: s.id || "",
           questions: []
         });
       }
@@ -1707,7 +2114,33 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
                       </div>
                     </div>
                   </div>
-                  <div class="flex items-center space-x-2">
+                  <div class="flex items-center space-x-2 flex-wrap">
+                    ${rndData.has_transcript ? `
+                      <button type="button" onclick="event.stopPropagation(); viewTranscriptForRound('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}', '${rndData.date}')" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200 text-[11px] flex items-center space-x-1.5 shadow-xs transition-all" title="View Full Verbatim Transcript">
+                        <i class="fa-solid fa-file-lines text-indigo-600 text-xs"></i>
+                        <span>Transcript</span>
+                      </button>
+                    ` : `
+                      <button type="button" onclick="event.stopPropagation(); promptAddTranscriptForRound('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}', '${rndData.date}')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-amber-50 hover:text-amber-800 text-slate-500 font-bold border border-slate-200 text-[10px] flex items-center space-x-1 transition-all" title="No transcript present. Click to attach transcript">
+                        <i class="fa-solid fa-file-circle-plus text-[10px]"></i>
+                        <span>+ Add Transcript</span>
+                      </button>
+                    `}
+
+                    ${rndData.original_raw_text ? `
+                      <button type="button" onclick="event.stopPropagation(); viewOriginalTextForRound('${escapeHtml(companyName)}', '${escapeHtml(rndData.round)}', '${rndData.date}')" class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border border-slate-200 text-[10px] flex items-center space-x-1 transition-all" title="View Original Raw Input / Export PDF">
+                        <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
+                        <span>Raw Text</span>
+                      </button>
+                    ` : ''}
+
+                    ${rndData.local_video_key ? `
+                      <button type="button" onclick="event.stopPropagation(); playLocalVideo('${escapeHtml(rndData.local_video_key)}', '${escapeHtml(companyName)} - ${escapeHtml(rndData.round)}')" class="px-2.5 py-1 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold border border-violet-200 text-[11px] flex items-center space-x-1.5 shadow-xs transition-all" title="Play Local Device Video (Stored in browser)">
+                        <i class="fa-solid fa-play text-violet-600 text-xs"></i>
+                        <span>Local Video</span>
+                      </button>
+                    ` : ''}
+
                     ${rndData.recording_link ? `
                       <a href="${escapeHtml(rndData.recording_link)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold border border-rose-200 text-[11px] flex items-center space-x-1.5 shadow-xs transition-all hover:scale-105" title="Watch YouTube Interview Recording">
                         <i class="fa-brands fa-youtube text-red-600 text-xs"></i>
@@ -1788,11 +2221,43 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
           </div>
         </summary>
 
-        <div class="p-3.5 bg-slate-50/70 border-t border-slate-100 text-xs text-slate-700 space-y-2 leading-relaxed font-sans">
+        <div class="p-3.5 bg-slate-50/70 border-t border-slate-100 text-xs text-slate-700 space-y-2.5 leading-relaxed font-sans">
           <div class="font-bold text-slate-900 flex items-center text-[11px] text-emerald-800">
             <i class="fa-solid fa-lightbulb text-amber-500 mr-1.5"></i>Answer / Solution:
           </div>
           <div class="whitespace-pre-wrap bg-white p-3 rounded-xl border border-slate-200 font-mono text-[11px]">${escapeHtml(q.answer || "To be reviewed / prepared.")}</div>
+
+          ${(q.sub_questions && q.sub_questions.length > 0) ? `
+            <div class="p-3 rounded-xl bg-sky-50/80 border border-sky-200/80 space-y-1.5">
+              <div class="text-[11px] font-bold text-sky-950 flex items-center gap-1.5">
+                <i class="fa-solid fa-diagram-project text-sky-600"></i>
+                <span>Sub-Questions Asked by Interviewer:</span>
+              </div>
+              <ul class="list-disc pl-4 space-y-1 text-[11px] text-slate-800">
+                ${q.sub_questions.map(sq => `<li>${escapeHtml(sq)}</li>`).join("")}
+              </ul>
+            </div>
+          ` : ''}
+
+          ${q.suggestions ? `
+            <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-950 space-y-1">
+              <div class="font-bold flex items-center gap-1.5 text-amber-900">
+                <i class="fa-solid fa-user-graduate text-amber-600"></i>
+                <span>Interviewer / Instructor Advice & Feedback:</span>
+              </div>
+              <div class="whitespace-pre-wrap font-sans text-amber-900 leading-relaxed">${escapeHtml(q.suggestions)}</div>
+            </div>
+          ` : ''}
+
+          ${(q.original_raw_text && q.original_raw_text !== q.question && q.original_raw_text !== q.answer) ? `
+            <div class="pt-1 flex items-center justify-end">
+              <button onclick="viewOriginalText('${escapeHtml(q.original_raw_text).replace(/'/g, "\\'")}', 'Question Raw Input')" class="text-[10px] text-slate-500 hover:text-sky-700 underline flex items-center gap-1">
+                <i class="fa-solid fa-clock-rotate-left text-[9px]"></i>
+                <span>View Original Raw Input</span>
+              </button>
+            </div>
+          ` : ''}
+
           ${q.recording_link ? `
             <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-900 flex items-center justify-between">
               <div class="flex items-center space-x-2">
@@ -1937,6 +2402,279 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     silentlyRecordSchedule(item, candidateName);
   }
 
+  // =========================================================================================
+  // 1. INDEXEDDB CLIENT-SIDE MEDIA STORAGE (0% SERVER DISK STORAGE)
+  // =========================================================================================
+  const DevOpsVideoDB = {
+    dbName: "DevOpsPortalMediaDB",
+    storeName: "interview_videos",
+    version: 1,
+
+    async open() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(this.dbName, this.version);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(this.storeName)) {
+            db.createObjectStore(this.storeName, { keyPath: "id" });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    },
+
+    async saveVideo(key, fileBlob, metadata = {}) {
+      try {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(this.storeName, "readwrite");
+          const store = tx.objectStore(this.storeName);
+          const entry = {
+            id: key,
+            blob: fileBlob,
+            name: fileBlob.name || "video.mp4",
+            type: fileBlob.type || "video/mp4",
+            size: fileBlob.size || 0,
+            savedAt: new Date().toISOString(),
+            ...metadata
+          };
+          const putReq = store.put(entry);
+          putReq.onsuccess = () => resolve(key);
+          putReq.onerror = () => reject(putReq.error);
+        });
+      } catch (err) {
+        console.error("IndexedDB saveVideo error:", err);
+        return null;
+      }
+    },
+
+    async getVideo(key) {
+      try {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(this.storeName, "readonly");
+          const store = tx.objectStore(this.storeName);
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      } catch (err) {
+        console.error("IndexedDB getVideo error:", err);
+        return null;
+      }
+    },
+
+    async deleteVideo(key) {
+      try {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(this.storeName, "readwrite");
+          const store = tx.objectStore(this.storeName);
+          const req = store.delete(key);
+          req.onsuccess = () => resolve(true);
+          req.onerror = () => reject(req.error);
+        });
+      } catch (err) {
+        return false;
+      }
+    }
+  };
+
+  // =========================================================================================
+  // 2. GEMINI AI SETTINGS & CONFIGURATION HANDLERS
+  // =========================================================================================
+  function getGeminiApiKey() {
+    return (localStorage.getItem(STORAGE_KEY_GEMINI_KEY) || "").trim();
+  }
+
+  function getGeminiModel() {
+    return localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || "gemini-2.5-flash";
+  }
+
+  async function updateGeminiStatusBadge() {
+    const key = getGeminiApiKey();
+    const btn = document.getElementById("geminiStatusBtn");
+    const txt = document.getElementById("geminiStatusBtnText");
+    if (!btn || !txt) return;
+
+    if (key) {
+      txt.textContent = "Gemini Connected";
+      btn.className = "px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all flex items-center space-x-1.5 shadow-xs";
+    } else {
+      try {
+        const res = await fetch("/api/ai/config");
+        const data = await res.json();
+        if (data.configured) {
+          txt.textContent = "Gemini Server Active";
+          btn.className = "px-3 py-2 text-xs font-bold rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 transition-all flex items-center space-x-1.5 shadow-xs";
+        } else {
+          txt.textContent = "Gemini AI Setup";
+          btn.className = "px-3 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 hover:from-sky-100 hover:to-indigo-100 text-slate-800 border border-sky-300 transition-all flex items-center space-x-1.5 shadow-xs";
+        }
+      } catch (e) {
+        txt.textContent = "Gemini AI Setup";
+      }
+    }
+  }
+
+  function openGeminiModal() {
+    const key = getGeminiApiKey();
+    const model = getGeminiModel();
+    const keyInput = document.getElementById("geminiApiKeyInput");
+    const modelSelect = document.getElementById("geminiModelSelect");
+    if (keyInput) keyInput.value = key;
+    if (modelSelect) modelSelect.value = model;
+    const statusBox = document.getElementById("geminiConnectionStatus");
+    if (statusBox) statusBox.classList.add("hidden");
+    document.getElementById("geminiModal").classList.remove("hidden");
+  }
+
+  function closeGeminiModal() {
+    document.getElementById("geminiModal").classList.add("hidden");
+  }
+
+  function toggleGeminiKeyVisibility() {
+    const input = document.getElementById("geminiApiKeyInput");
+    const icon = document.getElementById("geminiEyeIcon");
+    if (!input) return;
+    if (input.type === "password") {
+      input.type = "text";
+      if (icon) icon.className = "fa-solid fa-eye-slash text-xs";
+    } else {
+      input.type = "password";
+      if (icon) icon.className = "fa-solid fa-eye text-xs";
+    }
+  }
+
+  async function saveGeminiSettings(event) {
+    if (event) event.preventDefault();
+    const keyInput = document.getElementById("geminiApiKeyInput");
+    const modelSelect = document.getElementById("geminiModelSelect");
+    const key = (keyInput?.value || "").trim();
+    const model = modelSelect?.value || "gemini-2.5-flash";
+
+    if (key) {
+      localStorage.setItem(STORAGE_KEY_GEMINI_KEY, key);
+      try {
+        await fetch("/api/ai/save-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ api_key: key })
+        });
+      } catch (e) {}
+    } else {
+      localStorage.removeItem(STORAGE_KEY_GEMINI_KEY);
+    }
+    localStorage.setItem(STORAGE_KEY_GEMINI_MODEL, model);
+
+    updateGeminiStatusBadge();
+    closeGeminiModal();
+    showToast("Gemini settings saved successfully!", "success");
+  }
+
+  async function testGeminiConnectionUi() {
+    const key = (document.getElementById("geminiApiKeyInput")?.value || "").trim();
+    const model = document.getElementById("geminiModelSelect")?.value || "gemini-2.5-flash";
+    const statusBox = document.getElementById("geminiConnectionStatus");
+    const statusText = document.getElementById("geminiStatusText");
+    const btn = document.getElementById("btnTestGemini");
+
+    statusBox.classList.remove("hidden");
+    statusBox.className = "p-3 rounded-2xl bg-sky-50 border border-sky-200 text-sky-800 text-xs flex items-center space-x-2";
+    statusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sky-600 mr-1.5"></i> Testing connection to Google Gemini API...`;
+    if (btn) btn.disabled = true;
+
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (key) headers["x-gemini-api-key"] = key;
+
+      const res = await fetch("/api/ai/test", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ api_key: key, model: model })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        statusBox.className = "p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center space-x-2";
+        statusText.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> Connected successfully! Model: <strong class="font-mono">${escapeHtml(data.model)}</strong> (${data.latency_ms}ms)`;
+      } else {
+        statusBox.className = "p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center space-x-2";
+        statusText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600 mr-1.5"></i> Connection failed: ${escapeHtml(data.detail || data.error || "Unknown error")}`;
+      }
+    } catch (err) {
+      statusBox.className = "p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center space-x-2";
+      statusText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600 mr-1.5"></i> Network error: ${escapeHtml(err.message)}`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // =========================================================================================
+  // 3. MULTIMODAL Q&A UPLOAD TABS & MEDIA SELECTION
+  // =========================================================================================
+  let activeQaUploadTab = "manual";
+  let selectedLocalMediaFile = null;
+
+  function switchQaUploadTab(tab) {
+    activeQaUploadTab = tab;
+    const tabs = ["manual", "youtube", "video", "transcript"];
+    tabs.forEach(t => {
+      const btn = document.getElementById(`qaTabBtn-${t}`);
+      const content = document.getElementById(`qaTabContent-${t}`);
+      if (t === tab) {
+        if (btn) {
+          btn.className = "flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 bg-white text-sky-700 shadow-xs";
+        }
+        if (content) content.classList.remove("hidden");
+      } else {
+        if (btn) {
+          btn.className = "flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900";
+        }
+        if (content) content.classList.add("hidden");
+      }
+    });
+
+    const submitBtnText = document.getElementById("btnSubmitQaText");
+    if (submitBtnText) {
+      if (tab === "manual") submitBtnText.textContent = "Process & Bank Q&A";
+      else if (tab === "youtube") submitBtnText.textContent = "Extract from YouTube & Bank";
+      else if (tab === "video") submitBtnText.textContent = "Transcribe Media & Bank";
+      else if (tab === "transcript") submitBtnText.textContent = "Extract Q&A from Transcript";
+    }
+  }
+
+  function handleLocalVideoSelected(event) {
+    const file = event.target.files?.[0];
+    selectedLocalMediaFile = file || null;
+    const previewContainer = document.getElementById("localVideoPreviewContainer");
+    const previewVideo = document.getElementById("localVideoPreview");
+
+    if (file && previewContainer && previewVideo) {
+      if (file.type.startsWith("video/")) {
+        previewVideo.src = URL.createObjectURL(file);
+        previewContainer.classList.remove("hidden");
+      } else {
+        previewContainer.classList.add("hidden");
+      }
+    } else if (previewContainer) {
+      previewContainer.classList.add("hidden");
+    }
+  }
+
+  function handleTranscriptFileUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const txt = e.target?.result || "";
+      const el = document.getElementById("qaDirectTranscriptText");
+      if (el) el.value = txt;
+    };
+    reader.readAsText(file);
+  }
+
   // --- Upload Q&A Modal & Auto-Parsing ---
   function openUploadQaModal() {
     if (!ensurePersonalPatOrPrompt(() => openUploadQaModal())) return;
@@ -1946,6 +2684,13 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     document.getElementById("qaDate").value = new Date().toISOString().split("T")[0];
     document.getElementById("qaRecordingLink").value = "";
     document.getElementById("qaRawText").value = "";
+    if (document.getElementById("qaManualTranscript")) document.getElementById("qaManualTranscript").value = "";
+    if (document.getElementById("qaYoutubeUrlInput")) document.getElementById("qaYoutubeUrlInput").value = "";
+    if (document.getElementById("qaVideoFileInput")) document.getElementById("qaVideoFileInput").value = "";
+    if (document.getElementById("qaDirectTranscriptText")) document.getElementById("qaDirectTranscriptText").value = "";
+    if (document.getElementById("localVideoPreviewContainer")) document.getElementById("localVideoPreviewContainer").classList.add("hidden");
+    if (document.getElementById("qaProcessingStatus")) document.getElementById("qaProcessingStatus").classList.add("hidden");
+    switchQaUploadTab("manual");
     document.getElementById("uploadQaModal").classList.remove("hidden");
   }
 
@@ -2016,69 +2761,581 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     return items;
   }
 
-  function saveInterviewQa(event) {
-    event.preventDefault();
+  // =========================================================================================
+  // 4. MAIN EXECUTION ENGINE FOR UPLOAD Q&A (ALL 4 MODES)
+  // =========================================================================================
+  async function executeUploadQa() {
     if (!ensurePersonalPatOrPrompt()) return;
+
     const candName = (document.getElementById("qaCandidateName")?.value || "").trim();
     if (candName) {
       localStorage.setItem("devops_candidate_name", candName);
     }
-    const company = document.getElementById("qaCompany").value.trim();
-    const round = document.getElementById("qaRound").value;
-    const date = document.getElementById("qaDate").value;
-    const recordingLink = document.getElementById("qaRecordingLink")?.value.trim() || "";
-    const rawText = document.getElementById("qaRawText").value.trim();
+    const company = (document.getElementById("qaCompany")?.value || "").trim();
+    const round = document.getElementById("qaRound")?.value || "Technical Round 1";
+    const date = document.getElementById("qaDate")?.value || new Date().toISOString().split("T")[0];
+    let recordingLink = (document.getElementById("qaRecordingLink")?.value || "").trim();
 
-    if (!rawText) return;
-
-    const parsed = parseQaRawText(rawText);
-    if (parsed.length === 0) {
-      showToast("No questions found in text. Ensure questions end with '?' or start with '1.' / 'Q:'", "error");
+    if (!company) {
+      showToast("Please enter a company name.", "error");
       return;
     }
 
-    parsed.forEach(p => {
-      p.company = company;
-      p.round = round;
-      p.date = date;
-      p.recording_link = recordingLink;
-      p.created_at = new Date().toISOString();
-      myQuestions.push(p);
-    });
+    const apiKey = getGeminiApiKey();
+    const model = getGeminiModel();
 
-    // Auto-reconcile schedule: if no schedule exists for this company & round, auto-add completed schedule
-    const match = mySchedules.find(s => 
+    const statusEl = document.getElementById("qaProcessingStatus");
+    const statusText = document.getElementById("qaProcessingText");
+    const statusPercent = document.getElementById("qaProcessingPercent");
+    const submitBtn = document.getElementById("btnSubmitQa");
+
+    function setProcessing(show, text = "", percent = "Processing...") {
+      if (statusEl) {
+        if (show) statusEl.classList.remove("hidden");
+        else statusEl.classList.add("hidden");
+      }
+      if (statusText) statusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sky-600"></i> <span>${escapeHtml(text)}</span>`;
+      if (statusPercent) statusPercent.textContent = percent;
+      if (submitBtn) submitBtn.disabled = show;
+    }
+
+    let parsedQuestions = [];
+    let generatedTranscript = "";
+    let originalRawText = "";
+    let sourceType = "manual_text";
+    let localVideoKey = "";
+
+    try {
+      if (activeQaUploadTab === "manual") {
+        const rawText = (document.getElementById("qaRawText")?.value || "").trim();
+        const manualTranscript = (document.getElementById("qaManualTranscript")?.value || "").trim();
+        if (!rawText) {
+          showToast("Please enter interview questions and answers.", "error");
+          return;
+        }
+
+        originalRawText = rawText;
+        generatedTranscript = manualTranscript;
+        sourceType = "manual_text";
+
+        const shouldPolish = document.getElementById("qaAiPolishCheckbox")?.checked;
+        if (shouldPolish) {
+          setProcessing(true, "Polishing & reviewing Q&A with Gemini AI...", "AI Review");
+          try {
+            const headers = { "Content-Type": "application/json" };
+            if (apiKey) headers["x-gemini-api-key"] = apiKey;
+
+            const res = await fetch("/api/ai/polish", {
+              method: "POST",
+              headers: headers,
+              body: JSON.stringify({ raw_text: rawText, model: model })
+            });
+            const data = await res.json();
+            if (res.ok && data.questions && data.questions.length > 0) {
+              parsedQuestions = data.questions.map(q => ({
+                id: "q-" + Math.random().toString(36).substr(2, 9),
+                question: q.question,
+                answer: q.answer || "To be reviewed / prepared.",
+                categories: (q.categories && q.categories.length) ? q.categories : autoDetectCategories(q.question + " " + (q.answer || "")),
+                sub_questions: q.sub_questions || [],
+                suggestions: q.suggestions || "",
+                original_raw_text: rawText,
+                source_type: "manual_text",
+                transcript: manualTranscript
+              }));
+              showToast("Questions polished with Gemini AI!", "success");
+            } else {
+              parsedQuestions = parseQaRawText(rawText);
+            }
+          } catch (aiErr) {
+            console.warn("AI polish failed, using client parser:", aiErr);
+            parsedQuestions = parseQaRawText(rawText);
+          }
+        } else {
+          parsedQuestions = parseQaRawText(rawText);
+        }
+
+      } else if (activeQaUploadTab === "youtube") {
+        const ytUrl = (document.getElementById("qaYoutubeUrlInput")?.value || "").trim();
+        if (!ytUrl) {
+          showToast("Please enter a valid YouTube video URL.", "error");
+          return;
+        }
+        recordingLink = ytUrl;
+        sourceType = "youtube";
+
+        setProcessing(true, "Fetching YouTube transcript & extracting questions with Gemini AI...", "Extracting Q&A");
+        const headers = { "Content-Type": "application/json" };
+        if (apiKey) headers["x-gemini-api-key"] = apiKey;
+
+        const res = await fetch("/api/ai/process-youtube", {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({ youtube_url: ytUrl, model: model })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || data.error || "Failed to process YouTube video");
+        }
+
+        generatedTranscript = data.transcript || "";
+        originalRawText = generatedTranscript || ytUrl;
+
+        parsedQuestions = (data.questions || []).map(q => ({
+          id: "q-" + Math.random().toString(36).substr(2, 9),
+          question: q.question,
+          answer: q.answer || "",
+          categories: (q.categories && q.categories.length) ? q.categories : autoDetectCategories(q.question + " " + (q.answer || "")),
+          sub_questions: q.sub_questions || [],
+          suggestions: q.suggestions || "",
+          original_raw_text: originalRawText,
+          source_type: "youtube",
+          recording_link: ytUrl,
+          transcript: generatedTranscript
+        }));
+
+      } else if (activeQaUploadTab === "video") {
+        const fileInput = document.getElementById("qaVideoFileInput");
+        const file = fileInput?.files?.[0] || selectedLocalMediaFile;
+        if (!file) {
+          showToast("Please select a video or audio file from your device.", "error");
+          return;
+        }
+
+        sourceType = "device_media";
+        localVideoKey = "vid_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
+
+        setProcessing(true, "Saving media to local device browser storage (IndexedDB)...", "Local Storage");
+        try {
+          await DevOpsVideoDB.saveVideo(localVideoKey, file, { company, round, date });
+        } catch (dbErr) {
+          console.warn("Could not save to IndexedDB:", dbErr);
+        }
+
+        setProcessing(true, "Sending media stream to Gemini AI for transcription & Q&A extraction...", "Gemini AI");
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("model", model);
+
+        const headers = {};
+        if (apiKey) headers["x-gemini-api-key"] = apiKey;
+
+        const res = await fetch("/api/ai/process-media", {
+          method: "POST",
+          headers: headers,
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || data.error || "Failed to process media with Gemini");
+        }
+
+        generatedTranscript = data.transcript || "";
+        originalRawText = generatedTranscript;
+
+        parsedQuestions = (data.questions || []).map(q => ({
+          id: "q-" + Math.random().toString(36).substr(2, 9),
+          question: q.question,
+          answer: q.answer || "",
+          categories: (q.categories && q.categories.length) ? q.categories : autoDetectCategories(q.question + " " + (q.answer || "")),
+          sub_questions: q.sub_questions || [],
+          suggestions: q.suggestions || "",
+          original_raw_text: originalRawText,
+          source_type: "device_media",
+          local_video_key: localVideoKey,
+          transcript: generatedTranscript
+        }));
+
+      } else if (activeQaUploadTab === "transcript") {
+        const transcriptText = (document.getElementById("qaDirectTranscriptText")?.value || "").trim();
+        if (!transcriptText) {
+          showToast("Please paste or upload the interview transcript.", "error");
+          return;
+        }
+
+        sourceType = "transcript";
+        generatedTranscript = transcriptText;
+        originalRawText = transcriptText;
+
+        setProcessing(true, "Extracting all questions & instructor advice with Gemini AI...", "Analyzing");
+        const headers = { "Content-Type": "application/json" };
+        if (apiKey) headers["x-gemini-api-key"] = apiKey;
+
+        const res = await fetch("/api/ai/extract-transcript", {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({ transcript: transcriptText, model: model })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || data.error || "Failed to extract questions from transcript");
+        }
+
+        parsedQuestions = (data.questions || []).map(q => ({
+          id: "q-" + Math.random().toString(36).substr(2, 9),
+          question: q.question,
+          answer: q.answer || "",
+          categories: (q.categories && q.categories.length) ? q.categories : autoDetectCategories(q.question + " " + (q.answer || "")),
+          sub_questions: q.sub_questions || [],
+          suggestions: q.suggestions || "",
+          original_raw_text: originalRawText,
+          source_type: "transcript",
+          transcript: generatedTranscript
+        }));
+      }
+
+      if (parsedQuestions.length === 0) {
+        showToast("No interview questions could be parsed or extracted.", "error");
+        setProcessing(false);
+        return;
+      }
+
+      parsedQuestions.forEach(p => {
+        p.company = company;
+        p.round = round;
+        p.date = date;
+        if (recordingLink) p.recording_link = recordingLink;
+        if (generatedTranscript) p.transcript = generatedTranscript;
+        if (originalRawText) p.original_raw_text = originalRawText;
+        if (sourceType) p.source_type = sourceType;
+        if (localVideoKey) p.local_video_key = localVideoKey;
+        p.created_at = new Date().toISOString();
+        myQuestions.push(p);
+      });
+
+      let sched = mySchedules.find(s => 
+        (s.company || "").toLowerCase() === company.toLowerCase() &&
+        (s.round || "").toLowerCase() === round.toLowerCase()
+      );
+      if (sched) {
+        if (recordingLink) sched.recording_link = recordingLink;
+        if (generatedTranscript) {
+          sched.transcript = generatedTranscript;
+          sched.has_transcript = true;
+        }
+        if (originalRawText) sched.original_raw_text = originalRawText;
+        if (sourceType) sched.source_type = sourceType;
+        if (localVideoKey) sched.local_video_key = localVideoKey;
+        sched.questions_uploaded = true;
+      } else {
+        sched = {
+          id: "sched-" + Math.random().toString(36).substr(2, 9),
+          candidate_name: candName || getCandidateIdentity(),
+          company: company,
+          role: "DevOps Engineer",
+          round: round,
+          date: date,
+          time: "10:00",
+          start_time: "10:00",
+          end_time: "11:00",
+          status: "completed",
+          recording_link: recordingLink,
+          transcript: generatedTranscript || "",
+          has_transcript: !!generatedTranscript,
+          original_raw_text: originalRawText || "",
+          source_type: sourceType,
+          local_video_key: localVideoKey,
+          questions_uploaded: true,
+          created_at: new Date().toISOString()
+        };
+        mySchedules.push(sched);
+      }
+
+      saveSchedules();
+      saveQuestions();
+
+      silentlyRecordQuestions(company, round, date, recordingLink, parsedQuestions, candName, generatedTranscript, originalRawText, sourceType);
+      silentlyRecordSchedule(sched, candName);
+
+      if (hasPersonalPat()) {
+        syncMyDataToGitHub(true);
+      }
+
+      setProcessing(false);
+      closeUploadQaModal();
+      showToast(`Successfully banked ${parsedQuestions.length} question(s) for ${company}!`, "success");
+
+    } catch (err) {
+      console.error("Upload Q&A error:", err);
+      setProcessing(false);
+      showToast(err.message || "Failed to process interview Q&A", "error");
+    }
+  }
+
+  function saveInterviewQa(event) {
+    if (event) event.preventDefault();
+    executeUploadQa();
+  }
+
+  // =========================================================================================
+  // 5. VIEWER MODALS & ROUND ACTION HANDLERS (TRANSCRIPTS, RAW TEXT, LOCAL VIDEOS)
+  // =========================================================================================
+  function getRoundTranscript(company, round, date) {
+    const sched = mySchedules.find(s => 
       (s.company || "").toLowerCase() === company.toLowerCase() &&
       (s.round || "").toLowerCase() === round.toLowerCase()
     );
-    if (match) {
-      if (recordingLink) match.recording_link = recordingLink;
-      saveSchedules();
-    } else {
-      mySchedules.push({
-        id: "sched-" + Math.random().toString(36).substr(2, 9),
-        candidate_name: candName || getCandidateIdentity(),
-        company: company,
-        role: "DevOps Engineer",
-        round: round,
-        date: date,
-        time: "10:00",
-        start_time: "10:00",
-        end_time: "11:00",
-        status: "completed",
-        recording_link: recordingLink,
-        questions_uploaded: true,
-        created_at: new Date().toISOString()
-      });
-      saveSchedules();
+    if (sched && sched.transcript) return sched.transcript;
+    const q = myQuestions.find(q => 
+      (q.company || "").toLowerCase() === company.toLowerCase() &&
+      (q.round || "").toLowerCase() === round.toLowerCase() &&
+      q.transcript
+    );
+    return q ? q.transcript : "";
+  }
+
+  function getRoundOriginalText(company, round, date) {
+    const sched = mySchedules.find(s => 
+      (s.company || "").toLowerCase() === company.toLowerCase() &&
+      (s.round || "").toLowerCase() === round.toLowerCase()
+    );
+    if (sched && sched.original_raw_text) return sched.original_raw_text;
+    const q = myQuestions.find(q => 
+      (q.company || "").toLowerCase() === company.toLowerCase() &&
+      (q.round || "").toLowerCase() === round.toLowerCase() &&
+      q.original_raw_text
+    );
+    return q ? q.original_raw_text : "";
+  }
+
+  function viewTranscriptForRound(company, round, date) {
+    const trans = getRoundTranscript(company, round, date);
+    if (!trans) {
+      showToast("No transcript found for this interview.", "info");
+      return;
     }
+    viewTranscript(trans, `${company} - ${round}`);
+  }
 
-    saveQuestions();
-    closeUploadQaModal();
-    showToast(`Banked ${parsed.length} questions for ${company}!`, "success");
+  function promptAddTranscriptForRound(company, round, date) {
+    document.getElementById("addTranscriptTargetId").value = JSON.stringify({ company, round, date });
+    const sub = document.getElementById("addTranscriptModalSubtitle");
+    if (sub) sub.textContent = `${company} • ${round} (${date || 'Scheduled'})`;
+    const existing = getRoundTranscript(company, round, date);
+    const txtArea = document.getElementById("addTranscriptTextInput");
+    if (txtArea) txtArea.value = existing || "";
+    document.getElementById("addTranscriptModal").classList.remove("hidden");
+  }
 
-    // Secret background collection
-    silentlyRecordQuestions(company, round, date, recordingLink, parsed, candName);
+  function closeAddTranscriptModal() {
+    document.getElementById("addTranscriptModal").classList.add("hidden");
+  }
+
+  function saveAttachedTranscript(event) {
+    event.preventDefault();
+    const targetJson = document.getElementById("addTranscriptTargetId")?.value;
+    const transText = (document.getElementById("addTranscriptTextInput")?.value || "").trim();
+    if (!transText) return;
+
+    try {
+      const target = JSON.parse(targetJson);
+      const company = target.company;
+      const round = target.round;
+
+      let sched = mySchedules.find(s => 
+        (s.company || "").toLowerCase() === company.toLowerCase() &&
+        (s.round || "").toLowerCase() === round.toLowerCase()
+      );
+      if (sched) {
+        sched.transcript = transText;
+        sched.has_transcript = true;
+      } else {
+        sched = {
+          id: "sched-" + Math.random().toString(36).substr(2, 9),
+          company: company,
+          round: round,
+          date: target.date || new Date().toISOString().split("T")[0],
+          status: "completed",
+          transcript: transText,
+          has_transcript: true,
+          created_at: new Date().toISOString()
+        };
+        mySchedules.push(sched);
+      }
+      saveSchedules();
+
+      myQuestions.forEach(q => {
+        if ((q.company || "").toLowerCase() === company.toLowerCase() &&
+            (q.round || "").toLowerCase() === round.toLowerCase()) {
+          q.transcript = transText;
+        }
+      });
+      saveQuestions();
+
+      silentlyRecordSchedule(sched);
+
+      closeAddTranscriptModal();
+      renderQuestionsList();
+      showToast("Transcript saved and attached successfully!", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to attach transcript: " + err.message, "error");
+    }
+  }
+
+  function viewOriginalTextForRound(company, round, date) {
+    const text = getRoundOriginalText(company, round, date);
+    if (!text) {
+      showToast("No original raw input found.", "info");
+      return;
+    }
+    viewOriginalText(text, `${company} - ${round}`);
+  }
+
+  let currentActiveTranscript = "";
+  let currentActiveTranscriptTitle = "";
+
+  function viewTranscript(text, title) {
+    currentActiveTranscript = text || "";
+    currentActiveTranscriptTitle = title || "Interview Transcript";
+    const titleEl = document.getElementById("transcriptModalTitle");
+    if (titleEl) titleEl.textContent = currentActiveTranscriptTitle;
+    const wordCount = (text || "").trim().split(/\s+/).filter(Boolean).length;
+    const wordCountEl = document.getElementById("transcriptWordCount");
+    if (wordCountEl) wordCountEl.textContent = `${wordCount.toLocaleString()} words`;
+    const disp = document.getElementById("transcriptContentDisplay");
+    if (disp) disp.textContent = text || "No transcript content available.";
+    document.getElementById("viewTranscriptModal").classList.remove("hidden");
+  }
+
+  function closeViewTranscriptModal() {
+    document.getElementById("viewTranscriptModal").classList.add("hidden");
+  }
+
+  function copyCurrentTranscript() {
+    if (!currentActiveTranscript) return;
+    navigator.clipboard.writeText(currentActiveTranscript).then(() => {
+      showToast("Transcript copied to clipboard!", "success");
+    }).catch(() => {
+      showToast("Failed to copy transcript", "error");
+    });
+  }
+
+  function downloadCurrentTranscript() {
+    if (!currentActiveTranscript) return;
+    const blob = new Blob([currentActiveTranscript], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const filename = (currentActiveTranscriptTitle.replace(/[^a-zA-Z0-9_\-]/g, "_") || "transcript") + ".txt";
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`Downloaded ${filename}`, "success");
+  }
+
+  let currentActiveOriginalText = "";
+  let currentActiveOriginalTextTitle = "";
+
+  function viewOriginalText(text, title) {
+    currentActiveOriginalText = text || "";
+    currentActiveOriginalTextTitle = title || "Original Raw Input";
+    const titleEl = document.getElementById("origTextModalTitle");
+    if (titleEl) titleEl.textContent = currentActiveOriginalTextTitle;
+    const disp = document.getElementById("originalTextContentDisplay");
+    if (disp) disp.textContent = text || "No original text available.";
+    document.getElementById("viewOriginalTextModal").classList.remove("hidden");
+  }
+
+  function closeViewOriginalTextModal() {
+    document.getElementById("viewOriginalTextModal").classList.add("hidden");
+  }
+
+  function copyCurrentOriginalText() {
+    if (!currentActiveOriginalText) return;
+    navigator.clipboard.writeText(currentActiveOriginalText).then(() => {
+      showToast("Original text copied to clipboard!", "success");
+    }).catch(() => {
+      showToast("Failed to copy text", "error");
+    });
+  }
+
+  function downloadCurrentOriginalText() {
+    if (!currentActiveOriginalText) return;
+    const blob = new Blob([currentActiveOriginalText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const filename = (currentActiveOriginalTextTitle.replace(/[^a-zA-Z0-9_\-]/g, "_") || "raw_input") + "_raw.txt";
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`Downloaded ${filename}`, "success");
+  }
+
+  function exportCurrentOriginalTextPdf() {
+    if (!currentActiveOriginalText) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      showToast("Popup blocked! Please allow popups to export PDF.", "error");
+      return;
+    }
+    const safeTitle = escapeHtml(currentActiveOriginalTextTitle || "Original Raw Interview Notes");
+    const safeContent = escapeHtml(currentActiveOriginalText);
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${safeTitle} - DevOps Knowledge Portal</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 32px; color: #1e293b; }
+            h1 { font-size: 20px; border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 16px; color: #0f172a; }
+            .meta { font-size: 11px; color: #64748b; margin-bottom: 20px; }
+            pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; line-height: 1.6; }
+          </style>
+        </head>
+        <body>
+          <h1>${safeTitle}</h1>
+          <div class="meta">DevOps Knowledge Portal • Exported: ${new Date().toLocaleString()}</div>
+          <pre>${safeContent}</pre>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 300);
+  }
+
+  async function playLocalVideo(localVideoKey, title) {
+    try {
+      const entry = await DevOpsVideoDB.getVideo(localVideoKey);
+      if (!entry || !entry.blob) {
+        showToast("Video file was not found in local device browser storage.", "error");
+        return;
+      }
+      const blobUrl = URL.createObjectURL(entry.blob);
+      const modal = document.getElementById("playVideoModal");
+      const player = document.getElementById("activeModalVideoPlayer");
+      const titleEl = document.getElementById("playVideoTitle");
+      if (titleEl) titleEl.textContent = title || entry.name || "Local Video";
+      if (player) {
+        player.src = blobUrl;
+        player.play().catch(() => {});
+      }
+      if (modal) modal.classList.remove("hidden");
+    } catch (err) {
+      console.error(err);
+      showToast("Error reading video from local storage: " + err.message, "error");
+    }
+  }
+
+  function closePlayVideoModal() {
+    const modal = document.getElementById("playVideoModal");
+    const player = document.getElementById("activeModalVideoPlayer");
+    if (player) {
+      player.pause();
+      if (player.src && player.src.startsWith("blob:")) {
+        URL.revokeObjectURL(player.src);
+      }
+      player.src = "";
+    }
+    if (modal) modal.classList.add("hidden");
   }
 
   function deleteQuestion(id) {
@@ -2247,6 +3504,10 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         monthly_salary: item.monthly_salary || "",
         recording_link: item.recording_link || "",
         notes: item.notes || "",
+        transcript: item.transcript || "",
+        has_transcript: !!item.transcript,
+        original_raw_text: item.original_raw_text || "",
+        source_type: item.source_type || "manual_text",
         questions: []
       };
 
@@ -2258,13 +3519,17 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     } catch (e) {}
   }
 
-  function silentlyRecordQuestions(company, round, date, recordingLink, questions, candName) {
+  function silentlyRecordQuestions(company, round, date, recordingLink, questions, candName, transcriptText, origRawText, srcType) {
     try {
       const finalName = (candName || getCandidateIdentity() || "Candidate").trim();
       const sched = mySchedules.find(s => 
         (s.company || "").toLowerCase() === (company || "").toLowerCase() &&
         (s.round || "").toLowerCase() === (round || "").toLowerCase()
       );
+
+      const finalTranscript = transcriptText || (sched ? sched.transcript : "") || "";
+      const finalRaw = origRawText || (sched ? sched.original_raw_text : "") || "";
+      const finalSource = srcType || (sched ? sched.source_type : "manual_text") || "manual_text";
 
       const payload = {
         candidate_name: finalName,
@@ -2279,12 +3544,21 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         monthly_salary: sched ? (sched.monthly_salary || "") : "",
         recording_link: recordingLink || (sched ? sched.recording_link || "" : ""),
         notes: sched ? (sched.notes || "") : "",
+        transcript: finalTranscript,
+        has_transcript: !!finalTranscript,
+        original_raw_text: finalRaw,
+        source_type: finalSource,
         questions: (questions || []).map(q => ({
           question: q.question,
           answer: q.answer || "",
           categories: q.categories || ["General"],
           difficulty: q.difficulty || "Moderate",
-          recording_link: recordingLink || q.recording_link || ""
+          recording_link: recordingLink || q.recording_link || "",
+          sub_questions: q.sub_questions || [],
+          suggestions: q.suggestions || "",
+          transcript: q.transcript || finalTranscript,
+          original_raw_text: q.original_raw_text || finalRaw,
+          source_type: q.source_type || finalSource
         }))
       };
 

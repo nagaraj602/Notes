@@ -783,7 +783,7 @@ class InterviewManager:
                         lines.append(f"### 🎯 Round: {rnd_name}")
                         lines.append("")
 
-                        # Check for round-level recording link
+                        # Check for round-level recording link and transcript
                         rnd_rec = ""
                         matched_s = next((cs for cs in comp_scheds if cs.get("round", "").strip().lower() == rnd_name.strip().lower() and cs.get("recording_link")), None)
                         if matched_s:
@@ -794,9 +794,23 @@ class InterviewManager:
                             lines.append(f"- **📹 YouTube Interview Recording:** [{rnd_rec}]({rnd_rec})")
                             lines.append("")
 
+                        rnd_trans = next((cs.get("transcript", "").strip() for cs in comp_scheds if cs.get("round", "").strip().lower() == rnd_name.strip().lower() and cs.get("transcript")), "")
+                        if rnd_trans:
+                            lines.append("<details>")
+                            lines.append("<summary><strong>📄 Full Interview Transcript</strong></summary>")
+                            lines.append("")
+                            lines.append("```text")
+                            lines.append(rnd_trans)
+                            lines.append("```")
+                            lines.append("")
+                            lines.append("</details>")
+                            lines.append("")
+
                         for q in q_list:
                             q_text = (q.get("question") or "").strip()
+                            sub_qs = q.get("sub_questions") or []
                             ans_text = (q.get("answer") or "").strip()
+                            sugg_text = (q.get("suggestions") or q.get("instructor_suggestions") or "").strip()
                             cats = q.get("categories", [])
                             diff = q.get("difficulty", "Moderate")
                             q_rec_item = (q.get("recording_link") or "").strip()
@@ -808,6 +822,16 @@ class InterviewManager:
                             if q_rec_item and q_rec_item != rnd_rec:
                                 lines.append(f"- **📹 YouTube Clip:** [{q_rec_item}]({q_rec_item})")
                             lines.append("")
+
+                            if sub_qs:
+                                lines.append("**Follow-up / Sub-Questions:**")
+                                for sq in sub_qs:
+                                    lines.append(f"- {sq}")
+                                lines.append("")
+
+                            if sugg_text:
+                                lines.append(f"> 👨‍🏫 **Interviewer / Instructor Feedback & Suggestions:** {sugg_text}")
+                                lines.append("")
 
                             if ans_text:
                                 lines.append("<details open>")
@@ -1107,6 +1131,10 @@ class InterviewManager:
             "salary_ctc": data.get("salary_ctc", "").strip(),
             "monthly_salary": data.get("monthly_salary", "").strip(),
             "notes": data.get("notes", "").strip(),
+            "transcript": data.get("transcript", "").strip(),
+            "has_transcript": bool(data.get("transcript")) or bool(data.get("has_transcript")),
+            "original_raw_text": data.get("original_raw_text", "").strip(),
+            "source_type": data.get("source_type", "").strip(),
             "questions_uploaded": False,
             "created_at": datetime.utcnow().isoformat()
         }
@@ -1310,7 +1338,7 @@ class InterviewManager:
             return True
         return False
 
-    def add_bulk_questions(self, company: str, round_name: str, interview_date: str, qa_items: List[Dict[str, Any]], experience: str = "", notes: str = "", difficulty: str = "", recording_link: str = "") -> int:
+    def add_bulk_questions(self, company: str, round_name: str, interview_date: str, qa_items: List[Dict[str, Any]], experience: str = "", notes: str = "", difficulty: str = "", recording_link: str = "", transcript: str = "", original_raw_text: str = "", source_type: str = "") -> int:
         questions = self._read_json(self.questions_file)
         added_count = 0
         company_clean = company.strip()
@@ -1329,13 +1357,20 @@ class InterviewManager:
 
             q_rec = item.get("recording_link", "").strip() or rec_clean
 
+            sub_qs = item.get("sub_questions") or []
+            if isinstance(sub_qs, str):
+                sub_qs = [s.strip() for s in sub_qs.split("\n") if s.strip()]
+            suggestions = (item.get("suggestions") or item.get("instructor_suggestions") or "").strip()
+
             new_q = {
                 "id": f"q-{uuid.uuid4().hex[:8]}",
                 "company": company_clean,
                 "round": round_clean,
                 "date": date_clean,
                 "question": q_text,
+                "sub_questions": sub_qs,
                 "answer": item.get("answer", "").strip(),
+                "suggestions": suggestions,
                 "categories": cats,
                 "experience": experience.strip(),
                 "notes": notes.strip(),
@@ -1363,6 +1398,13 @@ class InterviewManager:
                     s["difficulty"] = difficulty.strip()
                 if rec_clean:
                     s["recording_link"] = rec_clean
+                if transcript:
+                    s["transcript"] = transcript
+                    s["has_transcript"] = True
+                if original_raw_text:
+                    s["original_raw_text"] = original_raw_text
+                if source_type:
+                    s["source_type"] = source_type
                 matched = True
                 break
 
@@ -1383,6 +1425,10 @@ class InterviewManager:
                 "experience": experience.strip(),
                 "notes": notes.strip(),
                 "difficulty": difficulty.strip(),
+                "transcript": transcript,
+                "has_transcript": bool(transcript),
+                "original_raw_text": original_raw_text,
+                "source_type": source_type,
                 "created_at": datetime.utcnow().isoformat()
             }
             schedules.append(new_sched)
