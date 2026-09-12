@@ -759,7 +759,6 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
 
   function ensurePersonalPatOrPrompt(actionCallback) {
     if (hasPersonalPat()) {
-      if (actionCallback) actionCallback();
       return true;
     }
     pendingPersonalPatAction = actionCallback;
