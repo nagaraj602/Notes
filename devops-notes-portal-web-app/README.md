@@ -299,7 +299,7 @@ docker run -d \
   -e GEMINI_API_KEY="${GEMINI_API_KEY:-}" \
   -e GEMINI_MODEL="gemini-3.8-flash-high" \
   --restart unless-stopped \
-  nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.9.0
+  nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.9.1
 ```
 
 ---

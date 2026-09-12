@@ -1024,6 +1024,15 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   let currentViewMode = "company";
   let currentCategoryFilter = "All";
   let currentWeekOffset = 0;
+  let currentMonthOffset = 0;
+  let currentCalendarView = localStorage.getItem("my_calendar_view") || "month";
+
+  function formatIsoDate(d = new Date()) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
 
   // Initialize on page load
   document.addEventListener("DOMContentLoaded", () => {
@@ -1694,10 +1703,6 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   }
 
   // --- Interactive Calendar (Week & Full Month Views) ---
-  let currentCalendarView = localStorage.getItem("my_calendar_view") || "month"; // Defaults to full month view
-  let currentWeekOffset = 0;
-  let currentMonthOffset = 0;
-
   function setCalendarView(view) {
     currentCalendarView = view;
     localStorage.setItem("my_calendar_view", view);
@@ -1768,12 +1773,13 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
 
     const daysHtml = [];
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const todayIso = formatIsoDate(today);
 
     for (let i = 0; i < 7; i++) {
       const d = new Date(firstDayOfWeek);
       d.setDate(firstDayOfWeek.getDate() + i);
-      const isoStr = d.toISOString().split("T")[0];
-      const isToday = d.getTime() === today.getTime();
+      const isoStr = formatIsoDate(d);
+      const isToday = isoStr === todayIso;
 
       // Find schedules for this day
       const dayScheds = (mySchedules || []).filter(s => s.date === isoStr);
@@ -1826,7 +1832,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
     const prevMonthDays = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 0).getDate();
 
-    const todayIso = new Date().toISOString().split("T")[0];
+    const todayIso = formatIsoDate(now);
     const cellsHtml = [];
 
     // Previous month trailing days

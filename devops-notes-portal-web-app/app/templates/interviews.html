@@ -385,6 +385,8 @@
 <script>
   let currentWeekOffset = 0;
   let currentMonthOffset = 0;
+  let currentCalendarView = localStorage.getItem("nagaraj_calendar_view") || "month";
+  let modalMonthOffset = 0;
   let allSchedules = [];
   let allQuestions = [];
   let currentStats = {};
@@ -392,6 +394,13 @@
   let activeViewMode = "company";
   let searchDebounceTimer = null;
   const availableCategories = {{ categories | tojson }};
+
+  function formatIsoDate(d = new Date()) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     fetch("/api/session/state", {
@@ -766,10 +775,6 @@
   }
 
   // --- SCHEDULES & INTERACTIVE CALENDAR (WEEK & MONTH VIEWS) ---
-  let currentCalendarView = localStorage.getItem("nagaraj_calendar_view") || "month"; // Defaults to full month view
-  let currentWeekOffset = 0;
-  let currentMonthOffset = 0;
-
   function setCalendarView(view) {
     currentCalendarView = view;
     localStorage.setItem("nagaraj_calendar_view", view);
@@ -861,8 +866,8 @@
     for (let i = 0; i < 7; i++) {
       const dayDate = new Date(currMonday);
       dayDate.setDate(dayDate.getDate() + i);
-      const dateStr = dayDate.toISOString().split("T")[0];
-      const isToday = dateStr === today.toISOString().split("T")[0];
+      const dateStr = formatIsoDate(dayDate);
+      const isToday = dateStr === formatIsoDate(today);
 
       const daySchedules = (allSchedules || []).filter(s => s.date === dateStr);
 
@@ -936,7 +941,7 @@
     const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
     const prevMonthDays = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 0).getDate();
 
-    const todayIso = new Date().toISOString().split("T")[0];
+    const todayIso = formatIsoDate(now);
     const cellsHtml = [];
 
     // Previous month trailing days
@@ -1088,8 +1093,7 @@
     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     safe = safe.replace(/\*(.*?)\*/g, '<em>$1</em>');
     safe = safe.replace(/`([^`]+)`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sky-700 font-mono text-[11px]">$1</code>');
-    safe = safe.replace(/
-/g, '<br>');
+    safe = safe.replace(/\n/g, '<br>');
     return safe;
   }
 
@@ -1523,7 +1527,7 @@
 
   // --- FULL MONTH CALENDAR MODAL ---
   function openFullCalendarModal() {
-    currentMonthOffset = 0;
+    modalMonthOffset = 0;
     renderFullMonth();
     document.getElementById("fullCalendarModal").classList.remove("hidden");
   }
@@ -1533,14 +1537,14 @@
   }
 
   function changeMonth(dir) {
-    if (dir === 0) currentMonthOffset = 0;
-    else currentMonthOffset += dir;
+    if (dir === 0) modalMonthOffset = 0;
+    else modalMonthOffset += dir;
     renderFullMonth();
   }
 
   function renderFullMonth() {
     const now = new Date();
-    const targetMonth = new Date(now.getFullYear(), now.getMonth() + currentMonthOffset, 1);
+    const targetMonth = new Date(now.getFullYear(), now.getMonth() + modalMonthOffset, 1);
     const monthName = targetMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
     document.getElementById("monthCalendarTitle").innerText = `Interview Calendar - ${monthName}`;
 
@@ -1554,10 +1558,11 @@
       grid.innerHTML += `<div class="p-2 rounded-xl bg-slate-50/50 border border-transparent min-h-[85px]"></div>`;
     }
 
+    const todayIso = formatIsoDate(now);
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${targetMonth.getFullYear()}-${String(targetMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const daySchedules = allSchedules.filter(s => s.date === dateStr);
-      const isToday = dateStr === now.toISOString().split("T")[0];
+      const isToday = dateStr === todayIso;
 
       let badges = daySchedules.map(s => {
         const timeRange = formatTimeRange(s.start_time, s.end_time, s.time);
