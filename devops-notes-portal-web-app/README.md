@@ -296,8 +296,10 @@ docker run -d \
   -e REPO_URL="https://github.com/nagaraj602/Notes.git" \
   -e REPO_BRANCH="main" \
   -e AUTO_SYNC_INTERVAL_MINUTES=5 \
+  -e GEMINI_API_KEY="${GEMINI_API_KEY:-}" \
+  -e GEMINI_MODEL="gemini-3.8-flash-high" \
   --restart unless-stopped \
-  nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:latest
+  nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.8.0
 ```
 
 ---

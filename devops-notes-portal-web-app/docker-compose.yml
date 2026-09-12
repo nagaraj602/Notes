@@ -14,8 +14,9 @@ services:
       - REPO_BRANCH=main
       - AUTO_SYNC_INTERVAL_MINUTES=5
       - NOTES_DIR=/app/data/notes
-      - PORT=8000
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=gemini-3.8-flash-high
     volumes:
       - notes_data:/app/data/notes
     healthcheck:

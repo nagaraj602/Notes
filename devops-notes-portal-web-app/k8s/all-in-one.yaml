@@ -15,6 +15,7 @@ data:
   NOTES_DIR: "/app/data/notes"
   GITHUB_TOKEN: ""
   GEMINI_API_KEY: ""
+  GEMINI_MODEL: "gemini-3.8-flash-high"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -47,7 +48,7 @@ spec:
     spec:
       containers:
         - name: devops-hub
-          image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.7.9
+          image: nagarajkamath602/devops-hub-notes-artisantek-training-mterial-interview-questions:v6.8.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000

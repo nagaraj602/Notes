@@ -883,7 +883,7 @@ from app.ai_engine import (
 
 class AiTestRequest(BaseModel):
     api_key: Optional[str] = ""
-    model: Optional[str] = "gemini-2.5-flash"
+    model: Optional[str] = "gemini-3.8-flash-high"
 
 class AiPolishRequest(BaseModel):
     text: str
@@ -911,7 +911,7 @@ async def api_ai_config(request: Request):
     return JSONResponse({
         "has_key": bool(key),
         "key_masked": masked,
-        "default_model": os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        "default_model": os.getenv("GEMINI_MODEL", "gemini-3.8-flash-high")
     })
 
 @app.post("/api/ai/save-key")
@@ -925,7 +925,7 @@ async def api_ai_save_key(req: AiKeySaveRequest, request: Request):
 @app.post("/api/ai/test")
 async def api_ai_test(req: AiTestRequest, request: Request):
     key = req.api_key or request.headers.get("x-gemini-api-key", "")
-    res = test_gemini_connection(api_key=key, model=req.model or "gemini-2.5-flash")
+    res = test_gemini_connection(api_key=key, model=req.model or "gemini-3.8-flash-high")
     return JSONResponse(res)
 
 @app.post("/api/ai/polish")
@@ -959,7 +959,7 @@ async def api_ai_process_youtube(req: AiYoutubeRequest, request: Request):
 async def api_ai_process_media(
     request: Request,
     file: UploadFile = File(...),
-    model: str = Form("gemini-2.5-flash"),
+    model: str = Form("gemini-3.8-flash-high"),
     api_key: str = Form("")
 ):
     key = api_key or request.headers.get("x-gemini-api-key", "")

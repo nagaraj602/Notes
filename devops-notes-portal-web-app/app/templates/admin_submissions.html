@@ -137,6 +137,97 @@
         </div>
       </div>
 
+      <!-- Server-Wide Gemini AI Configuration Card (Owner Only) -->
+      <div class="glass-card p-5 rounded-3xl border border-sky-200 bg-white/90 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-sky-100">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-base shadow-md shadow-sky-500/20">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <span>Server-Wide Gemini AI Configuration</span>
+                <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-900 font-bold border border-indigo-200">
+                  Global System Key
+                </span>
+              </h2>
+              <p class="text-[11px] text-slate-500">Configure Google Gemini 3.8 Flash High once here. All candidates and students will automatically use this key server-wide without entering their own.</p>
+            </div>
+          </div>
+          <div id="adminGeminiStatusBadge" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 flex items-center gap-1.5 self-start sm:self-auto shadow-2xs">
+            <i class="fa-solid fa-circle-notch fa-spin text-[10px]"></i> Checking status...
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- API Key Input -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold text-slate-700">Gemini API Key (Google AI Studio)</label>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-[10px] text-sky-600 hover:text-sky-800 font-bold flex items-center space-x-1">
+                <span>Get API Key</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
+            </div>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="adminGeminiApiKeyInput" 
+                placeholder="Enter Gemini API key (AIzaSy...)" 
+                class="w-full text-xs font-mono rounded-xl px-3.5 py-2.5 pr-10 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 bg-white"
+              />
+              <button 
+                type="button" 
+                onclick="toggleAdminGeminiEye()" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+              >
+                <i id="adminGeminiEye" class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <div id="adminGeminiCurrentKeyDisplay" class="text-[10px] text-slate-500 font-mono">Checking current configuration...</div>
+          </div>
+
+          <!-- Pinned Model Information -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-slate-700">Enforced AI Model (Strictly Pinned)</label>
+            <div class="px-3.5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/50 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-microchip text-indigo-600 text-xs"></i>
+                <span class="text-xs font-mono font-bold text-indigo-950">gemini-3.8-flash-high</span>
+              </div>
+              <span class="text-[9px] uppercase font-mono px-2 py-0.5 rounded-full bg-indigo-200 text-indigo-900 font-bold">Exclusive</span>
+            </div>
+            <p class="text-[10px] text-slate-500">Strictly locked across the portal. No model dropdowns, no downgrades or fallbacks to older versions.</p>
+          </div>
+        </div>
+
+        <!-- Alert box for test & save status -->
+        <div id="adminGeminiAlert" class="hidden p-3 rounded-xl text-xs font-mono"></div>
+
+        <!-- Buttons -->
+        <div class="flex items-center justify-between pt-2 border-t border-sky-100 flex-wrap gap-2">
+          <button 
+            type="button" 
+            id="btnTestAdminGemini" 
+            onclick="testAdminGeminiConnection()" 
+            class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center space-x-1.5 shadow-2xs"
+          >
+            <i class="fa-solid fa-bolt text-amber-500"></i>
+            <span>Test Connection</span>
+          </button>
+
+          <button 
+            type="button" 
+            id="btnSaveAdminGemini" 
+            onclick="saveAdminGeminiKey()" 
+            class="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-floppy-disk text-xs"></i>
+            <span>Save Server-Wide Key</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Filter and Search Bar -->
       <div class="glass-card p-4 rounded-2xl border border-sky-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div class="relative flex-1">
@@ -277,6 +368,7 @@
     document.getElementById("adminAuthGate").classList.add("hidden");
     document.getElementById("adminDashboard").classList.remove("hidden");
     loadAdminSubmissions();
+    loadAdminGeminiConfig();
   }
 
   function logoutAdmin() {
@@ -285,6 +377,129 @@
     document.getElementById("adminDashboard").classList.add("hidden");
     document.getElementById("adminAuthGate").classList.remove("hidden");
     document.getElementById("adminAuthInput").value = "";
+  }
+
+  // ==========================================
+  // SERVER-WIDE GEMINI AI ENGINE HANDLERS
+  // ==========================================
+  let adminGeminiEyeVisible = false;
+  function toggleAdminGeminiEye() {
+    const inp = document.getElementById("adminGeminiApiKeyInput");
+    const eye = document.getElementById("adminGeminiEye");
+    if (!inp) return;
+    adminGeminiEyeVisible = !adminGeminiEyeVisible;
+    inp.type = adminGeminiEyeVisible ? "text" : "password";
+    if (eye) eye.className = adminGeminiEyeVisible ? "fa-regular fa-eye-slash text-xs" : "fa-regular fa-eye text-xs";
+  }
+
+  async function loadAdminGeminiConfig() {
+    try {
+      const res = await fetch("/api/ai/config", {
+        headers: { "x-admin-token": currentAdminToken }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const badge = document.getElementById("adminGeminiStatusBadge");
+        const keyDisplay = document.getElementById("adminGeminiCurrentKeyDisplay");
+        if (data.has_key) {
+          if (badge) {
+            badge.className = "px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 flex items-center gap-1.5 self-start sm:self-auto shadow-2xs";
+            badge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-[10px]"></i> Server-Wide Key Active (${escapeHtml(data.key_masked)})`;
+          }
+          if (keyDisplay) keyDisplay.textContent = `Server Active Key: ${data.key_masked} • Default: gemini-3.8-flash-high`;
+        } else {
+          if (badge) {
+            badge.className = "px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300 flex items-center gap-1.5 self-start sm:self-auto shadow-2xs";
+            badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-[10px]"></i> Not Configured`;
+          }
+          if (keyDisplay) keyDisplay.textContent = "No server-wide key found. Enter and save your Gemini API key below.";
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load Gemini config:", e);
+    }
+  }
+
+  async function testAdminGeminiConnection() {
+    const input = document.getElementById("adminGeminiApiKeyInput");
+    const key = (input ? input.value : "").trim();
+    const alertBox = document.getElementById("adminGeminiAlert");
+    const btn = document.getElementById("btnTestAdminGemini");
+
+    alertBox.classList.remove("hidden");
+    alertBox.className = "p-3 rounded-xl text-xs font-mono bg-sky-50 text-sky-800 border border-sky-200 flex items-center gap-2";
+    alertBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sky-600"></i> Testing connection against Google Gemini 3.8 Flash High...`;
+    if (btn) btn.disabled = true;
+
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (currentAdminToken) headers["x-admin-token"] = currentAdminToken;
+      if (key) headers["x-gemini-api-key"] = key;
+
+      const res = await fetch("/api/ai/test", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ api_key: key, model: "gemini-3.8-flash-high" })
+      });
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        alertBox.className = "p-3 rounded-xl text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200";
+        alertBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> Connected successfully! Verified Model: <strong>gemini-3.8-flash-high</strong>. AI Response: "${escapeHtml(data.message)}"`;
+      } else {
+        alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200";
+        alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600 mr-1.5"></i> Connection failed: ${escapeHtml(data.message || data.detail || "API check failed")}`;
+      }
+    } catch (err) {
+      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200";
+      alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600 mr-1.5"></i> Network error: ${escapeHtml(err.message)}`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function saveAdminGeminiKey() {
+    const input = document.getElementById("adminGeminiApiKeyInput");
+    const key = (input ? input.value : "").trim();
+    const alertBox = document.getElementById("adminGeminiAlert");
+    const btn = document.getElementById("btnSaveAdminGemini");
+
+    if (!key) {
+      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200";
+      alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1.5"></i> Please enter an API key to save.`;
+      alertBox.classList.remove("hidden");
+      return;
+    }
+
+    alertBox.classList.remove("hidden");
+    alertBox.className = "p-3 rounded-xl text-xs font-mono bg-sky-50 text-sky-800 border border-sky-200 flex items-center gap-2";
+    alertBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sky-600"></i> Persisting server-wide API key...`;
+    if (btn) btn.disabled = true;
+
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (currentAdminToken) headers["x-admin-token"] = currentAdminToken;
+
+      const res = await fetch("/api/ai/save-key", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ api_key: key })
+      });
+      const data = await res.json();
+      if (res.ok && data.status === "saved") {
+        alertBox.className = "p-3 rounded-xl text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200";
+        alertBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> <strong>Success!</strong> Gemini API key saved server-wide to persistent storage. All platform users will now automatically use Gemini 3.8 Flash High.`;
+        input.value = "";
+        loadAdminGeminiConfig();
+      } else {
+        alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200";
+        alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600 mr-1.5"></i> Failed to save key: ${escapeHtml(data.detail || data.status || "Unknown error")}`;
+      }
+    } catch (err) {
+      alertBox.className = "p-3 rounded-xl text-xs font-mono bg-rose-50 text-rose-800 border border-rose-200";
+      alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600 mr-1.5"></i> Error saving key: ${escapeHtml(err.message)}`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   }
 
   async function loadAdminSubmissions() {
