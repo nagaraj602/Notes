@@ -878,7 +878,7 @@ from app.ai_engine import (
     resolve_gemini_api_key, save_gemini_api_key, normalize_model_name,
     test_gemini_connection, polish_and_review_text,
     extract_qa_from_transcript_text, process_youtube_interview,
-    process_ephemeral_media
+    process_ephemeral_media, process_bulk_interview_files
 )
 
 class AiTestRequest(BaseModel):
@@ -971,4 +971,113 @@ async def api_ai_process_media(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     finally:
-        del content
+        del content
+
+@app.post("/api/admin/old-iq/bulk-upload")
+async def api_admin_old_iq_bulk_upload(
+    request: Request,
+    files: List[UploadFile] = File(...),
+    source_comment: str = Form("whatsapp"),
+    date_str: str = Form(""),
+    api_key: str = Form(""),
+    model: str = Form("gemini-3.8-flash-high")
+):
+    """
+    Bulk Upload endpoint for Admin:
+    Accepts multiple .txt / .md files containing questions, dates, companies, and rounds.
+    Utilizes Gemini AI to parse, auto-generate production answers labeled [AI-Generated Answer],
+    formats a single unified Markdown file, saves to Old Interview Questions folder with
+    next sequence numbering (e.g. '3. 13-Sep-2026 from whatsapp.md'), and commits/pushes to GitHub.
+    """
+    admin_tok = extract_admin_token(request)
+    if not verify_admin_access(admin_tok):
+        raise HTTPException(status_code=401, detail="Instructor authentication required. Invalid or missing admin token.")
+
+    if not files:
+        raise HTTPException(status_code=400, detail="No files were uploaded.")
+
+    # Read uploaded file contents
+    file_data_list = []
+    for f in files:
+        raw_bytes = await f.read()
+        try:
+            text_content = raw_bytes.decode("utf-8")
+        except UnicodeDecodeError:
+            text_content = raw_bytes.decode("latin-1", errors="ignore")
+        file_data_list.append({
+            "filename": f.filename or "interview_notes.txt",
+            "content": text_content
+        })
+
+    key = api_key or request.headers.get("x-gemini-api-key", "") or resolve_gemini_api_key()
+
+    # Process files via Gemini AI
+    ai_result = process_bulk_interview_files(
+        file_data_list=file_data_list,
+        source_comment=source_comment,
+        api_key=key,
+        model=model or "gemini-3.8-flash-high"
+    )
+
+    markdown_content = ai_result.get("markdown_content", "")
+    if not markdown_content:
+        raise HTTPException(status_code=500, detail="AI processing failed to produce interview questions.")
+
+    # Locate the target directory (Old Interview Questions)
+    iq_dir = old_iq_manager.get_interview_questions_dir()
+    if not iq_dir:
+        base_dir = NOTES_DIR if NOTES_DIR and os.path.exists(NOTES_DIR) else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        iq_dir = os.path.join(base_dir, "Old Interview Questions")
+        os.makedirs(iq_dir, exist_ok=True)
+
+    # Determine sequence number by inspecting existing files in iq_dir
+    numbers = []
+    try:
+        existing_files = os.listdir(iq_dir)
+        for item in existing_files:
+            m = re.match(r'^(\d+)[\._]', item)
+            if m:
+                try:
+                    numbers.append(int(m.group(1)))
+                except ValueError:
+                    pass
+    except Exception:
+        pass
+
+    next_seq = (max(numbers) + 1) if numbers else 3
+
+    # Format date: e.g. 13-Sep-2026
+    clean_date = date_str.strip()
+    if not clean_date:
+        clean_date = time.strftime("%d-%b-%Y") # e.g. 13-Sep-2026
+
+    # Clean source comment (e.g. "From: whatsapp" -> "whatsapp")
+    clean_src = re.sub(r'^(from\s*:\s*|from\s+)', '', (source_comment or "").strip(), flags=re.IGNORECASE).strip()
+    if not clean_src:
+        clean_src = "whatsapp"
+
+    # Construct exact requested filename: e.g. "3. 13-Sep-2026 from whatsapp.md"
+    new_filename = f"{next_seq}. {clean_date} from {clean_src}.md"
+    target_filepath = os.path.join(iq_dir, new_filename)
+
+    with open(target_filepath, "w", encoding="utf-8") as out_fp:
+        out_fp.write(markdown_content)
+
+    # Invalidate cache so questions appear immediately in the app
+    old_iq_manager.invalidate_cache()
+
+    # Commit and push to GitHub repository
+    commit_msg = f"Add {new_filename} with AI-generated interview questions"
+    push_res = git_manager.commit_and_push_file(target_filepath, commit_msg, token=admin_tok)
+
+    return JSONResponse({
+        "status": "success",
+        "filename": new_filename,
+        "path": target_filepath,
+        "companies_count": ai_result.get("companies_count", 0),
+        "rounds_count": ai_result.get("rounds_count", 0),
+        "questions_count": ai_result.get("questions_count", 0),
+        "companies": ai_result.get("companies", []),
+        "categories": ai_result.get("categories", []),
+        "git_sync": push_res
+    })

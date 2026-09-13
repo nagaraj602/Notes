@@ -307,4 +307,59 @@ class GitSyncManager:
                             pass
         return results
 
+    def commit_and_push_file(self, file_path: str, commit_message: str, author_name: str = "nagaraj602", author_email: str = "nagarajkamath602@outlook.com", token: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Stages, commits, and pushes a specific file to the GitHub repository.
+        Works across both local dev (root repo) and container deployment (devops-notes repo).
+        """
+        try:
+            repo = git.Repo(os.path.dirname(os.path.abspath(file_path)), search_parent_directories=True)
+            
+            # Configure author/committer
+            try:
+                with repo.config_writer() as cw:
+                    if not cw.has_option("user", "name") or not cw.get_value("user", "name"):
+                        cw.set_value("user", "name", author_name)
+                    if not cw.has_option("user", "email") or not cw.get_value("user", "email"):
+                        cw.set_value("user", "email", author_email)
+            except Exception:
+                pass
+
+            # Stage file
+            repo.git.add(file_path)
+
+            # Commit
+            actor = git.Actor(author_name, author_email)
+            commit = repo.index.commit(commit_message, author=actor, committer=actor)
+            logger.info(f"Committed {file_path} as {commit.hexsha[:7]}: {commit_message}")
+
+            # Push
+            active_token = token or self.active_token or os.getenv("GITHUB_TOKEN", "").strip()
+            branch = "main"
+            try:
+                branch = repo.active_branch.name
+            except Exception:
+                pass
+
+            if active_token:
+                remote_url = f"https://{active_token}@github.com/nagaraj602/Notes.git"
+                try:
+                    repo.git.push(remote_url, f"{branch}:{branch}")
+                    logger.info(f"Pushed commit {commit.hexsha[:7]} to GitHub ({branch})")
+                except Exception as pe:
+                    logger.warning(f"Could not push to GitHub: {pe}")
+                    return {"status": "committed_local", "commit": commit.hexsha[:7], "warning": str(pe)}
+            else:
+                try:
+                    repo.git.push("origin", f"{branch}:{branch}")
+                    logger.info(f"Pushed commit {commit.hexsha[:7]} to origin ({branch})")
+                except Exception as pe:
+                    logger.warning(f"Push to origin skipped/failed: {pe}")
+                    return {"status": "committed_local", "commit": commit.hexsha[:7], "warning": str(pe)}
+
+            return {"status": "success", "commit": commit.hexsha[:7], "branch": branch}
+        except Exception as e:
+            logger.error(f"Failed to commit and push file {file_path}: {e}")
+            return {"status": "error", "message": str(e)}
+
 git_manager = GitSyncManager()

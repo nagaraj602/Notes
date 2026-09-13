@@ -192,7 +192,7 @@
               <i class="fa-solid fa-chevron-left"></i>
             </button>
             <button onclick="navigateCalendar(0)" id="calTodayBtn" class="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 text-xs font-bold transition-all shadow-xs cursor-pointer" title="Jump to current date/month">
-              This Month
+              Today
             </button>
             <button onclick="navigateCalendar(1)" id="calNextBtn" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs cursor-pointer" title="Next">
               <i class="fa-solid fa-chevron-right"></i>
@@ -217,13 +217,13 @@
             </span>
           </div>
 
-          <!-- Segmented View Toggle: Week vs Month -->
+          <!-- Segmented View Toggle: Week vs Month (Week default) -->
           <div class="flex items-center p-1 bg-slate-100/90 rounded-xl border border-sky-200/60 shadow-inner">
-            <button id="calViewWeekBtn" onclick="setCalendarView('week')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer">
+            <button id="calViewWeekBtn" onclick="setCalendarView('week')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer">
               <i class="fa-solid fa-calendar-week text-[11px]"></i>
               <span>Week</span>
             </button>
-            <button id="calViewMonthBtn" onclick="setCalendarView('month')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer">
+            <button id="calViewMonthBtn" onclick="setCalendarView('month')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer">
               <i class="fa-solid fa-calendar-days text-[11px]"></i>
               <span>Month</span>
             </button>
@@ -231,13 +231,13 @@
         </div>
       </div>
 
-      <!-- 7 Day Calendar Grid (Week View) -->
-      <div id="calendarGrid" class="hidden grid grid-cols-1 sm:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40">
+      <!-- 7 Day Calendar Grid (Week View - Default) -->
+      <div id="calendarGrid" class="grid grid-cols-1 sm:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40">
         <!-- Generated via JS -->
       </div>
 
       <!-- Full Month Calendar View (Multi-week grid with Mon-Sun headers) -->
-      <div id="calendarMonthContainer" class="p-3 bg-white/30 space-y-2">
+      <div id="calendarMonthContainer" class="hidden p-3 bg-white/30 space-y-2">
         <!-- Weekday Headers -->
         <div class="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 py-1 bg-sky-50/50 rounded-xl border border-sky-100">
           <div>Mon</div>
@@ -547,232 +547,303 @@
 <!-- ========================================================================================= -->
 <!-- MODAL 3: Multimodal Upload Interview Q&A Modal -->
 <!-- ========================================================================================= -->
-<div id="uploadQaModal" onclick="if(event.target === this) closeUploadQaModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 cursor-pointer">
-  <div class="bg-white rounded-3xl max-w-2xl w-full border border-sky-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto cursor-default">
-    <div class="flex items-center justify-between pb-3 border-b border-sky-100">
-      <div class="flex items-center space-x-2.5">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-sm">
-          <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+<div id="uploadQaModal" onclick="if(event.target === this) closeUploadQaModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 backdrop-blur-xs p-3 sm:p-5 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-4xl w-full border border-sky-200 shadow-2xl flex flex-col h-[90vh] max-h-[720px] overflow-hidden animate-in fade-in zoom-in duration-150 cursor-default">
+    
+    <!-- Modal Header (Fixed at top) -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-sky-100 bg-white flex-shrink-0">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-sky-500/20">
+          <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
         </div>
         <div>
-          <h3 class="text-sm font-extrabold text-slate-900">Upload & Bank Interview Q&A</h3>
-          <p class="text-[10px] text-slate-500">Multimodal: Manual Q&A, YouTube Link, Direct Video/Audio, or Full Transcript</p>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">Upload & Bank Interview Q&A</h3>
+          <p class="text-[11px] text-slate-500">Multimodal: YouTube Link, Transcripts, Device Audio/Video, or Text Q&A</p>
         </div>
       </div>
-      <button onclick="closeUploadQaModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all">
+      <button onclick="closeUploadQaModal()" class="w-8 h-8 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all cursor-pointer">
         <i class="fa-solid fa-xmark text-sm"></i>
       </button>
     </div>
 
-    <!-- Mode Switcher Tabs -->
-    <div class="flex items-center bg-slate-100 p-1 rounded-2xl gap-1 text-xs font-bold">
-      <button type="button" onclick="switchQaUploadTab('manual')" id="qaTabBtn-manual" class="flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 bg-white text-sky-700 shadow-xs">
-        <i class="fa-solid fa-font text-xs"></i>
-        <span>Text / Q&A</span>
-      </button>
-      <button type="button" onclick="switchQaUploadTab('youtube')" id="qaTabBtn-youtube" class="flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900">
-        <i class="fa-brands fa-youtube text-red-600 text-xs"></i>
-        <span>YouTube Link</span>
-      </button>
-      <button type="button" onclick="switchQaUploadTab('video')" id="qaTabBtn-video" class="flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900">
-        <i class="fa-solid fa-video text-indigo-600 text-xs"></i>
-        <span>Device Video/Audio</span>
-      </button>
-      <button type="button" onclick="switchQaUploadTab('transcript')" id="qaTabBtn-transcript" class="flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900">
-        <i class="fa-solid fa-file-lines text-emerald-600 text-xs"></i>
-        <span>Paste Transcript</span>
-      </button>
-    </div>
+    <!-- Modal Body: Two-column layout (Left Sidebar + Right Content Pane) -->
+    <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+      
+      <!-- LEFT SIDEBAR: EYE-CATCHING TABS IN EXACT ORDER -->
+      <aside class="w-full md:w-64 bg-slate-50/90 border-b md:border-b-0 md:border-r border-sky-100 p-3 sm:p-4 flex flex-col justify-between flex-shrink-0 space-y-3">
+        <div class="space-y-2">
+          <div class="text-[10px] font-mono font-extrabold uppercase tracking-wider text-slate-400 px-2 py-1">
+            Input Source Mode
+          </div>
+          
+          <nav class="space-y-1.5" id="qaSidebarNav">
+            <!-- 1. YouTube Link (Default) -->
+            <button type="button" onclick="switchQaUploadTab('youtube')" id="qaTabBtn-youtube" class="w-full text-left p-3 rounded-2xl transition-all flex items-start space-x-3 border cursor-pointer bg-white border-sky-300 shadow-sm text-slate-900 ring-2 ring-sky-400/20">
+              <div class="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0 text-base shadow-2xs">
+                <i class="fa-brands fa-youtube"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  <span>YouTube Link</span>
+                  <span class="text-[9px] px-1.5 py-0.2 bg-red-100 text-red-700 rounded-full font-bold">Fast</span>
+                </div>
+                <div class="text-[10px] text-slate-500 line-clamp-1 mt-0.5">Auto subtitles & Q&A</div>
+              </div>
+            </button>
 
-    <!-- Common Metadata Inputs (Company, Round, Date, Candidate) -->
-    <div class="space-y-3 pt-1">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div class="space-y-1">
-          <label class="text-[11px] font-bold text-slate-700">Candidate / Your Name</label>
-          <input type="text" id="qaCandidateName" placeholder="e.g. Your Name" class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium">
+            <!-- 2. Paste Transcript -->
+            <button type="button" onclick="switchQaUploadTab('transcript')" id="qaTabBtn-transcript" class="w-full text-left p-3 rounded-2xl transition-all flex items-start space-x-3 border cursor-pointer border-transparent hover:bg-white/80 text-slate-600 hover:text-slate-900">
+              <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 text-sm shadow-2xs">
+                <i class="fa-solid fa-file-lines"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-black text-slate-800">Paste Transcript</div>
+                <div class="text-[10px] text-slate-500 line-clamp-1 mt-0.5">Full meeting/call transcript</div>
+              </div>
+            </button>
+
+            <!-- 3. Device Video/Audio -->
+            <button type="button" onclick="switchQaUploadTab('video')" id="qaTabBtn-video" class="w-full text-left p-3 rounded-2xl transition-all flex items-start space-x-3 border cursor-pointer border-transparent hover:bg-white/80 text-slate-600 hover:text-slate-900">
+              <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 text-sm shadow-2xs">
+                <i class="fa-solid fa-video"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-black text-slate-800">Device Video/Audio</div>
+                <div class="text-[10px] text-slate-500 line-clamp-1 mt-0.5">MP4, WebM, MP3 local file</div>
+              </div>
+            </button>
+
+            <!-- 4. Text paste Q&A directly -->
+            <button type="button" onclick="switchQaUploadTab('manual')" id="qaTabBtn-manual" class="w-full text-left p-3 rounded-2xl transition-all flex items-start space-x-3 border cursor-pointer border-transparent hover:bg-white/80 text-slate-600 hover:text-slate-900">
+              <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0 text-sm shadow-2xs">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-black text-slate-800">Text paste Q&A directly</div>
+                <div class="text-[10px] text-slate-500 line-clamp-1 mt-0.5">Scenarios & auto AI answers</div>
+              </div>
+            </button>
+          </nav>
         </div>
-        <div class="space-y-1">
-          <label class="text-[11px] font-bold text-slate-700">Company *</label>
-          <input type="text" id="qaCompany" placeholder="e.g. Cisco, Microsoft, TCS" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium">
+
+        <!-- AI Engine Guarantee Badge -->
+        <div class="hidden md:block p-3 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-sky-50/80 border border-sky-100 text-[11px] text-slate-600 space-y-1">
+          <div class="flex items-center space-x-1.5 font-bold text-sky-800">
+            <i class="fa-solid fa-wand-magic-sparkles text-sky-600 text-xs"></i>
+            <span>Gemini AI Engine</span>
+          </div>
+          <p class="text-[10px] text-slate-500 leading-snug">
+            Auto-extracts questions, formats scenario contexts, elaborates instructor hints, and labels AI answers.
+          </p>
         </div>
-      </div>
+      </aside>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div class="space-y-1">
-          <label class="text-[11px] font-bold text-slate-700">Round *</label>
-          <select id="qaRound" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium bg-white">
-            <!-- Populated via JS -->
-          </select>
+      <!-- RIGHT CONTENT PANE: FORM & ACTIVE TAB INPUTS -->
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 min-w-0">
+        <!-- Common Metadata Inputs (Company, Round, Date, Candidate) -->
+        <div class="p-4 rounded-2xl bg-slate-50/60 border border-sky-100 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-slate-700">Candidate / Your Name</label>
+              <input type="text" id="qaCandidateName" placeholder="e.g. Your Name" class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium bg-white">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-slate-700">Company *</label>
+              <input type="text" id="qaCompany" placeholder="e.g. Cisco, Microsoft, TCS" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium bg-white">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-slate-700">Round *</label>
+              <select id="qaRound" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium bg-white">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-slate-700">Interview Date *</label>
+              <input type="date" id="qaDate" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium bg-white">
+            </div>
+          </div>
         </div>
-        <div class="space-y-1">
-          <label class="text-[11px] font-bold text-slate-700">Interview Date *</label>
-          <input type="date" id="qaDate" required class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-medium">
-        </div>
-      </div>
-    </div>
 
-    <!-- ============================================================== -->
-    <!-- TAB 1 CONTENT: Direct Text / Manual Q&A Input                  -->
-    <!-- ============================================================== -->
-    <div id="qaTabContent-manual" class="space-y-3">
-      <div class="space-y-1">
-        <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
-          <span>Paste Interview Questions & Answers *</span>
-          <span class="text-[10px] text-slate-400 font-normal">Supports 1. / Q: / Ans: or raw discussion notes</span>
-        </label>
-        <textarea id="qaRawText" rows="9" placeholder="Paste interview questions, answers, and scenario questions here. Example:
+        <!-- ============================================================== -->
+        <!-- TAB 1: YouTube Video Link (Default)                             -->
+        <!-- ============================================================== -->
+        <div id="qaTabContent-youtube" class="space-y-3">
+          <div class="p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200 text-xs text-rose-900 flex items-start space-x-2.5">
+            <i class="fa-brands fa-youtube text-red-600 text-xl flex-shrink-0 mt-0.5"></i>
+            <div class="text-[11px] leading-relaxed">
+              <strong>Automatic Subtitle & Q&A Extraction:</strong> Provide a public or unlisted YouTube video URL. Gemini AI will fetch the transcript, extract all interview questions, follow-up sub-questions, and instructor advice!
+            </div>
+          </div>
 
-1. What happens when a pod enters CrashLoopBackOff?
-Ans: The pod starts, crashes, and kubelet restarts it with exponential backoff delay...
-
-2. How do you implement Blue-Green deployment in Kubernetes using Ingress or Service selector?
-Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-mono leading-relaxed"></textarea>
-      </div>
-
-      <!-- AI Grammar Polish Option -->
-      <div class="p-3 rounded-xl bg-gradient-to-r from-sky-50/70 to-indigo-50/50 border border-sky-200 flex items-center justify-between">
-        <label class="flex items-center space-x-2 cursor-pointer text-xs font-bold text-slate-800">
-          <input type="checkbox" id="qaAiPolishCheckbox" checked class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500">
-          <span>✨ Review & Polish with Gemini AI (Correct grammar, keep original text safe)</span>
-        </label>
-        <span class="text-[10px] font-mono bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full font-bold">Auto-Fix</span>
-      </div>
-
-      <!-- Optional Transcript Attachment -->
-      <details class="group/trans rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden text-xs">
-        <summary class="p-2.5 cursor-pointer font-bold text-slate-700 flex items-center justify-between hover:bg-slate-100/70 transition-colors">
-          <span class="flex items-center space-x-1.5">
-            <i class="fa-solid fa-paperclip text-slate-500 text-xs"></i>
-            <span>Attach Full Transcript (Optional)</span>
-          </span>
-          <span class="text-[10px] font-normal text-slate-500">Leave empty if no transcript exists</span>
-        </summary>
-        <div class="p-3 border-t border-slate-200 bg-white space-y-1">
-          <textarea id="qaManualTranscript" rows="4" placeholder="If you have an audio transcript for this interview, paste it here..." class="w-full text-xs rounded-xl p-2.5 border border-sky-200 focus:outline-none font-mono"></textarea>
-        </div>
-      </details>
-
-      <div class="space-y-1">
-        <label class="text-[11px] font-bold text-slate-700 flex items-center">
-          <i class="fa-brands fa-youtube text-red-600 mr-1.5"></i>Interview Recording Link / YouTube URL (Optional)
-        </label>
-        <input type="url" id="qaRecordingLink" placeholder="https://www.youtube.com/watch?v=..." class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none font-mono">
-      </div>
-    </div>
-
-    <!-- ============================================================== -->
-    <!-- TAB 2 CONTENT: YouTube Video Link                              -->
-    <!-- ============================================================== -->
-    <div id="qaTabContent-youtube" class="hidden space-y-3">
-      <div class="p-3 rounded-2xl bg-rose-50/80 border border-rose-200 text-xs text-rose-900 flex items-start space-x-2.5">
-        <i class="fa-brands fa-youtube text-red-600 text-lg flex-shrink-0 mt-0.5"></i>
-        <div class="text-[11px] leading-relaxed">
-          <strong>Automatic Subtitle & Q&A Extraction:</strong> Provide a public or unlisted YouTube video link. Gemini will fetch the transcript, extract all interview questions, follow-up sub-questions, and instructor advice!
-        </div>
-      </div>
-
-      <div class="space-y-1">
-        <label class="text-[11px] font-bold text-slate-700">YouTube Video URL *</label>
-        <input type="url" id="qaYoutubeUrlInput" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." class="w-full text-xs font-mono rounded-xl px-3 py-2.5 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
-      </div>
-    </div>
-
-    <!-- ============================================================== -->
-    <!-- TAB 3 CONTENT: Direct Device Video / Audio Upload              -->
-    <!-- ============================================================== -->
-    <div id="qaTabContent-video" class="hidden space-y-3">
-      <!-- Client-Side Storage Guarantee Banner -->
-      <div class="p-3 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-xs text-emerald-950 flex items-start space-x-2.5">
-        <i class="fa-solid fa-shield-check text-emerald-600 text-base flex-shrink-0 mt-0.5"></i>
-        <div class="text-[11px] leading-relaxed">
-          <strong>100% Local Device Storage:</strong> Your video file stays strictly inside your browser's local storage (IndexedDB). It is <strong>NEVER saved to the server's disk</strong>. Only the generated transcript and extracted questions are banked.
-        </div>
-      </div>
-
-      <!-- Prominent Warning: Client CPU & RAM Resource Consumption -->
-      <div class="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-300 text-xs text-amber-950 space-y-2.5 shadow-2xs">
-        <div class="flex items-start space-x-2.5">
-          <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg flex-shrink-0 mt-0.5"></i>
           <div class="space-y-1">
-            <h4 class="font-extrabold text-amber-950 text-xs">High Device CPU & Memory (RAM) Consumption Notice</h4>
-            <p class="text-[11px] leading-relaxed text-amber-900">
-              Direct video uploads are kept purely in your browser's local storage. Processing large video files directly from local storage requires slicing, buffering, and streaming multi-megabyte/gigabyte media blobs in your browser. This <strong>heavily consumes your laptop or phone's CPU and RAM</strong>, and can cause browser tabs to freeze, lag, or crash on devices with limited memory.
-            </p>
+            <label class="text-[11px] font-bold text-slate-700">YouTube Video URL *</label>
+            <input type="url" id="qaYoutubeUrlInput" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." class="w-full text-xs font-mono rounded-xl px-3 py-2.5 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
           </div>
         </div>
 
-        <div class="p-3 rounded-xl bg-white/90 border border-amber-200 flex items-start space-x-2 text-[11px] text-slate-800">
-          <i class="fa-solid fa-lightbulb text-amber-500 text-sm mt-0.5 flex-shrink-0"></i>
-          <div class="leading-relaxed">
-            <strong class="text-slate-900">Recommended for Permanent Storage & Zero Device Lag:</strong>
-            To keep your recording permanently preserved and avoid high CPU/RAM usage on your device, <strong>upload the video to YouTube (as Unlisted or Private)</strong>, and paste the URL into the <strong class="text-indigo-700">"YouTube Link"</strong> tab! YouTube cloud servers handle all encoding and playback smoothly with 0% load on your device.
+        <!-- ============================================================== -->
+        <!-- TAB 2: Direct Transcript Paste                                 -->
+        <!-- ============================================================== -->
+        <div id="qaTabContent-transcript" class="hidden space-y-3">
+          <div class="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-200 text-xs text-indigo-900 flex items-start space-x-2.5">
+            <i class="fa-solid fa-file-lines text-indigo-600 text-base flex-shrink-0 mt-0.5"></i>
+            <div class="text-[11px] leading-relaxed">
+              <strong>Comprehensive Question Extraction:</strong> Gemini will analyze this transcript with strict instructions:
+              <em>"Extract all questions asked by instructor and any suggestions/answers. Don't miss any questions, even sub-questions."</em>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold text-slate-700">Transcript Text *</label>
+              <label class="text-[10px] text-sky-600 hover:text-sky-800 font-bold cursor-pointer">
+                <i class="fa-solid fa-upload mr-1"></i>Upload .txt / .srt / .vtt
+                <input type="file" accept=".txt,.srt,.vtt" onchange="handleTranscriptFileUpload(event)" class="hidden">
+              </label>
+            </div>
+            <textarea id="qaDirectTranscriptText" rows="10" placeholder="Paste full interview transcript here with speaker names or timestamps..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outline-none font-mono leading-relaxed"></textarea>
           </div>
         </div>
-      </div>
 
-      <div class="space-y-1">
-        <label class="text-[11px] font-bold text-slate-700">Select Video or Audio File from Laptop / Mobile *</label>
-        <input type="file" id="qaVideoFileInput" accept="video/*,audio/*,.mp4,.webm,.mov,.mkv,.avi,.mp3,.wav,.m4a" onchange="handleLocalVideoSelected(event)" class="w-full text-xs p-2 rounded-xl border border-sky-200 bg-slate-50 font-medium">
-        <p class="text-[10px] text-slate-400">Supported formats: MP4, WebM, MOV, MKV, MP3, WAV, M4A.</p>
-      </div>
+        <!-- ============================================================== -->
+        <!-- TAB 3: Direct Device Video / Audio Upload                      -->
+        <!-- ============================================================== -->
+        <div id="qaTabContent-video" class="hidden space-y-3">
+          <!-- Client-Side Storage Guarantee Banner -->
+          <div class="p-3 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-xs text-emerald-950 flex items-start space-x-2.5">
+            <i class="fa-solid fa-shield-check text-emerald-600 text-base flex-shrink-0 mt-0.5"></i>
+            <div class="text-[11px] leading-relaxed">
+              <strong>100% Local Device Storage:</strong> Your video file stays strictly inside your browser's local storage (IndexedDB). It is <strong>NEVER saved to the server's disk</strong>. Only the generated transcript and extracted questions are banked.
+            </div>
+          </div>
 
-      <!-- Local Video Preview -->
-      <div id="localVideoPreviewContainer" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-black aspect-video max-h-48 flex items-center justify-center">
-        <video id="localVideoPreview" controls class="w-full h-full max-h-48 object-contain"></video>
-      </div>
-    </div>
+          <!-- Prominent Warning: Client CPU & RAM Resource Consumption -->
+          <div class="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-300 text-xs text-amber-950 space-y-2.5 shadow-2xs">
+            <div class="flex items-start space-x-2.5">
+              <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg flex-shrink-0 mt-0.5"></i>
+              <div class="space-y-1">
+                <h4 class="font-extrabold text-amber-950 text-xs">High Device CPU & Memory (RAM) Consumption Notice</h4>
+                <p class="text-[11px] leading-relaxed text-amber-900">
+                  Direct video uploads are kept purely in your browser's local storage. Processing large video files directly from local storage requires slicing, buffering, and streaming multi-megabyte/gigabyte media blobs in your browser. This <strong>heavily consumes your laptop or phone's CPU and RAM</strong>.
+                </p>
+              </div>
+            </div>
 
-    <!-- ============================================================== -->
-    <!-- TAB 4 CONTENT: Direct Transcript Paste                         -->
-    <!-- ============================================================== -->
-    <div id="qaTabContent-transcript" class="hidden space-y-3">
-      <div class="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-200 text-xs text-indigo-900 flex items-start space-x-2.5">
-        <i class="fa-solid fa-file-lines text-indigo-600 text-base flex-shrink-0 mt-0.5"></i>
-        <div class="text-[11px] leading-relaxed">
-          <strong>Comprehensive Question Extraction:</strong> Gemini will analyze this transcript with strict instructions:
-          <em>"Extract all questions asked by instructor and any suggestions/answers. Don't miss any questions, even sub-questions."</em>
+            <div class="p-3 rounded-xl bg-white/90 border border-amber-200 flex items-start space-x-2 text-[11px] text-slate-800">
+              <i class="fa-solid fa-lightbulb text-amber-500 text-sm mt-0.5 flex-shrink-0"></i>
+              <div class="leading-relaxed">
+                <strong class="text-slate-900">Recommended for Permanent Storage & Zero Device Lag:</strong>
+                To keep your recording permanently preserved and avoid high CPU/RAM usage on your device, <strong>upload the video to YouTube (as Unlisted or Private)</strong>, and paste the URL into the <strong class="text-red-700">"YouTube Link"</strong> tab!
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-700">Select Video or Audio File from Laptop / Mobile *</label>
+            <input type="file" id="qaVideoFileInput" accept="video/*,audio/*,.mp4,.webm,.mov,.mkv,.avi,.mp3,.wav,.m4a" onchange="handleLocalVideoSelected(event)" class="w-full text-xs p-2 rounded-xl border border-sky-200 bg-slate-50 font-medium">
+            <p class="text-[10px] text-slate-400">Supported formats: MP4, WebM, MOV, MKV, MP3, WAV, M4A.</p>
+          </div>
+
+          <!-- Local Video Preview -->
+          <div id="localVideoPreviewContainer" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-black aspect-video max-h-48 flex items-center justify-center">
+            <video id="localVideoPreview" controls class="w-full h-full max-h-48 object-contain"></video>
+          </div>
         </div>
-      </div>
 
-      <div class="space-y-1">
-        <div class="flex items-center justify-between">
-          <label class="text-[11px] font-bold text-slate-700">Transcript Text *</label>
-          <label class="text-[10px] text-sky-600 hover:text-sky-800 font-bold cursor-pointer">
-            <i class="fa-solid fa-upload mr-1"></i>Upload .txt / .srt / .vtt
-            <input type="file" accept=".txt,.srt,.vtt" onchange="handleTranscriptFileUpload(event)" class="hidden">
-          </label>
+        <!-- ============================================================== -->
+        <!-- TAB 4: Direct Text / Text paste Q&A directly                   -->
+        <!-- ============================================================== -->
+        <div id="qaTabContent-manual" class="hidden space-y-3">
+          <!-- Mandatory AI Auto-Fix & Answer Elaboration Banner -->
+          <div class="p-3 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50 to-emerald-50 border border-sky-200 flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center text-xs shadow-xs">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+              </div>
+              <div>
+                <div class="text-xs font-black text-slate-900">AI Auto-Fix & Answer Elaboration Active</div>
+                <div class="text-[10px] text-slate-500">Auto-formats scenario context, primary/sub-questions, and synthesizes instructor hints into AI answers</div>
+              </div>
+            </div>
+            <span class="text-[10px] font-mono bg-sky-200/80 text-sky-900 px-2.5 py-1 rounded-full font-extrabold border border-sky-300">AUTO-FIX ENFORCED</span>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
+              <span>Paste Interview Questions & Answers *</span>
+              <span class="text-[10px] text-slate-400 font-normal">Supports raw text, scenario contexts, sub-questions, and instructor hints</span>
+            </label>
+            <textarea id="qaRawText" rows="9" placeholder="Paste interview questions, scenario contexts, and answers here. Example:
+
+Microservices Deployment & HTTP 503 Error
+Scenario Context:
+An e-commerce production architecture: Internet -> Load Balancer -> Ingress Controller -> Frontend Service -> Backend services.
+Primary Question:
+The team deploys a new version of the checkout service. The deployment completes successfully, but users report receiving HTTP 503 errors. How are you going to troubleshoot it?
+Sub-Questions:
+What commands are you going to run initially in order to understand what the problem is?
+Instructor's Answer / Suggestion:
+Inspect the Ingress resource, Service endpoints (kubectl get endpoints), and mapped ports..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 font-mono leading-relaxed"></textarea>
+          </div>
+
+          <!-- Optional Transcript Attachment -->
+          <details class="group/trans rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden text-xs">
+            <summary class="p-2.5 cursor-pointer font-bold text-slate-700 flex items-center justify-between hover:bg-slate-100/70 transition-colors">
+              <span class="flex items-center space-x-1.5">
+                <i class="fa-solid fa-paperclip text-slate-500 text-xs"></i>
+                <span>Attach Full Transcript (Optional)</span>
+              </span>
+              <span class="text-[10px] font-normal text-slate-500">Leave empty if no transcript exists</span>
+            </summary>
+            <div class="p-3 border-t border-slate-200 bg-white space-y-1">
+              <textarea id="qaManualTranscript" rows="4" placeholder="If you have an audio transcript for this interview, paste it here..." class="w-full text-xs rounded-xl p-2.5 border border-sky-200 focus:outline-none font-mono"></textarea>
+            </div>
+          </details>
+
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-700 flex items-center">
+              <i class="fa-brands fa-youtube text-red-600 mr-1.5"></i>Interview Recording Link / YouTube URL (Optional)
+            </label>
+            <input type="url" id="qaRecordingLink" placeholder="https://www.youtube.com/watch?v=..." class="w-full text-xs rounded-xl px-3 py-2 border border-sky-200 focus:outline-none font-mono">
+          </div>
         </div>
-        <textarea id="qaDirectTranscriptText" rows="10" placeholder="Paste full interview transcript here with speaker names or timestamps..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outline-none font-mono leading-relaxed"></textarea>
-      </div>
+
+        <!-- Processing Progress Bar & Status -->
+        <div id="qaProcessingStatus" class="hidden p-3 rounded-2xl bg-sky-50 border border-sky-200 space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold text-sky-900">
+            <span id="qaProcessingText" class="flex items-center gap-2">
+              <i class="fa-solid fa-spinner fa-spin text-sky-600"></i>
+              <span>Analyzing with Gemini AI...</span>
+            </span>
+            <span id="qaProcessingPercent" class="font-mono text-[11px]">Processing</span>
+          </div>
+          <div class="w-full bg-sky-200/60 rounded-full h-1.5 overflow-hidden">
+            <div id="qaProgressBar" class="bg-gradient-to-r from-sky-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300 w-1/3 animate-pulse"></div>
+          </div>
+        </div>
+      </main>
     </div>
 
-    <!-- Processing Progress Bar & Status -->
-    <div id="qaProcessingStatus" class="hidden p-3 rounded-2xl bg-sky-50 border border-sky-200 space-y-2">
-      <div class="flex items-center justify-between text-xs font-bold text-sky-900">
-        <span id="qaProcessingText" class="flex items-center gap-2">
-          <i class="fa-solid fa-spinner fa-spin text-sky-600"></i>
-          <span>Analyzing with Gemini AI...</span>
-        </span>
-        <span id="qaProcessingPercent" class="font-mono text-[11px]">Processing</span>
-      </div>
-      <div class="w-full bg-sky-200/60 rounded-full h-1.5 overflow-hidden">
-        <div id="qaProgressBar" class="bg-gradient-to-r from-sky-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300 w-1/3 animate-pulse"></div>
-      </div>
-    </div>
-
-    <!-- Modal Footer Actions -->
-    <div class="pt-3 flex items-center justify-between border-t border-sky-100 flex-wrap gap-2">
-      <div class="flex items-center space-x-2">
+    <!-- Modal Footer Actions (Fixed at bottom) -->
+    <div class="px-6 py-3.5 bg-slate-50 border-t border-sky-100 flex items-center justify-between flex-shrink-0 flex-wrap gap-2">
+      <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
+        <i class="fa-solid fa-shield-check text-emerald-600"></i>
+        <span>Banked directly into your personal repository</span>
       </div>
       <div class="flex items-center space-x-2">
-        <button type="button" onclick="closeUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">Cancel</button>
+        <button type="button" onclick="closeUploadQaModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all cursor-pointer">Cancel</button>
         <button type="button" id="btnSubmitQa" onclick="executeUploadQa()" class="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-sm transition-all flex items-center space-x-1.5 cursor-pointer">
           <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-          <span id="btnSubmitQaText">Process & Bank Q&A</span>
+          <span id="btnSubmitQaText">Extract from YouTube & Bank</span>
         </button>
       </div>
     </div>
+
   </div>
+</div>
 </div>
 
 <!-- ========================================================================================= -->
@@ -1025,7 +1096,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   let currentCategoryFilter = "All";
   let currentWeekOffset = 0;
   let currentMonthOffset = 0;
-  let currentCalendarView = localStorage.getItem("my_calendar_view") || "month";
+  let currentCalendarView = localStorage.getItem("my_calendar_view") || "week";
 
   function formatIsoDate(d = new Date()) {
     const y = d.getFullYear();
@@ -2303,6 +2374,12 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
               <span class="text-slate-900 font-bold text-xs">${escapeHtml(q.question)}</span>
               <div class="mt-1 flex items-center space-x-1.5 flex-wrap">
                 ${catBadges}
+                ${(q.answer && (q.answer.includes("[AI-Generated Answer]") || q.answer.includes("AI-Generated"))) ? `
+                  <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center space-x-1" title="AI-Generated Production Answer">
+                    <i class="fa-solid fa-wand-magic-sparkles text-[8px] text-indigo-500"></i>
+                    <span>AI Generated</span>
+                  </span>
+                ` : ''}
                 ${q.recording_link ? `
                   <a href="${escapeHtml(q.recording_link)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center space-x-1" title="Watch YouTube Clip">
                     <i class="fa-brands fa-youtube text-red-600"></i>
@@ -2616,23 +2693,23 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
   // =========================================================================================
   // 3. MULTIMODAL Q&A UPLOAD TABS & MEDIA SELECTION
   // =========================================================================================
-  let activeQaUploadTab = "manual";
+  let activeQaUploadTab = "youtube";
   let selectedLocalMediaFile = null;
 
   function switchQaUploadTab(tab) {
     activeQaUploadTab = tab;
-    const tabs = ["manual", "youtube", "video", "transcript"];
+    const tabs = ["youtube", "transcript", "video", "manual"];
     tabs.forEach(t => {
       const btn = document.getElementById(`qaTabBtn-${t}`);
       const content = document.getElementById(`qaTabContent-${t}`);
       if (t === tab) {
         if (btn) {
-          btn.className = "flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 bg-white text-sky-700 shadow-xs";
+          btn.className = "w-full text-left p-3 rounded-2xl transition-all flex items-start space-x-3 border cursor-pointer bg-white border-sky-300 shadow-sm text-slate-900 ring-2 ring-sky-400/20";
         }
         if (content) content.classList.remove("hidden");
       } else {
         if (btn) {
-          btn.className = "flex-1 py-1.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900";
+          btn.className = "w-full text-left p-3 rounded-2xl transition-all flex items-start space-x-3 border cursor-pointer border-transparent hover:bg-white/80 text-slate-600 hover:text-slate-900";
         }
         if (content) content.classList.add("hidden");
       }
@@ -2640,10 +2717,10 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
 
     const submitBtnText = document.getElementById("btnSubmitQaText");
     if (submitBtnText) {
-      if (tab === "manual") submitBtnText.textContent = "Process & Bank Q&A";
-      else if (tab === "youtube") submitBtnText.textContent = "Extract from YouTube & Bank";
-      else if (tab === "video") submitBtnText.textContent = "Transcribe Media & Bank";
+      if (tab === "youtube") submitBtnText.textContent = "Extract from YouTube & Bank";
       else if (tab === "transcript") submitBtnText.textContent = "Extract Q&A from Transcript";
+      else if (tab === "video") submitBtnText.textContent = "Transcribe Media & Bank";
+      else if (tab === "manual") submitBtnText.textContent = "Process & Bank Q&A";
     }
   }
 
@@ -2692,7 +2769,7 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
     if (document.getElementById("qaDirectTranscriptText")) document.getElementById("qaDirectTranscriptText").value = "";
     if (document.getElementById("localVideoPreviewContainer")) document.getElementById("localVideoPreviewContainer").classList.add("hidden");
     if (document.getElementById("qaProcessingStatus")) document.getElementById("qaProcessingStatus").classList.add("hidden");
-    switchQaUploadTab("manual");
+    switchQaUploadTab("youtube");
     document.getElementById("uploadQaModal").classList.remove("hidden");
   }
 
@@ -2820,40 +2897,43 @@ Ans: ..." class="w-full text-xs rounded-xl p-3 border border-sky-200 focus:outli
         generatedTranscript = manualTranscript;
         sourceType = "manual_text";
 
-        const shouldPolish = document.getElementById("qaAiPolishCheckbox")?.checked;
-        if (shouldPolish) {
-          setProcessing(true, "Polishing & reviewing Q&A with Gemini AI...", "AI Review");
-          try {
-            const headers = { "Content-Type": "application/json" };
-            if (apiKey) headers["x-gemini-api-key"] = apiKey;
+        // Mandatory AI Auto-Fix, Question Formatting & Elaborated Answer Generation
+        setProcessing(true, "Auto-Fixing & elaborating answers with Gemini AI...", "AI Auto-Fix");
+        try {
+          const headers = { "Content-Type": "application/json" };
+          if (apiKey) headers["x-gemini-api-key"] = apiKey;
 
-            const res = await fetch("/api/ai/polish", {
-              method: "POST",
-              headers: headers,
-              body: JSON.stringify({ text: rawText, model: "gemini-3.8-flash-high" })
-            });
-            const data = await res.json();
-            if (res.ok && data.questions && data.questions.length > 0) {
-              parsedQuestions = data.questions.map(q => ({
+          const res = await fetch("/api/ai/polish", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({ text: rawText, model: "gemini-3.8-flash-high" })
+          });
+          const data = await res.json();
+          if (res.ok && data.questions && data.questions.length > 0) {
+            parsedQuestions = data.questions.map(q => {
+              let ans = (q.answer || "").trim();
+              if (!ans) ans = "💡 **[AI-Generated Answer]**\n\nTo be reviewed / prepared with production guidelines.";
+              else if (!ans.includes("[AI-Generated Answer]") && !ans.includes("AI-Generated")) {
+                ans = `💡 **[AI-Generated Answer]**\n\n${ans}`;
+              }
+              return {
                 id: "q-" + Math.random().toString(36).substr(2, 9),
                 question: q.question,
-                answer: q.answer || "To be reviewed / prepared.",
-                categories: (q.categories && q.categories.length) ? q.categories : autoDetectCategories(q.question + " " + (q.answer || "")),
+                answer: ans,
+                categories: (q.categories && q.categories.length) ? q.categories : autoDetectCategories(q.question + " " + ans),
                 sub_questions: q.sub_questions || [],
                 suggestions: q.suggestions || "",
                 original_raw_text: rawText,
                 source_type: "manual_text",
                 transcript: manualTranscript
-              }));
-              showToast("Questions polished with Gemini AI!", "success");
-            } else {
-              parsedQuestions = parseQaRawText(rawText);
-            }
-          } catch (aiErr) {
-            console.warn("AI polish failed, using client parser:", aiErr);
+              };
+            });
+            showToast("Questions auto-formatted & answers elaborated with Gemini AI!", "success");
+          } else {
             parsedQuestions = parseQaRawText(rawText);
           }
-        } else {
+        } catch (aiErr) {
+          console.warn("AI polish failed, using client fallback parser:", aiErr);
           parsedQuestions = parseQaRawText(rawText);
         }
 

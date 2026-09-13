@@ -109,7 +109,7 @@
               <i class="fa-solid fa-chevron-left"></i>
             </button>
             <button onclick="navigateCalendar(0)" id="calTodayBtn" class="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 text-xs font-bold transition-all shadow-xs cursor-pointer" title="Jump to current date/month">
-              This Month
+              Today
             </button>
             <button onclick="navigateCalendar(1)" id="calNextBtn" class="w-8 h-8 rounded-xl bg-white/90 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-sky-200 flex items-center justify-center text-xs transition-all shadow-xs cursor-pointer" title="Next">
               <i class="fa-solid fa-chevron-right"></i>
@@ -138,13 +138,13 @@
             </span>
           </div>
 
-          <!-- Segmented View Toggle: Week vs Month -->
+          <!-- Segmented View Toggle: Week vs Month (Week default) -->
           <div class="flex items-center p-1 bg-slate-100/90 rounded-xl border border-sky-200/60 shadow-inner">
-            <button id="calViewWeekBtn" onclick="setCalendarView('week')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer">
+            <button id="calViewWeekBtn" onclick="setCalendarView('week')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer">
               <i class="fa-solid fa-calendar-week text-[11px]"></i>
               <span>Week</span>
             </button>
-            <button id="calViewMonthBtn" onclick="setCalendarView('month')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-white text-sky-700 shadow-xs cursor-pointer">
+            <button id="calViewMonthBtn" onclick="setCalendarView('month')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 text-slate-600 hover:text-sky-700 cursor-pointer">
               <i class="fa-solid fa-calendar-days text-[11px]"></i>
               <span>Month</span>
             </button>
@@ -152,13 +152,13 @@
         </div>
       </div>
 
-      <!-- 7-Day Grid (Week View) -->
-      <div id="weekDaysGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40 min-h-[160px]">
+      <!-- 7-Day Grid (Week View - Default) -->
+      <div id="weekDaysGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 bg-white/40 min-h-[160px]">
         <!-- Rendered via JS -->
       </div>
 
       <!-- Full Month Calendar View (Multi-week grid with Mon-Sun headers) -->
-      <div id="monthDaysContainer" class="p-3 bg-white/30 space-y-2">
+      <div id="monthDaysContainer" class="hidden p-3 bg-white/30 space-y-2">
         <!-- Weekday Headers -->
         <div class="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 py-1 bg-sky-50/50 rounded-xl border border-sky-100">
           <div>Mon</div>
@@ -385,7 +385,7 @@
 <script>
   let currentWeekOffset = 0;
   let currentMonthOffset = 0;
-  let currentCalendarView = localStorage.getItem("nagaraj_calendar_view") || "month";
+  let currentCalendarView = localStorage.getItem("nagaraj_calendar_view") || "week";
   let modalMonthOffset = 0;
   let allSchedules = [];
   let allQuestions = [];
@@ -1144,6 +1144,12 @@
                 ${q.difficulty ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md border font-mono ${diffClass}"><i class="fa-solid fa-gauge-high mr-1"></i>${escapeHtml(q.difficulty)}</span>` : ''}
                 ${!isGrouped && q.date ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${formatDateCustom(q.date)}</span>` : ''}
                 ${catsHtml}
+                ${(q.answer && (q.answer.includes("[AI-Generated Answer]") || q.answer.includes("AI-Generated"))) ? `
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border font-mono bg-indigo-50 text-indigo-700 border-indigo-200 shadow-2xs flex items-center gap-1" title="AI-Generated Production Answer">
+                    <i class="fa-solid fa-wand-magic-sparkles text-[9px] text-indigo-500"></i>
+                    <span>AI Generated</span>
+                  </span>
+                ` : ''}
                 ${q.recording_link ? `
                   <a href="${escapeHtml(q.recording_link)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center space-x-1 transition-all" title="Watch YouTube Clip / Recording">
                     <i class="fa-brands fa-youtube text-red-600 text-[11px]"></i>

@@ -22,7 +22,7 @@ A modern, production-grade DevOps knowledge portal, interactive notes reader, an
   - [4.1 Notes Explorer & Search](#41-notes-explorer--search)
   - [4.2 My Interview Hub & Personal Tracker (`/my-interviews`)](#42-my-interview-hub--personal-tracker-my-interviews)
   - [4.3 Nagaraj Interview Schedule & Q&A Hub (`/interviews`)](#43-nagaraj-interview-schedule--qa-hub-interviews)
-  - [4.4 Old IQ Questions Bank (`/old-iq-questions`)](#44-old-iq-questions-bank-old-iq-questions)
+  - [4.4 Old Interview Questions Bank (`/old-iq-questions`)](#44-old-interview-questions-bank-old-iq-questions)
 - [5. Secure GitHub Authentication & Multi-User Sync](#5-secure-github-authentication--multi-user-sync)
 - [6. Project Structure](#6-project-structure)
 - [7. API Reference](#7-api-reference)
@@ -367,8 +367,8 @@ To reduce cloud hosting costs on Google Cloud Platform, schedule your Compute En
 * **Hierarchical Grouping**: Questions grouped under dedicated Company banners and Round cards.
 * **Multi-Category Auto-Detection**: Auto-detects and tags questions across 17 DevOps categories (`Linux`, `Shell script`, `jenkins`, `Github`, `Build tools`, `Docker`, `AWS`, `Kubernetes`, `terraform`, `Ansible`, `jira`, `scrum`, `Agile`, `Monitoring tools`, `python`, `Azure`, `AI tool`).
 
-### 4.4 Old IQ Questions Bank (`/old-iq-questions`)
-* **Dedicated Navigation Menu**: Parses markdown question banks from the `Interview Questions/` repository directory.
+### 4.4 Old Interview Questions Bank (`/old-iq-questions`)
+* **Dedicated Navigation Menu**: Parses markdown question banks from the `Old Interview Questions/` repository directory.
 * **Collapsible Hierarchy**: Company ➔ Round ➔ Category ➔ Question & Senior-Level Answer Accordion.
 * **Instant Client-Side Filtering**: Category pill counters and instant search across question text and answers.
 
@@ -392,7 +392,7 @@ devops-notes-portal-web-app/
 │   ├── config.py                 # Multi-repository configuration & env overrides
 │   ├── git_sync.py               # Background Git sync engine
 │   ├── interview_hub.py          # Schedules, Q&A, and auto-categorization
-│   ├── old_iq_manager.py         # Dedicated parser for 'Interview Questions/'
+│   ├── old_iq_manager.py         # Dedicated parser for 'Old Interview Questions/'
 │   ├── session_manager.py        # Notes-repo backed session database
 │   ├── markdown_engine.py        # Markdown parser with code highlighting
 │   ├── main.py                   # FastAPI backend endpoints & lifespan sync
@@ -401,7 +401,7 @@ devops-notes-portal-web-app/
 │       ├── index.html            # Notes tree, viewer, mermaid & typography
 │       ├── interviews.html       # Nagaraj interview tracker & Q&A uploader
 │       ├── my_interviews.html    # Zero-login personal tracker with browser sync
-│       └── old_iq.html           # Dedicated Old IQ questions viewer
+│       └── old_iq.html           # Dedicated Old Interview Questions viewer
 ├── k8s/
 │   └── all-in-one.yaml           # Complete Kubernetes manifests (Deployment, SVC, PVC)
 ├── Dockerfile                    # Multi-stage optimized Docker build

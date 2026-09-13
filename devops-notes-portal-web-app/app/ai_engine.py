@@ -167,15 +167,28 @@ def test_gemini_connection(api_key: str, model: str = "gemini-3.8-flash-high") -
 
 def polish_and_review_text(raw_text: str, api_key: str = "", model: str = "gemini-3.8-flash-high") -> Dict[str, Any]:
     """
-    Grammar review, correction, and structured question extraction from raw user text.
+    Grammar review, correction, scenario parsing, and structured question extraction from raw user text.
+    Auto-generates production-grade answers labeled as [AI-Generated Answer].
+    If instructor suggestions or answers are present, AI incorporates and elaborates on them.
     Preserves original text untouched and returns both.
     """
     system_instruction = (
-        "You are an expert DevOps engineer and technical editor. "
-        "Review the provided DevOps interview questions and answers. "
-        "Fix all grammar, spelling, and phrasing issues while maintaining strict technical accuracy. "
-        "Format any bash scripts, commands, and Kubernetes manifests cleanly with markdown backticks. "
-        "Extract every question and sub-question into a structured JSON format."
+        "You are an expert DevOps lead architect, interview coach, and technical editor. "
+        "Review the provided DevOps interview questions, scenario notes, and answers.\n"
+        "CRITICAL REQUIREMENTS:\n"
+        "1. Recognize scenario-based questions: Detect Scenario Context, architecture flows (e.g. Internet -> LB -> Ingress -> Services), Primary Question, Sub-Questions, and Instructor's Suggestions/Answers.\n"
+        "2. Question structure: For each question, extract:\n"
+        "   - 'question': Main question title/prompt. If scenario context is present, format it clearly with markdown (e.g. '### Scenario Context:\\n...\\n\\n### Primary Question:\\n...').\n"
+        "   - 'sub_questions': list of follow-up questions or sub-questions.\n"
+        "   - 'suggestions': instructor's hints, root-cause notes, or suggestions.\n"
+        "   - 'categories': relevant DevOps categories (Kubernetes, Microservices, Networking, Docker, Linux, Shell script, Jenkins, CI/CD, AWS, Terraform, Ansible, Jira, Scrum, Agile, Monitoring tools, Python, Azure, AI tool).\n"
+        "   - 'difficulty': 'Basic', 'Moderate', or 'Advanced'.\n"
+        "3. Answer generation (MANDATORY):\n"
+        "   - You MUST auto-generate a comprehensive, in-depth, production-grade DevOps answer with exact CLI commands (e.g., kubectl get endpoints, kubectl describe, kubectl logs), configuration snippets, root cause troubleshooting, and resolution steps.\n"
+        "   - The answer MUST start with '💡 **[AI-Generated Answer]**' (or '💡 **[AI-Generated Answer - Elaborated from Instructor's Suggestion]**').\n"
+        "   - If instructor suggestions or partial answers are provided in the input, you MUST fully synthesize and elaborate on them into the detailed answer.\n"
+        "   - If NO answer was provided in the input, generate a complete production-grade answer.\n"
+        "Format any bash scripts, commands, and Kubernetes manifests cleanly with markdown backticks."
     )
 
     prompt = f"""
@@ -185,11 +198,11 @@ Given the following raw interview notes/questions:
 Provide your response as a valid JSON object with the exact keys:
 1. "polished_text": A cleanly formatted, grammatically polished markdown version of the complete text.
 2. "questions": An array of question objects, each with:
-   - "question": string (the main question title/text)
+   - "question": string (the question title, incorporating scenario context if provided)
    - "sub_questions": list of strings (any sub-questions or follow-up prompts)
-   - "answer": string (the refined, production-grade DevOps answer)
-   - "suggestions": string (any tips, best practices, or feedback, or empty string)
-   - "categories": list of strings (e.g. Linux, Shell script, jenkins, Github, Build tools, Docker, AWS, Kubernetes, terraform, Ansible, jira, scrum, Agile, Monitoring tools, python, Azure, AI tool)
+   - "answer": string (the refined, production-grade DevOps answer, starting with '💡 **[AI-Generated Answer]**')
+   - "suggestions": string (instructor's suggestions/hints, or empty string)
+   - "categories": list of strings (e.g. Kubernetes, Microservices, Networking, Docker, AWS, Linux, CI/CD, etc.)
    - "difficulty": string ("Basic", "Moderate", or "Advanced")
 """
 
@@ -202,13 +215,23 @@ Provide your response as a valid JSON object with the exact keys:
         response_json=True
     )
 
+    def ensure_ai_label_on_questions(q_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        for q in q_list:
+            ans = q.get("answer", "").strip()
+            if not ans:
+                ans = "💡 **[AI-Generated Answer]**\n\nTo be reviewed / prepared with production guidelines."
+            elif not ("[AI-Generated Answer]" in ans or "AI-Generated" in ans):
+                ans = f"💡 **[AI-Generated Answer]**\n\n{ans}"
+            q["answer"] = ans
+        return q_list
+
     try:
         data = json.loads(response_text)
         return {
             "status": "success",
             "original_text": raw_text,
             "polished_text": data.get("polished_text", raw_text),
-            "questions": data.get("questions", [])
+            "questions": ensure_ai_label_on_questions(data.get("questions", []))
         }
     except Exception:
         # Fallback if json parse fails
@@ -220,7 +243,7 @@ Provide your response as a valid JSON object with the exact keys:
                 "status": "success",
                 "original_text": raw_text,
                 "polished_text": data.get("polished_text", raw_text),
-                "questions": data.get("questions", [])
+                "questions": ensure_ai_label_on_questions(data.get("questions", []))
             }
         except Exception:
             return {
@@ -560,4 +583,123 @@ def process_ephemeral_media(
         "summary": data.get("interview_summary", ""),
         "questions": data.get("questions", []),
         "count": len(data.get("questions", []))
+    }
+
+def process_bulk_interview_files(
+    file_data_list: List[Dict[str, str]],
+    source_comment: str = "whatsapp",
+    api_key: str = "",
+    model: str = "gemini-3.8-flash-high"
+) -> Dict[str, Any]:
+    """
+    Parses multiple raw text/markdown interview files uploaded by Admin.
+    Extracts companies, rounds, dates, categories, questions, sub-questions, and instructor suggestions.
+    Auto-generates elaborated AI answers labeled with [AI-Generated Answer].
+    Builds a single unified markdown document formatted for the Old Interview Questions repository.
+    """
+    clean_source = re.sub(r'^(from\s*:\s*|from\s+)', '', (source_comment or "").strip(), flags=re.IGNORECASE).strip()
+    if not clean_source:
+        clean_source = "uploaded notes"
+
+    system_instruction = (
+        "You are an expert DevOps Lead Architect, Senior Interviewer, and Technical Documentation Specialist. "
+        "You are provided with contents of multiple interview text or markdown files collected from various candidates/sources. "
+        "Each file may contain interview questions, dates, company names, round names, scenario contexts, and instructor suggestions.\n"
+        "YOUR CORE TASKS:\n"
+        "1. Extract ALL questions from all files without skipping any question or sub-question.\n"
+        "2. Identify the Company name and Round name (e.g. 'L1', 'Technical Discussion 1', 'Assessment', 'Screening', 'Managerial') for each question. If company name is not explicit in the text, deduce it from context or group under 'General DevOps Interviews'.\n"
+        "3. Identify the interview Date and Category (CI/CD, DOCKER, KUBERNETES, TERRAFORM, AWS, LINUX, SHELL SCRIPT, ANSIBLE, NETWORKING, MICROSERVICES, MONITORING, GIT, PYTHON, AZURE, GENERAL).\n"
+        "4. Auto-generate comprehensive, production-grade DevOps answers for EVERY question:\n"
+        "   - The answer MUST start with '💡 **[AI-Generated Answer]**'.\n"
+        "   - If instructor suggestions or answers are present, incorporate and elaborate on them into a detailed step-by-step troubleshooting guide or explanation with exact commands and manifests.\n"
+        "   - If no answer was provided, write a complete, high-quality production answer.\n"
+        "5. Compile all questions hierarchically (Company -> Round -> Category -> Questions) into a single, beautifully structured Markdown document matching the exact schema:\n\n"
+        "# DevOps Interview Questions (from " + clean_source + ")\n\n"
+        "<details open>\n"
+        "<summary><h2>🏢 Company Name</h2></summary>\n\n"
+        "<details open>\n"
+        "<summary><h3>Round Name</h3></summary>\n\n"
+        "*Date: DD-MMM-YYYY*\n\n"
+        "#### 【 CATEGORY 】\n\n"
+        "<details>\n"
+        "<summary><strong>● Question Title / Prompt</strong></summary>\n\n"
+        "**Scenario Context:** (if applicable)\n"
+        "Context details\n\n"
+        "**Sub-Questions:** (if applicable)\n"
+        "- Sub question 1\n\n"
+        "**Instructor's Suggestion / Hints:** (if applicable)\n"
+        "Instructor suggestion\n\n"
+        "**Answer:**\n"
+        "💡 **[AI-Generated Answer]**\n"
+        "Detailed production-grade answer...\n"
+        "</details>\n\n"
+        "</details>\n"
+        "</details>\n\n"
+        "6. Return strict JSON with keys:\n"
+        "- 'markdown_content': string (the full generated markdown)\n"
+        "- 'companies_count': int\n"
+        "- 'rounds_count': int\n"
+        "- 'questions_count': int\n"
+        "- 'companies': list of string company names\n"
+        "- 'categories': list of string categories\n"
+    )
+
+    file_blocks = []
+    for idx, f_item in enumerate(file_data_list, 1):
+        fname = f_item.get("filename", f"file_{idx}.txt")
+        fcontent = f_item.get("content", "")
+        file_blocks.append(f"=== FILE {idx}: {fname} ===\n{fcontent}\n=== END FILE {idx} ===")
+
+    combined_text = "\n\n".join(file_blocks)
+
+    prompt = f"""
+Files Origin / Comment: {clean_source}
+Total uploaded files: {len(file_data_list)}
+
+Uploaded Files:
+\"\"\"
+{combined_text}
+\"\"\"
+
+Please process and synthesize all interview questions into a single cohesive Markdown document with production-grade AI answers labeled with 💡 **[AI-Generated Answer]**, and return the strict JSON object.
+"""
+
+    contents = [{"parts": [{"text": prompt}]}]
+    response_text = call_gemini_api(
+        contents,
+        api_key=api_key,
+        model=model,
+        system_instruction=system_instruction,
+        response_json=True
+    )
+
+    try:
+        data = json.loads(response_text)
+    except Exception:
+        cleaned_json = re.sub(r'^```json\s*', '', response_text.strip(), flags=re.MULTILINE)
+        cleaned_json = re.sub(r'```$', '', cleaned_json.strip(), flags=re.MULTILINE)
+        try:
+            data = json.loads(cleaned_json)
+        except Exception:
+            data = {
+                "markdown_content": response_text,
+                "companies_count": 1,
+                "rounds_count": 1,
+                "questions_count": 1,
+                "companies": ["DevOps Interviews"],
+                "categories": ["General"]
+            }
+
+    md_content = data.get("markdown_content", "")
+    if not md_content or len(md_content) < 50:
+        md_content = f"# DevOps Interview Questions (from {clean_source})\n\n" + response_text
+
+    return {
+        "status": "success",
+        "markdown_content": md_content,
+        "companies_count": data.get("companies_count", len(data.get("companies", []))),
+        "rounds_count": data.get("rounds_count", 1),
+        "questions_count": data.get("questions_count", 0),
+        "companies": data.get("companies", []),
+        "categories": data.get("categories", [])
     }

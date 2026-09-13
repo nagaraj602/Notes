@@ -1,6 +1,6 @@
 """
-Old IQ Questions Manager - Parses and manages interview questions from 'Interview Questions' folder.
-Supports both container deployment (/app/data/notes/devops-notes/Interview Questions)
+Old Interview Questions Manager - Parses and manages interview questions from 'Old Interview Questions' folder.
+Supports both container deployment (/app/data/notes/devops-notes/Old Interview Questions)
 and local development environments.
 Zero interference with 'Nagaraj_interviews'.
 """
@@ -149,27 +149,39 @@ class OldIQManager:
         self._cached_data: Optional[Dict[str, Any]] = None
         self._cached_mtime: float = 0
 
+    def invalidate_cache(self):
+        """Clears in-memory cached questions so new files reload immediately."""
+        self._cached_data = None
+        self._cached_mtime = 0
+
     def get_interview_questions_dir(self) -> str:
-        """Locates the 'Interview Questions' folder across Docker, K8s, and local dev."""
+        """Locates the 'Old Interview Questions' folder across Docker, K8s, and local dev."""
+        candidate_names = ["Old Interview Questions", "Interview Questions"]
         if self.custom_notes_dir and os.path.exists(self.custom_notes_dir):
-            p = os.path.join(self.custom_notes_dir, "Interview Questions")
-            if os.path.exists(p):
-                return p
+            for cname in candidate_names:
+                p = os.path.join(self.custom_notes_dir, cname)
+                if os.path.exists(p):
+                    return p
 
         # 1. Container mount path inside Docker/K3s
-        container_path = "/app/data/notes/devops-notes/Interview Questions"
-        if os.path.exists(container_path) and os.path.isdir(container_path):
-            return container_path
+        for cname in candidate_names:
+            container_path = f"/app/data/notes/devops-notes/{cname}"
+            if os.path.exists(container_path) and os.path.isdir(container_path):
+                return container_path
+            container_root = f"/app/data/notes/{cname}"
+            if os.path.exists(container_root) and os.path.isdir(container_root):
+                return container_root
 
         # 2. Local development: look upwards from current file directory
         cur = os.path.abspath(os.path.dirname(__file__))
         for _ in range(6):
-            candidate = os.path.join(cur, "Interview Questions")
-            if os.path.exists(candidate) and os.path.isdir(candidate):
-                return candidate
-            candidate_notes = os.path.join(cur, "devops-notes", "Interview Questions")
-            if os.path.exists(candidate_notes) and os.path.isdir(candidate_notes):
-                return candidate_notes
+            for cname in candidate_names:
+                candidate = os.path.join(cur, cname)
+                if os.path.exists(candidate) and os.path.isdir(candidate):
+                    return candidate
+                candidate_notes = os.path.join(cur, "devops-notes", cname)
+                if os.path.exists(candidate_notes) and os.path.isdir(candidate_notes):
+                    return candidate_notes
             cur = os.path.dirname(cur)
 
         return ""
@@ -190,7 +202,7 @@ class OldIQManager:
         return latest
 
     def get_data(self, force_refresh: bool = False) -> Dict[str, Any]:
-        """Loads and parses all interview questions from the 'Interview Questions' folder."""
+        """Loads and parses all interview questions from the 'Old Interview Questions' folder."""
         iq_dir = self.get_interview_questions_dir()
         if not iq_dir or not os.path.exists(iq_dir):
             return {
@@ -225,10 +237,10 @@ class OldIQManager:
             except Exception:
                 continue
 
-            if "2. 9-Sep-2026" in fname or "1. 23-Aug-2026" in fname:
-                self._parse_company_interview_file(fname, content, companies_map, category_counts)
-            elif "0. Basic" in fname or "0_1. General" in fname:
+            if "0. Basic" in fname or "0_1. General" in fname:
                 self._parse_general_guide_file(fname, content, companies_map, category_counts)
+            else:
+                self._parse_company_interview_file(fname, content, companies_map, category_counts)
 
         # Convert rounds to sorted lists for each company
         for c in companies_map.values():
