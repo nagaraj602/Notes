@@ -3,6 +3,7 @@ import shutil
 import git
 import time
 import logging
+from typing import Dict, Any, List, Optional
 from app.config import REPOS, NOTES_DIR
 
 logging.basicConfig(level=logging.INFO)
