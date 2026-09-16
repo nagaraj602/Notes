@@ -586,7 +586,7 @@ while true; do
     echo "  2) [Docker Desktop K8s] Build, push & deploy to Docker Desktop Kubernetes"
     echo "  3) [Kubeadm Cluster] Deploy to production / multi-node Kubernetes cluster"
     echo "  4) [Docker Run] Run standalone container with persistent volume"
-    echo "  5) [GCP Ubuntu Server Setup] Automated Setup (Docker + Compose + App + Cloudflare)"
+    echo "  5) [GCP Ubuntu Server Setup] Automated Setup (Install Docker + Docker Compose + App Deploy + Cloudflare tunnel)"
     echo "  6) [Cloudflare Tunnel] Setup zero-port secure HTTPS tunnel"
     echo "  7) [Build & Push Only] Build image locally & push to Docker Hub (with auth fix)"
     echo "  8) [GCP VM Scheduler] Setup 11:00 PM Shutdown / 6:00 AM Startup Schedule"
