@@ -372,6 +372,14 @@ To reduce cloud hosting costs on Google Cloud Platform, schedule your Compute En
 * **Collapsible Hierarchy**: Company ➔ Round ➔ Category ➔ Question & Senior-Level Answer Accordion.
 * **Instant Client-Side Filtering**: Category pill counters and instant search across question text and answers.
 
+### 4.5 Commands & Manifests Cheat Sheets Portal (`/cheatsheets`)
+* **16 Technology Categories**: Linux, Shell Script, GitHub, Build Tools (Maven, Python, C, NodeJS), AWS CLI v2, Docker, Kubernetes kubectl, Helm, Terraform, Ansible, Monitoring Tools, plus dedicated Code Example categories for Shell Scripts, Kubernetes Manifests, Terraform YAML/HCL, Ansible Playbooks, and Dockerfiles.
+* **Responsive Dual Layout**: Interactive Command Table (Command + AI Explanation) for CLI categories, and dedicated copyable code block cards with syntax highlighting for configuration manifests and scripts.
+* **Admin AI Ingestion**: Bulk command addition and text file upload with strictly pinned `gemini-3.8-flash-high` AI parsing, review/edit window, prompt improvisation, and direct banking to `commands_cheatsheet/<category>.md`.
+
+### 4.6 Strict Gemini 3.8 Flash High AI Model Pinning
+* **Zero Model Downgrades**: All AI multimodal processing (audio/video transcription, YouTube Q&A extraction, grammar polishing, and cheatsheet parsing) is strictly locked to `gemini-3.8-flash-high` across the entire portal without fallback to older models.
+
 ---
 
 ## 5. Secure GitHub Authentication & Multi-User Sync
@@ -381,6 +389,8 @@ To reduce cloud hosting costs on Google Cloud Platform, schedule your Compute En
 2. **Server-Side Push Credentials (`.git_token`)**:
    * For the official Nagaraj Notes showcase, enter your GitHub PAT in `/settings`.
    * It is securely written to `/app/data/notes/.git_token` (on the persistent volume outside the git clone) and ignored by `.gitignore`.
+3. **Secret Admin Portal**:
+   * Admin dashboard `/admin/submissions` is protected by admin PAT token authentication and completely hidden from public navigation menus. Accessing `/admin` directly renders a standard `404 Not Found` page.
 
 ---
 
@@ -391,22 +401,36 @@ devops-notes-portal-web-app/
 ├── app/
 │   ├── config.py                 # Multi-repository configuration & env overrides
 │   ├── git_sync.py               # Background Git sync engine
+│   ├── ai_engine.py              # Strictly pinned Gemini 3.8 Flash High AI engine
+│   ├── cheatsheet_manager.py     # Parser & manager for commands_cheatsheet/
 │   ├── interview_hub.py          # Schedules, Q&A, and auto-categorization
 │   ├── old_iq_manager.py         # Dedicated parser for 'Old Interview Questions/'
+│   ├── candidate_submissions.py  # Candidate telemetry & admin approval
 │   ├── session_manager.py        # Notes-repo backed session database
 │   ├── markdown_engine.py        # Markdown parser with code highlighting
 │   ├── main.py                   # FastAPI backend endpoints & lifespan sync
+│   ├── static/
+│   │   └── js/                   # Modular client-side feature scripts
+│   │       ├── my_interviews_common.js
+│   │       ├── my_interviews_calendar.js
+│   │       ├── my_interviews_schedule.js
+│   │       ├── my_interviews_qa.js
+│   │       └── my_interviews_stats_modal.js
 │   └── templates/
-│       ├── base.html             # Main layout, nav header
+│       ├── base.html             # Main layout & navigation header
 │       ├── index.html            # Notes tree, viewer, mermaid & typography
 │       ├── interviews.html       # Nagaraj interview tracker & Q&A uploader
-│       ├── my_interviews.html    # Zero-login personal tracker with browser sync
-│       └── old_iq.html           # Dedicated Old Interview Questions viewer
+│       ├── my_interviews.html    # Modular personal tracker with browser sync
+│       ├── old_iq.html           # Dedicated Old Interview Questions viewer
+│       ├── cheatsheets.html      # Commands & Code Examples Cheat Sheets portal
+│       ├── admin_submissions.html# Admin approvals & AI Cheatsheet Ingestion
+│       └── 404.html              # Custom 404 error page
+├── commands_cheatsheet/          # 16 Markdown technology cheat sheets
 ├── k8s/
 │   └── all-in-one.yaml           # Complete Kubernetes manifests (Deployment, SVC, PVC)
 ├── Dockerfile                    # Multi-stage optimized Docker build
 ├── docker-compose.yml            # Docker Compose with dual-port mapping & healthchecks
-├── deploy.sh                     # Universal 1-Click interactive deployer (Git Bash & Linux)
+├── deploy.sh                     # Universal 1-Click interactive deployer
 ├── requirements.txt              # Python dependencies
 └── README.md                     # Documentation & Deployment Guide
 ```

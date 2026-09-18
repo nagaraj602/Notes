@@ -591,6 +591,13 @@
         btn.classList.remove('active-cat');
       }
     });
+
+    if (cat === 'ALL') {
+      // When category ALL is selected, collapse all companies, rounds, and answers
+      toggleAllCompanies(false);
+      toggleAllAnswers(false);
+    }
+
     applyFilters();
   }
 
@@ -634,6 +641,12 @@
     let visibleQuestions = 0;
     let visibleCompanies = 0;
 
+    if (currentCategory === 'ALL' && !searchVal && currentCompany === 'ALL') {
+      // Strictly collapse all companies, rounds, and answers by default when ALL is active
+      toggleAllCompanies(false);
+      toggleAllAnswers(false);
+    }
+
     const companyCards = document.querySelectorAll('.company-card');
 
     companyCards.forEach(card => {
@@ -648,7 +661,7 @@
         const qItems = roundCard.querySelectorAll('.question-card, .question-item');
 
         qItems.forEach(qItem => {
-          const qCat = qItem.getAttribute('data-cat');
+          const qCat = qItem.getAttribute('data-cat') || '';
           const qId = qItem.getAttribute('data-q-id');
           const qText = qItem.querySelector('.q-text')?.innerText.toLowerCase() || '';
           const rawTpl = document.getElementById(`raw-ans-${qId}`);
@@ -669,6 +682,13 @@
 
         if (roundHasMatchingQuestions) {
           roundCard.classList.remove('hidden');
+          // If category other than ALL is selected or search query active, expand this round
+          if (currentCategory !== 'ALL' || searchVal.length > 2) {
+            const rContent = roundCard.querySelector('.round-content');
+            if (rContent) rContent.classList.remove('hidden');
+            const rChevron = roundCard.querySelector('[id^="chevron-round-"]');
+            if (rChevron) rChevron.classList.add('rotate-180');
+          }
         } else {
           roundCard.classList.add('hidden');
         }
@@ -677,10 +697,12 @@
       if (companyHasMatchingQuestions) {
         card.classList.remove('hidden');
         visibleCompanies++;
-        // If actively searching, auto-expand the company and rounds
-        if (searchVal.length > 2) {
+        // If actively searching or category other than ALL is selected, auto-expand the company
+        if (searchVal.length > 2 || currentCategory !== 'ALL') {
           const content = card.querySelector('.company-content');
           if (content) content.classList.remove('hidden');
+          const cChevron = card.querySelector('[id^="chevron-comp-"]');
+          if (cChevron) cChevron.classList.add('rotate-180');
         }
       } else {
         card.classList.add('hidden');
@@ -706,9 +728,9 @@
     }
   }
 
-  // Initialize markdown on load for any pre-expanded answers
+  // Initialize: By default category ALL is opened and completely collapsed
   document.addEventListener('DOMContentLoaded', () => {
-    // Ready
+    selectCategory('ALL');
   });
 </script>
 {% endblock %}

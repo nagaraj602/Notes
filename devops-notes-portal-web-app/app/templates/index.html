@@ -329,8 +329,13 @@
 
   <!-- Interactive Image Lightbox & Zoom Modal -->
   <div id="imageLightboxModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md transition-opacity duration-200 select-none">
+    <!-- Top-Right Prominent Floating Close Button Outside the Image -->
+    <button onclick="closeLightbox()" class="fixed top-5 right-6 z-[70] w-11 h-11 rounded-2xl bg-white/95 hover:bg-rose-50 text-slate-700 hover:text-rose-600 border border-sky-200 shadow-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-xl" title="Close (Esc or click outside)">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+
     <!-- Top Floating Controls Toolbar -->
-    <div class="absolute top-5 left-1/2 transform -translate-x-1/2 z-60 glass-card px-4 py-2 rounded-2xl border border-sky-300/40 bg-white/95 shadow-2xl flex items-center space-x-2 text-slate-800 backdrop-blur-xl">
+    <div class="absolute top-5 left-1/2 transform -translate-x-1/2 z-[60] glass-card px-4 py-2 rounded-2xl border border-sky-300/40 bg-white/95 shadow-2xl flex items-center space-x-2 text-slate-800 backdrop-blur-xl">
       <span id="lightboxCaption" class="text-xs font-mono font-bold text-sky-900 truncate max-w-xs md:max-w-sm mr-1">Diagram</span>
       
       <div class="h-4 w-px bg-slate-200"></div>
@@ -1463,10 +1468,15 @@
       zoomLightbox(delta);
     }, { passive: false });
 
-    // Drag to Pan
+    // Drag to Pan & Click outside to close
+    let dragMoveDistance = 0;
+    let downPos = { x: 0, y: 0 };
+
     lightboxCanvas.addEventListener("mousedown", (e) => {
-      if (e.target.closest("button") || e.target.closest("a")) return;
+      if (e.target.closest("button") || e.target.closest("a") || e.target.closest(".glass-card")) return;
       isDraggingImg = true;
+      downPos = { x: e.clientX, y: e.clientY };
+      dragMoveDistance = 0;
       startX = e.clientX - translateX;
       startY = e.clientY - translateY;
       lightboxCanvas.classList.add("cursor-grabbing");
@@ -1474,15 +1484,36 @@
 
     document.addEventListener("mousemove", (e) => {
       if (!isDraggingImg) return;
+      dragMoveDistance = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
       translateX = e.clientX - startX;
       translateY = e.clientY - startY;
       applyImgTransform();
     });
 
-    document.addEventListener("mouseup", () => {
+    document.addEventListener("mouseup", (e) => {
       if (isDraggingImg) {
         isDraggingImg = false;
         if (lightboxCanvas) lightboxCanvas.classList.remove("cursor-grabbing");
+        // If clicked outside of the image/diagram without dragging (threshold < 15px)
+        if (dragMoveDistance < 15) {
+          const isImg = e.target.id === "lightboxImg" || e.target.closest("#lightboxImg");
+          const isSvg = e.target.id === "lightboxSvgContainer" || e.target.closest("#lightboxSvgContainer");
+          const isToolbar = e.target.closest(".glass-card") || e.target.closest("button") || e.target.closest("a");
+          if (!isImg && !isSvg && !isToolbar) {
+            closeLightbox();
+          }
+        }
+      }
+    });
+
+    // Explicit click on canvas background outside image
+    lightboxCanvas.addEventListener("click", (e) => {
+      if (dragMoveDistance > 15) return;
+      const isImg = e.target.id === "lightboxImg" || e.target.closest("#lightboxImg");
+      const isSvg = e.target.id === "lightboxSvgContainer" || e.target.closest("#lightboxSvgContainer");
+      const isToolbar = e.target.closest(".glass-card") || e.target.closest("button") || e.target.closest("a");
+      if (!isImg && !isSvg && !isToolbar) {
+        closeLightbox();
       }
     });
 

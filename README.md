@@ -9,6 +9,7 @@ Welcome to the comprehensive DevOps & Cloud Engineering repository maintained by
 | Directory / File | Description |
 | :--- | :--- |
 | [**`devops-notes-portal-web-app/`**](./devops-notes-portal-web-app/) | Full-stack FastAPI & Dockerized web application with live Git sync, search, and interview trackers |
+| [**`commands_cheatsheet/`**](./commands_cheatsheet/) | Production Linux, Shell, AWS, Docker, K8s, Helm, Terraform, Ansible commands & manifest cheat sheets with AI explanations |
 | [**`AWS notes.md`**](./AWS%20notes.md) | Comprehensive AWS architecture, services, troubleshooting, and production notes |
 | [**`Terraform/`**](./Terraform/) | Infrastructure as Code (IaC) modules, configurations, and best practices |
 | [**`Interview Questions/`**](./Interview%20Questions/) | Curated technical question banks collected from real-world senior DevOps interview rounds |

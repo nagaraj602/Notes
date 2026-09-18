@@ -84,11 +84,11 @@
       </div>
 
       <div class="flex items-center space-x-2">
-        <button onclick="loadAdminSubmissions()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-700 font-bold text-xs border border-sky-200 transition-all flex items-center space-x-1.5 shadow-xs">
-          <i class="fa-solid fa-rotate text-sky-600 text-xs"></i>
+        <button id="btnRefreshAdmin" onclick="refreshAdminSubmissions()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-700 font-bold text-xs border border-sky-200 transition-all flex items-center space-x-1.5 shadow-xs cursor-pointer active:scale-95" title="Refresh submissions and telemetry">
+          <i id="adminRefreshIcon" class="fa-solid fa-rotate text-sky-600 text-xs"></i>
           <span>Refresh</span>
         </button>
-        <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition-all flex items-center space-x-1 shadow-xs">
+        <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition-all flex items-center space-x-1 shadow-xs cursor-pointer">
           <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
           <span>Lock</span>
         </button>
@@ -151,7 +151,7 @@
                   Global System Key
                 </span>
               </h2>
-              <p class="text-[11px] text-slate-500">Configure Google Gemini 3.8 Flash High once here. All candidates and students will automatically use this key server-wide without entering their own.</p>
+              <p class="text-[11px] text-slate-500">Configure Google Gemini API once here. All candidates and students will automatically use this key server-wide without entering their own.</p>
             </div>
           </div>
           <div id="adminGeminiStatusBadge" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 flex items-center gap-1.5 self-start sm:self-auto shadow-2xs">
@@ -187,13 +187,13 @@
             <div id="adminGeminiCurrentKeyDisplay" class="text-[10px] text-slate-500 font-mono">Checking current configuration...</div>
           </div>
 
-          <!-- Pinned Model Information -->
+          <!-- AI Model Configuration -->
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-slate-700">Enforced AI Model (Strictly Pinned)</label>
             <div class="px-3.5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/50 flex items-center justify-between">
               <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-microchip text-indigo-600 text-xs"></i>
-                <span class="text-xs font-mono font-bold text-indigo-950">gemini-3.8-flash-high</span>
+                <span id="adminGeminiModelDisplay" class="text-xs font-mono font-bold text-indigo-950">gemini-3.8-flash-high</span>
               </div>
               <span class="text-[9px] uppercase font-mono px-2 py-0.5 rounded-full bg-indigo-200 text-indigo-900 font-bold">Exclusive</span>
             </div>
@@ -361,6 +361,115 @@
         </div>
       </div>
 
+      <!-- ============================================================== -->
+      <!-- 🌟 COMMANDS CHEAT SHEET INGESTION & AI BANKING CARD            -->
+      <!-- ============================================================== -->
+      <div class="glass-card p-6 rounded-3xl border border-indigo-200 bg-white/95 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-sky-600 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-500/20">
+              <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                <span>Commands Cheat Sheet Management (Bulk Add & File Upload with AI Parsing)</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-300">ADMIN ONLY</span>
+              </h3>
+              <p class="text-xs text-slate-500">Upload text notes or paste raw commands / manifest code. Gemini AI (<code>gemini-3.8-flash-high</code>) will parse, generate structured explanations or clean code examples, provide an editable review window, and bank directly into <code>commands_cheatsheet/&lt;category&gt;.md</code>.</p>
+            </div>
+          </div>
+          <a href="/cheatsheets" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs font-bold border border-indigo-200 flex items-center space-x-1.5 transition-all self-start sm:self-auto shadow-2xs">
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+            <span>Open Cheat Sheets Portal</span>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Left: Target Category & Mode -->
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-slate-700">Target Technology Category *</label>
+              <select id="csTargetCategory" class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none">
+                <optgroup label="CLI Commands Cheatsheets (Table Format)">
+                  <option value="linux">Linux Commands (linux.md)</option>
+                  <option value="shell_script">Shell Script (shell_script.md)</option>
+                  <option value="github">Github & Git CLI (github.md)</option>
+                  <option value="build_tools">Build Tools: Maven, Python, C, NodeJS (build_tools.md)</option>
+                  <option value="aws">AWS CLI v2 (aws.md)</option>
+                  <option value="docker">Docker (docker.md)</option>
+                  <option value="kubernetes">Kubernetes kubectl (kubernetes.md)</option>
+                  <option value="helm">Helm 3 (helm.md)</option>
+                  <option value="terraform">Terraform IaC (terraform.md)</option>
+                  <option value="ansible">Ansible (ansible.md)</option>
+                  <option value="monitoring">Monitoring & Observability (monitoring.md)</option>
+                </optgroup>
+                <optgroup label="Production Code Examples (Dedicated View & Copy)">
+                  <option value="shell_examples">Shell Script Examples (shell_examples.md)</option>
+                  <option value="k8s_manifests">Kubernetes Manifest Files (k8s_manifests.md)</option>
+                  <option value="terraform_examples">Terraform YAML / HCL Examples (terraform_examples.md)</option>
+                  <option value="ansible_examples">Ansible Example Files (ansible_examples.md)</option>
+                  <option value="dockerfile_examples">Dockerfile Example Files (dockerfile_examples.md)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
+                <span>Upload Text / Markdown File</span>
+                <span class="text-[10px] text-slate-400 font-normal">.txt, .md, .sh, .yaml</span>
+              </label>
+              <input 
+                type="file" 
+                id="csFileInput" 
+                accept=".txt,.md,.sh,.yaml,.yml,.dockerfile,.tf" 
+                onchange="handleCheatsheetFileUpload(event)"
+                class="w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-slate-200 rounded-xl p-1 bg-slate-50 cursor-pointer"
+              />
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-slate-700">Optional AI Prompt Refinement</label>
+              <textarea 
+                id="csPromptOverride" 
+                rows="2" 
+                placeholder="Optional: custom instructions for Gemini (e.g. Focus on high-availability flags, provide troubleshooting tips...)" 
+                class="w-full p-2 text-xs rounded-xl bg-slate-50 border border-slate-200 font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none resize-none"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Right: Text / Raw Notes Input -->
+          <div class="md:col-span-2 space-y-1">
+            <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
+              <span>Paste Raw Commands, Notes, Manifests, or Scripts *</span>
+              <button type="button" onclick="document.getElementById('csRawInput').value = ''" class="text-[10px] text-rose-500 hover:underline">Clear Text</button>
+            </label>
+            <textarea 
+              id="csRawInput" 
+              rows="9" 
+              placeholder="Paste raw notes, commands, terminal outputs, or configuration blocks here..." 
+              class="w-full p-3 text-xs rounded-2xl bg-slate-50 border border-slate-200 font-mono text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="text-[11px] text-slate-500 flex items-center space-x-2">
+            <i class="fa-solid fa-circle-info text-indigo-500"></i>
+            <span>Enforced AI Model: <code class="font-mono text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded font-bold">gemini-3.8-flash-high</code></span>
+          </div>
+          <button 
+            type="button" 
+            id="btnProcessCsAi" 
+            onclick="executeCheatsheetAiParse()" 
+            class="px-5 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white shadow-md shadow-indigo-500/20 transition-all flex items-center space-x-2 cursor-pointer"
+          >
+            <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+            <span>Extract with Gemini AI & Preview</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Filter and Search Bar -->
       <div class="glass-card p-4 rounded-2xl border border-sky-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div class="relative flex-1">
@@ -405,7 +514,9 @@
   });
 
   async function checkSavedAdminAuth() {
-    const saved = sessionStorage.getItem("devops_admin_token");
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlTok = urlParams.get("admin_token") || urlParams.get("token");
+    const saved = urlTok || sessionStorage.getItem("devops_admin_token") || localStorage.getItem("devops_admin_token") || localStorage.getItem("admin_access_token");
     if (saved) {
       currentAdminToken = saved;
       try {
@@ -415,6 +526,7 @@
           body: JSON.stringify({ token: saved })
         });
         if (res.ok) {
+          sessionStorage.setItem("devops_admin_token", saved);
           unlockDashboard();
           return;
         }
@@ -471,6 +583,7 @@
 
       currentAdminToken = tok;
       sessionStorage.setItem("devops_admin_token", tok);
+      localStorage.setItem("devops_admin_token", tok);
       unlockDashboard();
     } catch (err) {
       alertBox.innerText = err.message || "Invalid credentials.";
@@ -488,6 +601,7 @@
         const data = await res.json();
         currentAdminToken = data.token || "server_auth";
         sessionStorage.setItem("devops_admin_token", currentAdminToken);
+        localStorage.setItem("devops_admin_token", currentAdminToken);
         unlockDashboard();
       } else {
         alert("Server token authentication failed.");
@@ -506,6 +620,8 @@
 
   function logoutAdmin() {
     sessionStorage.removeItem("devops_admin_token");
+    localStorage.removeItem("devops_admin_token");
+    localStorage.removeItem("admin_access_token");
     currentAdminToken = "";
     document.getElementById("adminDashboard").classList.add("hidden");
     document.getElementById("adminAuthGate").classList.remove("hidden");
@@ -528,24 +644,27 @@
   async function loadAdminGeminiConfig() {
     try {
       const res = await fetch("/api/ai/config", {
-        headers: { "x-admin-token": currentAdminToken }
+        headers: { "x-admin-token": currentAdminToken, "Authorization": `Bearer ${currentAdminToken}` }
       });
       if (res.ok) {
         const data = await res.json();
         const badge = document.getElementById("adminGeminiStatusBadge");
         const keyDisplay = document.getElementById("adminGeminiCurrentKeyDisplay");
+        const modelDisplay = document.getElementById("adminGeminiModelDisplay");
         if (data.has_key) {
           if (badge) {
             badge.className = "px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 flex items-center gap-1.5 self-start sm:self-auto shadow-2xs";
             badge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-[10px]"></i> Server-Wide Key Active (${escapeHtml(data.key_masked)})`;
           }
           if (keyDisplay) keyDisplay.textContent = `Server Active Key: ${data.key_masked} • Default: gemini-3.8-flash-high`;
+          if (modelDisplay) modelDisplay.textContent = "gemini-3.8-flash-high";
         } else {
           if (badge) {
             badge.className = "px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300 flex items-center gap-1.5 self-start sm:self-auto shadow-2xs";
             badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-[10px]"></i> Not Configured`;
           }
           if (keyDisplay) keyDisplay.textContent = "No server-wide key found. Enter and save your Gemini API key below.";
+          if (modelDisplay) modelDisplay.textContent = "gemini-3.8-flash-high";
         }
       }
     } catch (e) {
@@ -558,6 +677,7 @@
     const key = (input ? input.value : "").trim();
     const alertBox = document.getElementById("adminGeminiAlert");
     const btn = document.getElementById("btnTestAdminGemini");
+    const modelDisplay = document.getElementById("adminGeminiModelDisplay");
 
     alertBox.classList.remove("hidden");
     alertBox.className = "p-3 rounded-xl text-xs font-mono bg-sky-50 text-sky-800 border border-sky-200 flex items-center gap-2";
@@ -566,7 +686,10 @@
 
     try {
       const headers = { "Content-Type": "application/json" };
-      if (currentAdminToken) headers["x-admin-token"] = currentAdminToken;
+      if (currentAdminToken) {
+        headers["x-admin-token"] = currentAdminToken;
+        headers["Authorization"] = `Bearer ${currentAdminToken}`;
+      }
       if (key) headers["x-gemini-api-key"] = key;
 
       const res = await fetch("/api/ai/test", {
@@ -576,6 +699,7 @@
       });
       const data = await res.json();
       if (res.ok && data.status === "success") {
+        if (modelDisplay) modelDisplay.textContent = "gemini-3.8-flash-high";
         alertBox.className = "p-3 rounded-xl text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200";
         alertBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> Connected successfully! Verified Model: <strong>gemini-3.8-flash-high</strong>. AI Response: "${escapeHtml(data.message)}"`;
       } else {
@@ -610,7 +734,10 @@
 
     try {
       const headers = { "Content-Type": "application/json" };
-      if (currentAdminToken) headers["x-admin-token"] = currentAdminToken;
+      if (currentAdminToken) {
+        headers["x-admin-token"] = currentAdminToken;
+        headers["Authorization"] = `Bearer ${currentAdminToken}`;
+      }
 
       const res = await fetch("/api/ai/save-key", {
         method: "POST",
@@ -620,7 +747,7 @@
       const data = await res.json();
       if (res.ok && data.status === "saved") {
         alertBox.className = "p-3 rounded-xl text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200";
-        alertBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> <strong>Success!</strong> Gemini API key saved server-wide to persistent storage. All platform users will now automatically use Gemini 3.8 Flash High.`;
+        alertBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> <strong>Success!</strong> Gemini API key saved server-wide to persistent storage. All candidates and students will automatically use this key.`;
         input.value = "";
         loadAdminGeminiConfig();
       } else {
@@ -788,19 +915,49 @@
     }
   }
 
+  async function refreshAdminSubmissions() {
+    const icon = document.getElementById("adminRefreshIcon");
+    const btn = document.getElementById("btnRefreshAdmin");
+    if (icon) icon.classList.add("fa-spin");
+    if (btn) btn.disabled = true;
+
+    try {
+      await Promise.allSettled([
+        loadAdminSubmissions(),
+        loadAdminGeminiConfig()
+      ]);
+      if (typeof showToast === "function") {
+        showToast("Submissions & telemetry refreshed successfully!", "success");
+      }
+    } catch (e) {
+      if (typeof showToast === "function") {
+        showToast("Refresh error: " + e.message, "error");
+      }
+    } finally {
+      if (icon) icon.classList.remove("fa-spin");
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async function loadAdminSubmissions() {
     try {
+      const headers = {};
+      if (currentAdminToken) {
+        headers["Authorization"] = `Bearer ${currentAdminToken}`;
+        headers["x-admin-token"] = currentAdminToken;
+      }
       const [subRes, statsRes] = await Promise.all([
-        fetch("/api/candidate-submissions", {
-          headers: { "Authorization": `Bearer ${currentAdminToken}` }
-        }),
-        fetch("/api/candidate-submissions/stats", {
-          headers: { "Authorization": `Bearer ${currentAdminToken}` }
-        })
+        fetch("/api/candidate-submissions", { headers }),
+        fetch("/api/candidate-submissions/stats", { headers })
       ]);
 
       if (!subRes.ok) {
-        if (subRes.status === 403) logoutAdmin();
+        if (subRes.status === 403 || subRes.status === 401) {
+          showToast("Session expired or unauthorized. Please re-authenticate.", "error");
+          logoutAdmin();
+        } else {
+          showToast("Failed to fetch submissions (" + subRes.status + ")", "error");
+        }
         return;
       }
 
@@ -812,6 +969,7 @@
       filterSubmissions();
     } catch (err) {
       console.error("Failed to load submissions:", err);
+      showToast("Failed to load submissions: " + err.message, "error");
     }
   }
 
@@ -1213,6 +1371,206 @@
       printWindow.print();
     }, 300);
   }
+
+  // --- CHEATSHEET MANAGEMENT & AI INGESTION JS ---
+  let currentCsParsedData = null;
+
+  function handleCheatsheetFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target.result;
+      const rawInp = document.getElementById("csRawInput");
+      if (rawInp) rawInp.value = content;
+      showToast(`Loaded file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`, "info");
+    };
+    reader.readAsText(file);
+  }
+
+  async function executeCheatsheetAiParse() {
+    const rawText = document.getElementById("csRawInput")?.value.trim() || "";
+    const category = document.getElementById("csTargetCategory")?.value || "linux";
+    const promptOverride = document.getElementById("csPromptOverride")?.value.trim() || "";
+    const btn = document.getElementById("btnProcessCsAi");
+
+    if (!rawText) {
+      showToast("Please enter or upload notes/commands to process.", "error");
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Extracting with Gemini 3.8 Flash High...</span>`;
+    }
+
+    try {
+      const res = await fetch("/api/admin/cheatsheets/ai-parse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${currentAdminToken || sessionStorage.getItem('devops_admin_token') || ''}`
+        },
+        body: JSON.stringify({
+          raw_text: rawText,
+          target_category: category,
+          prompt_override: promptOverride,
+          api_key: ""
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Server error (${res.status})`);
+      }
+
+      const data = await res.json();
+      currentCsParsedData = data;
+      openCheatsheetPreviewModal(data);
+      showToast(`Successfully extracted ${data.count} items!`, "success");
+    } catch (err) {
+      showToast("AI Extraction failed: " + err.message, "error");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-xs"></i> <span>Extract with Gemini AI & Preview</span>`;
+      }
+    }
+  }
+
+  function openCheatsheetPreviewModal(data) {
+    const modal = document.getElementById("cheatsheetPreviewModal");
+    const catLabel = document.getElementById("csPreviewCategoryLabel");
+    const countEl = document.getElementById("csPreviewCount");
+    const container = document.getElementById("csPreviewItemsContainer");
+
+    if (!modal || !container) return;
+
+    if (catLabel) catLabel.textContent = `${data.category_name} (${data.category}.md)`;
+    if (countEl) countEl.textContent = data.count || 0;
+
+    const items = data.items || [];
+    const isExample = (data.type === "examples");
+
+    if (isExample) {
+      container.innerHTML = items.map((it, idx) => `
+        <div class="p-3.5 rounded-2xl border border-indigo-100 bg-white shadow-xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-slate-800 text-xs">#${idx + 1} Code Example</span>
+            <button onclick="removeCsPreviewItem(${idx})" class="text-rose-500 hover:text-rose-700 text-xs cursor-pointer"><i class="fa-solid fa-trash-can mr-1"></i>Delete</button>
+          </div>
+          <div>
+            <label class="font-bold text-[10px] text-slate-500 uppercase">Title</label>
+            <input type="text" id="cs_item_title_${idx}" value="${escapeHtml(it.title || '')}" class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 font-bold text-slate-800" />
+          </div>
+          <div>
+            <label class="font-bold text-[10px] text-slate-500 uppercase">Description</label>
+            <textarea id="cs_item_desc_${idx}" rows="2" class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 text-slate-700">${escapeHtml(it.description || '')}</textarea>
+          </div>
+          <div>
+            <label class="font-bold text-[10px] text-slate-500 uppercase">Code (${escapeHtml(it.language || 'yaml')})</label>
+            <textarea id="cs_item_code_${idx}" rows="6" class="w-full p-2.5 text-xs font-mono rounded-lg border border-slate-800 bg-slate-950 text-sky-200 leading-relaxed">${escapeHtml(it.code || '')}</textarea>
+          </div>
+        </div>
+      `).join("");
+    } else {
+      container.innerHTML = items.map((it, idx) => `
+        <div class="p-3 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-slate-800 text-xs">#${idx + 1} Command</span>
+            <button onclick="removeCsPreviewItem(${idx})" class="text-rose-500 hover:text-rose-700 text-xs cursor-pointer"><i class="fa-solid fa-trash-can mr-1"></i>Delete</button>
+          </div>
+          <div>
+            <label class="font-bold text-[10px] text-slate-500 uppercase">Command</label>
+            <input type="text" id="cs_item_cmd_${idx}" value="${escapeHtml(it.command || '')}" class="w-full px-2.5 py-1 text-xs font-mono rounded-lg border border-slate-800 bg-slate-900 text-sky-200 font-semibold" />
+          </div>
+          <div>
+            <label class="font-bold text-[10px] text-slate-500 uppercase">AI Explanation</label>
+            <textarea id="cs_item_exp_${idx}" rows="2" class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 text-slate-800">${escapeHtml(it.explanation || '')}</textarea>
+          </div>
+          <div>
+            <label class="font-bold text-[10px] text-slate-500 uppercase">Tags</label>
+            <input type="text" id="cs_item_tags_${idx}" value="${escapeHtml(it.tags || '')}" class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 text-slate-600" />
+          </div>
+        </div>
+      `).join("");
+    }
+
+    modal.classList.remove("hidden");
+  }
+
+  function removeCsPreviewItem(idx) {
+    if (!currentCsParsedData || !currentCsParsedData.items) return;
+    currentCsParsedData.items.splice(idx, 1);
+    currentCsParsedData.count = currentCsParsedData.items.length;
+    openCheatsheetPreviewModal(currentCsParsedData);
+  }
+
+  function closeCheatsheetPreviewModal() {
+    const modal = document.getElementById("cheatsheetPreviewModal");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  async function approveAndBankCheatsheet() {
+    if (!currentCsParsedData) return;
+    const btn = document.getElementById("btnApproveBankCs");
+    const isExample = (currentCsParsedData.type === "examples");
+    const saveMode = document.querySelector('input[name="csSaveMode"]:checked')?.value || "append";
+
+    // Gather edited items
+    const editedItems = [];
+    (currentCsParsedData.items || []).forEach((it, idx) => {
+      if (isExample) {
+        const title = document.getElementById(`cs_item_title_${idx}`)?.value || it.title;
+        const description = document.getElementById(`cs_item_desc_${idx}`)?.value || it.description;
+        const code = document.getElementById(`cs_item_code_${idx}`)?.value || it.code;
+        editedItems.push({ title, description, language: it.language || "yaml", code });
+      } else {
+        const command = document.getElementById(`cs_item_cmd_${idx}`)?.value || it.command;
+        const explanation = document.getElementById(`cs_item_exp_${idx}`)?.value || it.explanation;
+        const tags = document.getElementById(`cs_item_tags_${idx}`)?.value || it.tags;
+        editedItems.push({ command, explanation, tags });
+      }
+    });
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Saving to Repository...</span>`;
+    }
+
+    try {
+      const res = await fetch("/api/admin/cheatsheets/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${currentAdminToken || sessionStorage.getItem('devops_admin_token') || ''}`
+        },
+        body: JSON.stringify({
+          category_id: currentCsParsedData.category,
+          items: editedItems,
+          mode: saveMode,
+          raw_content: ""
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Save failed (${res.status})`);
+      }
+
+      showToast(`Successfully banked ${editedItems.length} items to ${currentCsParsedData.category}.md!`, "success");
+      closeCheatsheetPreviewModal();
+      const rawInp = document.getElementById("csRawInput");
+      if (rawInp) rawInp.value = "";
+    } catch (err) {
+      showToast("Banking failed: " + err.message, "error");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-xs"></i> <span>Approve & Bank to Repository</span>`;
+      }
+    }
+  }
 </script>
 
 <!-- ========================================================================================= -->
@@ -1305,6 +1663,71 @@
       <button onclick="closeAdminRawTextModal()" class="px-4 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
         Close
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================================= -->
+<!-- MODAL: Cheatsheet AI Parse Preview & Editable Banking Modal                              -->
+<!-- ========================================================================================= -->
+<div id="cheatsheetPreviewModal" onclick="if(event.target === this) closeCheatsheetPreviewModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 cursor-pointer">
+  <div class="bg-white rounded-3xl max-w-4xl w-full border border-indigo-200 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150 max-h-[92vh] flex flex-col cursor-default">
+    <div class="flex items-center justify-between pb-3 border-b border-indigo-100 flex-shrink-0">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+            <span>Review & Approve Cheatsheet Extraction</span>
+            <span id="csPreviewBadge" class="text-[10px] font-mono px-2 py-0.2 rounded-full bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">gemini-3.8-flash-high</span>
+          </h3>
+          <p class="text-[11px] text-slate-500">Review AI-extracted commands/examples below. Edit inline before banking to repository.</p>
+        </div>
+      </div>
+      <button onclick="closeCheatsheetPreviewModal()" class="w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all cursor-pointer">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Category & Save Mode Controls -->
+    <div class="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs flex-shrink-0">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-slate-700">Bank into Category:</span>
+        <span id="csPreviewCategoryLabel" class="font-bold text-indigo-700 font-mono bg-white px-2.5 py-1 rounded-lg border border-indigo-200"></span>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <label class="flex items-center space-x-1.5 font-bold text-slate-700 cursor-pointer">
+          <input type="radio" name="csSaveMode" value="append" checked class="text-indigo-600 focus:ring-indigo-500">
+          <span>Append to Existing</span>
+        </label>
+        <label class="flex items-center space-x-1.5 font-bold text-slate-700 cursor-pointer">
+          <input type="radio" name="csSaveMode" value="replace" class="text-indigo-600 focus:ring-indigo-500">
+          <span>Replace Entire File</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Editable Items Container -->
+    <div id="csPreviewItemsContainer" class="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
+      <!-- Dynamically populated -->
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="pt-3 border-t border-indigo-100 flex items-center justify-between flex-shrink-0">
+      <div class="text-[11px] text-slate-500 font-mono">
+        Total Items: <strong id="csPreviewCount">0</strong>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="closeCheatsheetPreviewModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all cursor-pointer">
+          Cancel
+        </button>
+        <button id="btnApproveBankCs" onclick="approveAndBankCheatsheet()" class="px-5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white shadow-md shadow-indigo-500/20 transition-all flex items-center space-x-1.5 cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+          <span>Approve & Bank to Repository</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>

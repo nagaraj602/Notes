@@ -11,3 +11,6 @@ candidate_submissions.json
 .candidate_submissions.json
 *.submissions.json
 scratch/
+notes
+qa
+.gemini_api_key

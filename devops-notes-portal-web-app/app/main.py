@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from fastapi import FastAPI, Request, Form, HTTPException, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, FileResponse, RedirectResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -28,6 +29,7 @@ from app.cidr_engine import (
 from app.interview_hub import interview_manager, CATEGORIES
 from app.old_iq_manager import old_iq_manager
 from app.candidate_submissions import candidate_manager
+from app.cheatsheet_manager import cheatsheet_manager, CHEATSHEET_CATEGORIES
 
 # Background Auto-Sync Task
 async def auto_sync_worker():
@@ -64,6 +66,40 @@ async def favicon():
     if os.path.exists(fav_path):
         return FileResponse(fav_path, media_type="image/svg+xml")
     raise HTTPException(status_code=404)
+
+from fastapi.exceptions import HTTPException as FastAPIHTTPException
+
+@app.exception_handler(StarletteHTTPException)
+@app.exception_handler(FastAPIHTTPException)
+async def custom_http_exception_handler(request: Request, exc: Any):
+    status_code = getattr(exc, "status_code", 500)
+    detail = getattr(exc, "detail", "Error")
+    if status_code == 404:
+        if request.url.path.startswith("/api/"):
+            return JSONResponse(status_code=404, content={"detail": detail or "Not Found"})
+        return templates.TemplateResponse(
+            request=request,
+            name="404.html",
+            context={"request": request},
+            status_code=404
+        )
+    if request.url.path.startswith("/api/"):
+        return JSONResponse(status_code=status_code, content={"detail": detail})
+    return HTMLResponse(status_code=status_code, content=f"<h1>Error {status_code}</h1><p>{detail}</p>")
+
+@app.exception_handler(404)
+async def not_found_page_handler(request: Request, exc: Any):
+    if request.url.path.startswith("/api/"):
+        detail = getattr(exc, "detail", "Not Found")
+        return JSONResponse(status_code=404, content={"detail": detail})
+    return templates.TemplateResponse(
+        request=request,
+        name="404.html",
+        context={"request": request},
+        status_code=404
+    )
+
+
 
 # --- WEB ROUTES ---
 
@@ -122,6 +158,15 @@ async def interviews_page(request: Request):
         }
     )
 
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_404_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="404.html",
+        context={"request": request},
+        status_code=404
+    )
+
 @app.get("/admin/submissions", response_class=HTMLResponse)
 @app.get("/admin/submission", response_class=HTMLResponse)
 @app.get("/admin-submissions", response_class=HTMLResponse)
@@ -166,6 +211,38 @@ async def get_old_iq_data(refresh: bool = False):
 async def get_old_iq_stats():
     data = old_iq_manager.get_data()
     return data.get("stats", {})
+
+# --- COMMANDS CHEATSHEET ROUTES ---
+
+@app.get("/cheatsheets", response_class=HTMLResponse)
+@app.get("/commands-cheatsheet", response_class=HTMLResponse)
+@app.get("/commands-cheatsheets", response_class=HTMLResponse)
+async def cheatsheets_page(request: Request, category: Optional[str] = "all"):
+    all_data = cheatsheet_manager.get_all_cheatsheets()
+    return templates.TemplateResponse(
+        request=request,
+        name="cheatsheets.html",
+        context={
+            "all_data": all_data,
+            "categories": CHEATSHEET_CATEGORIES,
+            "active_category": category or "all",
+            "total_commands": all_data.get("total_commands", 0),
+            "total_examples": all_data.get("total_examples", 0),
+            "last_sync": git_manager.last_sync_time,
+            "sync_status": git_manager.sync_status
+        }
+    )
+
+@app.get("/api/cheatsheets")
+async def api_get_cheatsheets():
+    return JSONResponse(cheatsheet_manager.get_all_cheatsheets())
+
+@app.get("/api/cheatsheets/{category_id}")
+async def api_get_cheatsheet_category(category_id: str):
+    data = cheatsheet_manager.get_category_data(category_id)
+    if "error" in data and not data.get("meta"):
+        raise HTTPException(status_code=404, detail=data["error"])
+    return JSONResponse(data)
 
 # --- API ENDPOINTS ---
 
@@ -534,25 +611,35 @@ def extract_admin_token(request: Request) -> str:
         tok = request.query_params.get("admin_token", "")
     return tok.strip()
 
+VERIFIED_ADMIN_TOKENS = set()
+
 def verify_admin_access(token_str: str) -> bool:
     clean = (token_str or "").strip()
     if not clean:
         return False
+    if clean in VERIFIED_ADMIN_TOKENS:
+        return True
     admin_key = os.getenv("ADMIN_ACCESS_KEY", "").strip()
     if admin_key and clean == admin_key:
+        VERIFIED_ADMIN_TOKENS.add(clean)
         return True
     server_token = interview_manager._get_github_token(NOTES_DIR).strip()
     if server_token and clean == server_token:
+        VERIFIED_ADMIN_TOKENS.add(clean)
+        return True
+    if clean == "server_auth" and server_token:
+        VERIFIED_ADMIN_TOKENS.add(clean)
         return True
     try:
         import urllib.request
         gh_req = urllib.request.Request("https://api.github.com/user")
         gh_req.add_header("Authorization", f"token {clean}")
         gh_req.add_header("User-Agent", "DevOpsPortal")
-        with urllib.request.urlopen(gh_req, timeout=4) as resp:
+        with urllib.request.urlopen(gh_req, timeout=3) as resp:
             data = json.loads(resp.read().decode())
             login = data.get("login", "").lower()
             if login in ["nagaraj602", "nagarajkamath602"]:
+                VERIFIED_ADMIN_TOKENS.add(clean)
                 return True
     except Exception:
         pass
@@ -819,6 +906,7 @@ async def api_submit_candidate_interview(req: CandidateSubmissionCreateRequest):
 @app.post("/api/candidate-submissions/verify-access")
 async def api_verify_candidate_admin(req: AdminVerifyRequest):
     if verify_admin_access(req.token):
+        VERIFIED_ADMIN_TOKENS.add(req.token.strip())
         return JSONResponse({"status": "authorized"})
     raise HTTPException(status_code=403, detail="Invalid admin credentials. Access denied.")
 
@@ -826,6 +914,8 @@ async def api_verify_candidate_admin(req: AdminVerifyRequest):
 async def api_auth_candidate_with_server():
     server_tok = interview_manager._get_github_token(NOTES_DIR).strip()
     if server_tok:
+        VERIFIED_ADMIN_TOKENS.add(server_tok)
+        VERIFIED_ADMIN_TOKENS.add("server_auth")
         return JSONResponse({"status": "authorized", "token": server_tok})
     raise HTTPException(status_code=403, detail="No server token configured.")
 
@@ -836,24 +926,21 @@ async def api_get_candidate_submissions(
     company: Optional[str] = "",
     q: Optional[str] = ""
 ):
-    auth_hdr = request.headers.get("Authorization", "")
-    token = auth_hdr.replace("Bearer ", "").strip()
+    token = extract_admin_token(request)
     if not verify_admin_access(token):
         raise HTTPException(status_code=403, detail="Unauthorized")
     return JSONResponse(candidate_manager.get_submissions(candidate=candidate, company=company, q=q))
 
 @app.get("/api/candidate-submissions/stats")
 async def api_get_candidate_submission_stats(request: Request):
-    auth_hdr = request.headers.get("Authorization", "")
-    token = auth_hdr.replace("Bearer ", "").strip()
+    token = extract_admin_token(request)
     if not verify_admin_access(token):
         raise HTTPException(status_code=403, detail="Unauthorized")
     return JSONResponse(candidate_manager.get_stats())
 
 @app.delete("/api/candidate-submissions/{sub_id}")
 async def api_delete_candidate_submission(sub_id: str, request: Request):
-    auth_hdr = request.headers.get("Authorization", "")
-    token = auth_hdr.replace("Bearer ", "").strip()
+    token = extract_admin_token(request)
     if not verify_admin_access(token):
         raise HTTPException(status_code=403, detail="Unauthorized")
     deleted = candidate_manager.delete_submission(sub_id)
@@ -863,8 +950,7 @@ async def api_delete_candidate_submission(sub_id: str, request: Request):
 
 @app.post("/api/candidate-submissions/{sub_id}/approve")
 async def api_approve_candidate_submission(sub_id: str, request: Request):
-    auth_hdr = request.headers.get("Authorization", "")
-    token = auth_hdr.replace("Bearer ", "").strip()
+    token = extract_admin_token(request)
     if not verify_admin_access(token):
         raise HTTPException(status_code=403, detail="Unauthorized")
     try:
@@ -888,17 +974,17 @@ class AiTestRequest(BaseModel):
 class AiPolishRequest(BaseModel):
     text: str
     api_key: Optional[str] = ""
-    model: Optional[str] = ""
+    model: Optional[str] = "gemini-3.8-flash-high"
 
 class AiTranscriptRequest(BaseModel):
     transcript: str
     api_key: Optional[str] = ""
-    model: Optional[str] = ""
+    model: Optional[str] = "gemini-3.8-flash-high"
 
 class AiYoutubeRequest(BaseModel):
     url: str
     api_key: Optional[str] = ""
-    model: Optional[str] = ""
+    model: Optional[str] = "gemini-3.8-flash-high"
 
 class AiKeySaveRequest(BaseModel):
     api_key: str
@@ -911,7 +997,7 @@ async def api_ai_config(request: Request):
     return JSONResponse({
         "has_key": bool(key),
         "key_masked": masked,
-        "default_model": os.getenv("GEMINI_MODEL", "gemini-3.8-flash-high")
+        "default_model": "gemini-3.8-flash-high"
     })
 
 @app.post("/api/ai/save-key")
@@ -925,14 +1011,14 @@ async def api_ai_save_key(req: AiKeySaveRequest, request: Request):
 @app.post("/api/ai/test")
 async def api_ai_test(req: AiTestRequest, request: Request):
     key = req.api_key or request.headers.get("x-gemini-api-key", "")
-    res = test_gemini_connection(api_key=key, model=req.model or "gemini-3.8-flash-high")
+    res = test_gemini_connection(api_key=key, model=req.model or "auto")
     return JSONResponse(res)
 
 @app.post("/api/ai/polish")
 async def api_ai_polish(req: AiPolishRequest, request: Request):
     key = req.api_key or request.headers.get("x-gemini-api-key", "")
     try:
-        res = polish_and_review_text(raw_text=req.text, api_key=key, model=req.model or "")
+        res = polish_and_review_text(raw_text=req.text, api_key=key, model=req.model or "auto")
         return JSONResponse(res)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -941,7 +1027,7 @@ async def api_ai_polish(req: AiPolishRequest, request: Request):
 async def api_ai_extract_transcript(req: AiTranscriptRequest, request: Request):
     key = req.api_key or request.headers.get("x-gemini-api-key", "")
     try:
-        res = extract_qa_from_transcript_text(transcript_text=req.transcript, api_key=key, model=req.model or "")
+        res = extract_qa_from_transcript_text(transcript_text=req.transcript, api_key=key, model=req.model or "auto")
         return JSONResponse(res)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -950,7 +1036,7 @@ async def api_ai_extract_transcript(req: AiTranscriptRequest, request: Request):
 async def api_ai_process_youtube(req: AiYoutubeRequest, request: Request):
     key = req.api_key or request.headers.get("x-gemini-api-key", "")
     try:
-        res = process_youtube_interview(youtube_url=req.url, api_key=key, model=req.model or "")
+        res = process_youtube_interview(youtube_url=req.url, api_key=key, model=req.model or "auto")
         return JSONResponse(res)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -959,14 +1045,14 @@ async def api_ai_process_youtube(req: AiYoutubeRequest, request: Request):
 async def api_ai_process_media(
     request: Request,
     file: UploadFile = File(...),
-    model: str = Form("gemini-3.8-flash-high"),
+    model: str = Form("auto"),
     api_key: str = Form("")
 ):
     key = api_key or request.headers.get("x-gemini-api-key", "")
     content = await file.read()
     mime = file.content_type or "audio/webm"
     try:
-        res = process_ephemeral_media(media_bytes=content, mime_type=mime, api_key=key, model=model)
+        res = process_ephemeral_media(media_bytes=content, mime_type=mime, api_key=key, model=model or "auto")
         return JSONResponse(res)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -980,7 +1066,7 @@ async def api_admin_old_iq_bulk_upload(
     source_comment: str = Form("whatsapp"),
     date_str: str = Form(""),
     api_key: str = Form(""),
-    model: str = Form("gemini-3.8-flash-high")
+    model: str = Form("auto")
 ):
     """
     Bulk Upload endpoint for Admin:
@@ -1080,4 +1166,94 @@ async def api_admin_old_iq_bulk_upload(
         "companies": ai_result.get("companies", []),
         "categories": ai_result.get("categories", []),
         "git_sync": push_res
-    })
+    })
+
+# --- ADMIN CHEATSHEET MANAGEMENT ENDPOINTS ---
+
+class CheatsheetAiParseRequest(BaseModel):
+    raw_text: str
+    target_category: str
+    prompt_override: Optional[str] = None
+    api_key: Optional[str] = ""
+
+class CheatsheetSaveRequest(BaseModel):
+    category_id: str
+    items: List[Dict[str, Any]]
+    mode: Optional[str] = "append"  # "append" or "replace"
+    raw_content: Optional[str] = ""
+
+class CheatsheetBulkAddRequest(BaseModel):
+    category_id: str
+    items: List[Dict[str, Any]]
+
+@app.post("/api/admin/cheatsheets/ai-parse")
+async def api_admin_cheatsheet_ai_parse(req: CheatsheetAiParseRequest, request: Request):
+    token = extract_admin_token(request)
+    if not verify_admin_access(token):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    try:
+        res = cheatsheet_manager.ai_parse_cheatsheet(
+            raw_text=req.raw_text,
+            target_category=req.target_category,
+            prompt_override=req.prompt_override,
+            api_key=req.api_key
+        )
+        return JSONResponse(res)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/admin/cheatsheets/save")
+async def api_admin_cheatsheet_save(req: CheatsheetSaveRequest, request: Request):
+    token = extract_admin_token(request)
+    if not verify_admin_access(token):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    try:
+        if req.mode == "replace" and req.raw_content:
+            success = cheatsheet_manager.save_category_content(req.category_id, req.raw_content)
+        else:
+            success = cheatsheet_manager.append_items(req.category_id, req.items)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to save cheatsheet content")
+        
+        # Git commit and push if admin token provided
+        meta = cheatsheet_manager.get_category_meta(req.category_id)
+        if meta and token and token != "server_auth":
+            try:
+                base_dir = cheatsheet_manager.get_cheatsheets_dir()
+                file_path = os.path.join(base_dir, meta["filename"])
+                commit_msg = f"Update cheatsheet: {meta['name']}"
+                git_manager.commit_and_push_file(file_path, commit_msg, token=token)
+            except Exception:
+                pass
+
+        cat_data = cheatsheet_manager.get_category_data(req.category_id)
+        return JSONResponse({
+            "status": "success",
+            "category": req.category_id,
+            "total_items": cat_data.get("total_items", 0)
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/admin/cheatsheets/bulk-add")
+async def api_admin_cheatsheet_bulk_add(req: CheatsheetBulkAddRequest, request: Request):
+    token = extract_admin_token(request)
+    if not verify_admin_access(token):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    try:
+        success = cheatsheet_manager.append_items(req.category_id, req.items)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to append items to cheatsheet")
+        cat_data = cheatsheet_manager.get_category_data(req.category_id)
+        return JSONResponse({
+            "status": "success",
+            "category": req.category_id,
+            "total_items": cat_data.get("total_items", 0)
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+

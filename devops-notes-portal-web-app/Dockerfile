@@ -35,6 +35,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Copy application source code
 COPY app/ /app/app/
+COPY commands_cheatsheet/ /app/commands_cheatsheet/
 
 # Create data directory for notes storage
 RUN mkdir -p /app/data/notes  
@@ -43,6 +44,7 @@ RUN mkdir -p /app/data/notes
 ENV REPO_URL="https://github.com/nagaraj602/Notes.git"
 ENV REPO_BRANCH="main"
 ENV AUTO_SYNC_INTERVAL_MINUTES=5
+ENV CHEATSHEET_DIR="/app/commands_cheatsheet"
 ENV NOTES_DIR="/app/data/notes"
 ENV PORT=8000
 ENV GEMINI_MODEL="gemini-3.8-flash-high"
