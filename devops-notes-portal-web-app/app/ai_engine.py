@@ -82,47 +82,125 @@ def save_gemini_api_key(api_key: str) -> bool:
             logger.warning(f"Could not save Gemini key to {tp}: {e}")
     return False
 
+def get_active_gemini_model() -> str:
+    """Retrieves current server-wide configured Gemini model or falls back to DEFAULT_MODEL."""
+    env_m = os.getenv("GEMINI_MODEL", "").strip()
+    if env_m:
+        return env_m
+
+    candidate_paths = [
+        "/app/data/notes/.gemini_model",
+        os.path.join(os.path.dirname(__file__), "..", "..", ".gemini_model")
+    ]
+    try:
+        from app.config import NOTES_DIR
+        if NOTES_DIR:
+            candidate_paths.insert(0, os.path.join(NOTES_DIR, ".gemini_model"))
+    except Exception:
+        pass
+
+    for cp in candidate_paths:
+        if os.path.exists(cp):
+            try:
+                with open(cp, "r", encoding="utf-8") as f:
+                    m = f.read().strip()
+                    if m:
+                        return m
+            except Exception:
+                pass
+    return DEFAULT_MODEL
+
+def save_active_gemini_model(model_name: str) -> bool:
+    """Persists chosen Gemini model to server storage."""
+    clean = model_name.strip()
+    if not clean:
+        return False
+    target_paths = ["/app/data/notes/.gemini_model"]
+    try:
+        from app.config import NOTES_DIR
+        if NOTES_DIR and os.path.exists(NOTES_DIR):
+            target_paths.insert(0, os.path.join(NOTES_DIR, ".gemini_model"))
+    except Exception:
+        pass
+
+    for tp in target_paths:
+        try:
+            os.makedirs(os.path.dirname(tp), exist_ok=True)
+            with open(tp, "w", encoding="utf-8") as f:
+                f.write(clean)
+            return True
+        except Exception as e:
+            logger.warning(f"Could not save Gemini model to {tp}: {e}")
+    return False
+
 def list_supported_models(api_key: str = "") -> List[str]:
-    """
-    Returns the supported pinned model.
-    Locked across the portal to gemini-3.8-flash-high with zero dropdowns or downgrades.
-    """
-    return [PINNED_MODEL]
+    """Queries Google AI Studio ListModels API to discover available models that support generateContent."""
+    key = resolve_gemini_api_key(api_key)
+    fallback_list = [
+        "gemini-3.8-flash-high",
+        "gemini-3.8-flash",
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash"
+    ]
+    if not key:
+        return fallback_list
+
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models?key={key}"
+        resp = requests.get(url, timeout=7)
+        if resp.status_code == 200:
+            data = resp.json()
+            models_raw = data.get("models", [])
+            valid_models = []
+            for m in models_raw:
+                methods = m.get("supportedGenerationMethods", [])
+                if "generateContent" in methods:
+                    name = m.get("name", "").replace("models/", "").strip()
+                    if name:
+                        valid_models.append(name)
+            if valid_models:
+                if "gemini-3.8-flash-high" not in valid_models:
+                    valid_models.insert(0, "gemini-3.8-flash-high")
+                return valid_models
+    except Exception as e:
+        logger.warning(f"Could not query models from Gemini API: {e}")
+    return fallback_list
 
 def canonical_gemini_api_model(model_name: Optional[str] = None) -> str:
     """
-    Translates the portal's pinned model name into Google AI Studio's canonical REST API identifier.
-    The portal strictly enforces 'gemini-3.8-flash-high' with zero fallback to older generations (no 2.5, 2.0, 1.5).
-    Google AI Studio REST endpoint requires 'gemini-3.8-flash'.
+    Translates the model name into Google AI Studio's canonical REST API identifier.
+    'gemini-3.8-flash-high' or 'gemini-3.8-high' -> 'gemini-3.8-flash'.
+    Other models (e.g. 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash') pass through directly.
     """
-    clean = (model_name or PINNED_MODEL).strip().lower()
+    raw = (model_name or get_active_gemini_model() or DEFAULT_MODEL).strip()
+    clean = raw.lower()
     if clean in ["gemini-3.8-flash-high", "gemini-3.8-high"]:
         return "gemini-3.8-flash"
-    # Block older generation downgrades
-    if any(old in clean for old in ["2.5", "2.0", "1.5", "1.0"]):
-        return "gemini-3.8-flash"
-    return clean or "gemini-3.8-flash"
+    if clean.startswith("models/"):
+        return clean.replace("models/", "")
+    return raw
 
 def normalize_model_name(model_name: Optional[str] = None, api_key: Optional[str] = None) -> str:
-    """Strictly locks model to gemini-3.8-flash-high across the portal."""
-    return PINNED_MODEL
+    """Resolves active server-wide Gemini model."""
+    return get_active_gemini_model()
 
 def call_gemini_api(
     contents: List[Dict[str, Any]],
     api_key: str,
-    model: str = PINNED_MODEL,
+    model: Optional[str] = None,
     system_instruction: Optional[str] = None,
     response_json: bool = False
 ) -> str:
     """
-    Direct HTTPS REST call to Google Gemini API using strictly gemini-3.8-flash-high.
-    Dispatches to Google AI Studio's gemini-3.8-flash endpoint without downgrades or fallbacks.
+    Direct HTTPS REST call to Google Gemini API with automatic 503 exponential backoff retry.
     """
+    import time
     key = resolve_gemini_api_key(api_key)
     if not key:
         raise ValueError("Gemini API key is required. Please add your key in the AI Setup modal or set GEMINI_API_KEY.")
 
-    target_model = PINNED_MODEL
+    target_model = model or get_active_gemini_model() or DEFAULT_MODEL
     api_endpoint_model = canonical_gemini_api_model(target_model)
 
     payload: Dict[str, Any] = {
@@ -141,49 +219,79 @@ def call_gemini_api(
         }
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{api_endpoint_model}:generateContent?key={key}"
-    try:
-        resp = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=120)
-        if resp.status_code == 200:
-            data = resp.json()
-            candidates = data.get("candidates", [])
-            if not candidates:
-                raise ValueError(f"No response generated by Gemini model ({target_model}).")
-            parts = candidates[0].get("content", {}).get("parts", [])
-            full_text = "".join([p.get("text", "") for p in parts])
-            return full_text
-        elif resp.status_code == 404:
-            raise ValueError(f"Model '{target_model}' request failed (404): {resp.text}")
-        elif resp.status_code == 403:
-            raise ValueError("Gemini API key is invalid or unauthorized (403). Please verify your Google AI Studio key.")
-        elif resp.status_code == 429:
-            raise ValueError("Gemini API rate limit exceeded (429). Please wait a moment before trying again.")
-        else:
-            raise ValueError(f"Gemini API request failed ({resp.status_code}): {resp.text}")
-    except requests.exceptions.Timeout:
-        raise ValueError(f"Gemini API request timed out ({target_model}). Please try again.")
-    except requests.exceptions.RequestException as e:
-        raise ValueError(f"Gemini API network error: {str(e)}")
+    
+    max_retries = 3
+    last_error = ""
+    for attempt in range(max_retries):
+        try:
+            resp = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=120)
+            if resp.status_code == 200:
+                data = resp.json()
+                candidates = data.get("candidates", [])
+                if not candidates:
+                    raise ValueError(f"No response generated by Gemini model ({target_model}).")
+                parts = candidates[0].get("content", {}).get("parts", [])
+                full_text = "".join([p.get("text", "") for p in parts])
+                return full_text
+            elif resp.status_code in [503, 429]:
+                last_error = f"Gemini API request failed ({resp.status_code}): {resp.text}"
+                if attempt < max_retries - 1:
+                    wait_time = 2 * (attempt + 1)
+                    logger.info(f"Gemini API returned {resp.status_code} for {api_endpoint_model}. Retrying in {wait_time}s (attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    raise ValueError(
+                        f"Model '{target_model}' (endpoint: '{api_endpoint_model}') is currently experiencing high demand on Google AI Studio (503).\n"
+                        f"Spikes are temporary. You can retry, or use the Admin Terminal / Model settings below to switch to another model (e.g. 'gemini-2.5-flash' or 'gemini-2.0-flash').\n"
+                        f"Google Response: {resp.text}"
+                    )
+            elif resp.status_code == 404:
+                raise ValueError(f"Model '{target_model}' (endpoint: '{api_endpoint_model}') request failed (404): {resp.text}")
+            elif resp.status_code == 403:
+                raise ValueError("Gemini API key is invalid or unauthorized (403). Please verify your Google AI Studio key.")
+            else:
+                raise ValueError(f"Gemini API request failed ({resp.status_code}): {resp.text}")
+        except requests.exceptions.Timeout:
+            if attempt < max_retries - 1:
+                time.sleep(2)
+                continue
+            raise ValueError(f"Gemini API request timed out ({target_model}). Please try again.")
+        except requests.exceptions.RequestException as e:
+            if attempt < max_retries - 1:
+                time.sleep(2)
+                continue
+            raise ValueError(f"Gemini API network error: {str(e)}")
 
-def test_gemini_connection(api_key: str, model: str = PINNED_MODEL) -> Dict[str, Any]:
-    """Tests Gemini connection strictly using gemini-3.8-flash-high."""
+    raise ValueError(last_error or "Gemini API request failed after retries.")
+
+def test_gemini_connection(api_key: str, model: Optional[str] = None) -> Dict[str, Any]:
+    """Tests Gemini connection with latency measurement and verified REST endpoint info."""
+    import time
+    start_t = time.time()
     try:
         key = resolve_gemini_api_key(api_key)
+        target_model = model or get_active_gemini_model()
         if not key:
-            return {"status": "error", "message": "No API key provided or found on server.", "model": PINNED_MODEL}
+            return {"status": "error", "message": "No API key provided or found on server.", "model": target_model}
 
-        target_model = PINNED_MODEL
         contents = [{"parts": [{"text": "Reply with 'DevOps Hub AI is connected successfully!'"}]}]
         reply = call_gemini_api(contents, api_key=key, model=target_model)
+        elapsed_ms = int((time.time() - start_t) * 1000)
         return {
             "status": "success",
             "message": reply.strip(),
-            "model": target_model
+            "model": target_model,
+            "api_endpoint_model": canonical_gemini_api_model(target_model),
+            "latency_ms": elapsed_ms
         }
     except Exception as e:
+        elapsed_ms = int((time.time() - start_t) * 1000)
         return {
             "status": "error",
             "message": str(e),
-            "model": PINNED_MODEL
+            "model": model or get_active_gemini_model(),
+            "latency_ms": elapsed_ms
         }
 
 

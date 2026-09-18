@@ -962,6 +962,8 @@ async def api_approve_candidate_submission(sub_id: str, request: Request):
 # --- GEMINI AI TRANSCRIPTION, YOUTUBE & Q&A EXTRACTION APIS ---
 from app.ai_engine import (
     resolve_gemini_api_key, save_gemini_api_key, normalize_model_name,
+    get_active_gemini_model, save_active_gemini_model, list_supported_models,
+    canonical_gemini_api_model, DEFAULT_MODEL,
     test_gemini_connection, polish_and_review_text,
     extract_qa_from_transcript_text, process_youtube_interview,
     process_ephemeral_media, process_bulk_interview_files
@@ -969,22 +971,29 @@ from app.ai_engine import (
 
 class AiTestRequest(BaseModel):
     api_key: Optional[str] = ""
-    model: Optional[str] = "gemini-3.8-flash-high"
+    model: Optional[str] = ""
+
+class AiModelSaveRequest(BaseModel):
+    model: str
+
+class TerminalCommandRequest(BaseModel):
+    command: str
+    api_key: Optional[str] = ""
 
 class AiPolishRequest(BaseModel):
     text: str
     api_key: Optional[str] = ""
-    model: Optional[str] = "gemini-3.8-flash-high"
+    model: Optional[str] = ""
 
 class AiTranscriptRequest(BaseModel):
     transcript: str
     api_key: Optional[str] = ""
-    model: Optional[str] = "gemini-3.8-flash-high"
+    model: Optional[str] = ""
 
 class AiYoutubeRequest(BaseModel):
     url: str
     api_key: Optional[str] = ""
-    model: Optional[str] = "gemini-3.8-flash-high"
+    model: Optional[str] = ""
 
 class AiKeySaveRequest(BaseModel):
     api_key: str
@@ -994,11 +1003,162 @@ async def api_ai_config(request: Request):
     hdr_key = request.headers.get("x-gemini-api-key", "")
     key = resolve_gemini_api_key(hdr_key)
     masked = f"{key[:4]}...{key[-4:]}" if len(key) > 8 else ("****" if key else "")
+    active_m = get_active_gemini_model()
     return JSONResponse({
         "has_key": bool(key),
         "key_masked": masked,
-        "default_model": "gemini-3.8-flash-high"
+        "active_model": active_m,
+        "default_model": DEFAULT_MODEL,
+        "canonical_api_model": canonical_gemini_api_model(active_m)
     })
+
+@app.post("/api/ai/set-model")
+async def api_ai_set_model(req: AiModelSaveRequest, request: Request):
+    tok = extract_admin_token(request)
+    if not verify_admin_access(tok):
+        raise HTTPException(status_code=403, detail="Instructor authorization required.")
+    cleaned = (req.model or "").strip()
+    if not cleaned:
+        raise HTTPException(status_code=400, detail="Model name cannot be empty.")
+    ok = save_active_gemini_model(cleaned)
+    if ok:
+        return JSONResponse({
+            "status": "success",
+            "model": cleaned,
+            "canonical_api_model": canonical_gemini_api_model(cleaned),
+            "message": f"Server-wide Gemini model set to '{cleaned}'"
+        })
+    raise HTTPException(status_code=500, detail="Failed to persist model configuration.")
+
+@app.get("/api/ai/models")
+async def api_ai_get_models(request: Request):
+    tok = extract_admin_token(request)
+    if not verify_admin_access(tok):
+        raise HTTPException(status_code=403, detail="Instructor authorization required.")
+    hdr_key = request.headers.get("x-gemini-api-key", "")
+    models = list_supported_models(hdr_key)
+    return JSONResponse({
+        "models": models,
+        "active_model": get_active_gemini_model()
+    })
+
+@app.post("/api/ai/terminal")
+async def api_ai_terminal(req: TerminalCommandRequest, request: Request):
+    tok = extract_admin_token(request)
+    if not verify_admin_access(tok):
+        raise HTTPException(status_code=403, detail="Instructor authorization required.")
+
+    cmd_raw = (req.command or "").strip()
+    if not cmd_raw:
+        return JSONResponse({"output": ""})
+
+    parts = cmd_raw.split()
+    verb = parts[0].lower()
+    subverb = parts[1].lower() if len(parts) > 1 else ""
+
+    key = resolve_gemini_api_key(req.api_key)
+
+    if verb == "help":
+        output = (
+            "===============================================================\n"
+            "  DEVOPS HUB ADMIN TERMINAL - COMMAND REFERENCE\n"
+            "===============================================================\n"
+            "  gemini status              - Check API key, active model, and endpoints\n"
+            "  gemini list-models         - Query Google AI Studio for available models\n"
+            "  gemini set-model <name>    - Switch and persist server-wide model\n"
+            "  gemini test [model]        - Test connection with latency & live reply\n"
+            "  gemini set-key <AIzaSy...> - Save Gemini API key server-wide\n"
+            "  sysinfo                    - Container OS, Python version & paths\n"
+            "  clear                      - Clear terminal output\n"
+            "  help                       - Show this command reference\n"
+            "==============================================================="
+        )
+        return JSONResponse({"output": output})
+
+    elif verb == "sysinfo":
+        import platform, sys
+        active_m = get_active_gemini_model()
+        output = (
+            f"Container & Runtime Diagnostic:\n"
+            f"  OS:                 {platform.system()} {platform.release()} ({platform.machine()})\n"
+            f"  Python Version:     {sys.version.split()[0]}\n"
+            f"  Active Model:       {active_m}\n"
+            f"  Canonical Endpoint: models/{canonical_gemini_api_model(active_m)}:generateContent\n"
+            f"  Key Configured:     {'Yes (' + key[:4] + '...' + key[-4:] + ')' if len(key) > 8 else ('Yes' if key else 'No')}"
+        )
+        return JSONResponse({"output": output})
+
+    elif verb == "gemini":
+        if subverb == "status" or not subverb:
+            active_m = get_active_gemini_model()
+            canon_m = canonical_gemini_api_model(active_m)
+            masked = f"{key[:4]}...{key[-4:]}" if len(key) > 8 else ("Configured" if key else "Not Configured")
+            output = (
+                "Gemini AI Configuration Status:\n"
+                f"  API Key:            {masked}\n"
+                f"  Active Model:       {active_m}\n"
+                f"  Canonical Endpoint: models/{canon_m}:generateContent\n"
+                f"  Default Pinned:     {DEFAULT_MODEL}\n"
+                f"  Token Store:        /app/data/notes/.gemini_api_key\n"
+                f"  Model Store:        /app/data/notes/.gemini_model"
+            )
+            return JSONResponse({"output": output})
+
+        elif subverb == "list-models":
+            if not key:
+                return JSONResponse({"output": "Error: No Gemini API key found on server. Run 'gemini set-key <AIzaSy...>' first."})
+            models = list_supported_models(key)
+            active_m = get_active_gemini_model()
+            lines = ["Available Models on Google AI Studio for your API Key:"]
+            for idx, m in enumerate(models, 1):
+                marker = "  <-- [ACTIVE]" if m == active_m or (m == "gemini-3.8-flash" and active_m == "gemini-3.8-flash-high") else ""
+                lines.append(f"  {idx:2d}. {m}{marker}")
+            lines.append("\nTip: Run 'gemini set-model <model-name>' to switch models.")
+            return JSONResponse({"output": "\n".join(lines)})
+
+        elif subverb == "set-model":
+            if len(parts) < 3:
+                return JSONResponse({"output": "Usage: gemini set-model <model-name>\nExample: gemini set-model gemini-2.5-flash"})
+            new_model = parts[2].strip()
+            ok = save_active_gemini_model(new_model)
+            if ok:
+                canon = canonical_gemini_api_model(new_model)
+                return JSONResponse({
+                    "output": f"Success: Server-wide model changed to '{new_model}' (canonical REST endpoint: '{canon}').",
+                    "new_model": new_model
+                })
+            return JSONResponse({"output": f"Error: Failed to persist model '{new_model}'."})
+
+        elif subverb == "set-key":
+            if len(parts) < 3:
+                return JSONResponse({"output": "Usage: gemini set-key <AIzaSy...>"})
+            new_key = parts[2].strip()
+            ok = save_gemini_api_key(new_key)
+            if ok:
+                return JSONResponse({"output": "Success: Gemini API key saved server-wide to persistent storage."})
+            return JSONResponse({"output": "Error: Failed to save API key."})
+
+        elif subverb == "test":
+            test_m = parts[2].strip() if len(parts) > 2 else get_active_gemini_model()
+            res = test_gemini_connection(api_key=key, model=test_m)
+            if res.get("status") == "success":
+                output = (
+                    f"Test Succeeded! (Latency: {res.get('latency_ms', 0)}ms)\n"
+                    f"  Model Tested:  {res.get('model')}\n"
+                    f"  REST Endpoint: models/{res.get('api_endpoint_model')}:generateContent\n"
+                    f"  AI Response:   \"{res.get('message')}\""
+                )
+            else:
+                output = (
+                    f"Test FAILED (Latency: {res.get('latency_ms', 0)}ms)\n"
+                    f"  Model Tested:  {res.get('model')}\n"
+                    f"  Error: {res.get('message')}"
+                )
+            return JSONResponse({"output": output})
+        else:
+            return JSONResponse({"output": f"Unknown gemini subcommand: '{subverb}'. Run 'help' for available commands."})
+
+    return JSONResponse({"output": f"Command not found: '{verb}'. Type 'help' for available commands."})
 
 @app.post("/api/ai/save-key")
 async def api_ai_save_key(req: AiKeySaveRequest, request: Request):
