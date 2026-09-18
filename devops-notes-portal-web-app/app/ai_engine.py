@@ -84,48 +84,24 @@ def save_gemini_api_key(api_key: str) -> bool:
 
 def list_supported_models(api_key: str = "") -> List[str]:
     """
-    Dynamically queries Google AI Studio ListModels API to discover available models that support generateContent.
-    Falls back to PREFERRED_MODELS if offline or API key not yet verified.
+    Returns the supported pinned model.
+    Locked across the portal to gemini-3.8-flash-high with zero dropdowns or downgrades.
     """
-    global _CACHED_SUPPORTED_MODELS, _CACHED_MODELS_TIME
-    import time
-    now = time.time()
-    if _CACHED_SUPPORTED_MODELS and (now - _CACHED_MODELS_TIME < 300):
-        return _CACHED_SUPPORTED_MODELS
+    return [PINNED_MODEL]
 
-    key = resolve_gemini_api_key(api_key)
-    if not key:
-        return PREFERRED_MODELS
-
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models?key={key}"
-        resp = requests.get(url, timeout=5)
-        if resp.status_code == 200:
-            data = resp.json()
-            models_raw = data.get("models", [])
-            valid_models = []
-            for m in models_raw:
-                methods = m.get("supportedGenerationMethods", [])
-                if "generateContent" in methods:
-                    name = m.get("name", "").replace("models/", "").strip()
-                    if name:
-                        valid_models.append(name)
-            if valid_models:
-                # Prioritize Flash models in order
-                ordered = []
-                for pref in PREFERRED_MODELS:
-                    if pref in valid_models:
-                        ordered.append(pref)
-                for vm in valid_models:
-                    if vm not in ordered:
-                        ordered.append(vm)
-                _CACHED_SUPPORTED_MODELS = ordered
-                _CACHED_MODELS_TIME = now
-                return ordered
-    except Exception as e:
-        logger.warning(f"Could not list models from Gemini API: {e}")
-
-    return PREFERRED_MODELS
+def canonical_gemini_api_model(model_name: Optional[str] = None) -> str:
+    """
+    Translates the portal's pinned model name into Google AI Studio's canonical REST API identifier.
+    The portal strictly enforces 'gemini-3.8-flash-high' with zero fallback to older generations (no 2.5, 2.0, 1.5).
+    Google AI Studio REST endpoint requires 'gemini-3.8-flash'.
+    """
+    clean = (model_name or PINNED_MODEL).strip().lower()
+    if clean in ["gemini-3.8-flash-high", "gemini-3.8-high"]:
+        return "gemini-3.8-flash"
+    # Block older generation downgrades
+    if any(old in clean for old in ["2.5", "2.0", "1.5", "1.0"]):
+        return "gemini-3.8-flash"
+    return clean or "gemini-3.8-flash"
 
 def normalize_model_name(model_name: Optional[str] = None, api_key: Optional[str] = None) -> str:
     """Strictly locks model to gemini-3.8-flash-high across the portal."""
@@ -140,13 +116,14 @@ def call_gemini_api(
 ) -> str:
     """
     Direct HTTPS REST call to Google Gemini API using strictly gemini-3.8-flash-high.
-    No model dropdowns, no downgrades or fallbacks to older versions.
+    Dispatches to Google AI Studio's gemini-3.8-flash endpoint without downgrades or fallbacks.
     """
     key = resolve_gemini_api_key(api_key)
     if not key:
         raise ValueError("Gemini API key is required. Please add your key in the AI Setup modal or set GEMINI_API_KEY.")
 
     target_model = PINNED_MODEL
+    api_endpoint_model = canonical_gemini_api_model(target_model)
 
     payload: Dict[str, Any] = {
         "contents": contents,
@@ -163,7 +140,7 @@ def call_gemini_api(
             "parts": [{"text": system_instruction}]
         }
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{target_model}:generateContent?key={key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{api_endpoint_model}:generateContent?key={key}"
     try:
         resp = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=120)
         if resp.status_code == 200:

@@ -592,10 +592,12 @@
       }
     });
 
+    // Always keep answers in collapsed mode when selecting/switching categories
+    toggleAllAnswers(false);
+
     if (cat === 'ALL') {
-      // When category ALL is selected, collapse all companies, rounds, and answers
+      // When category ALL is selected, collapse all companies and rounds completely
       toggleAllCompanies(false);
-      toggleAllAnswers(false);
     }
 
     applyFilters();
@@ -682,7 +684,7 @@
 
         if (roundHasMatchingQuestions) {
           roundCard.classList.remove('hidden');
-          // If category other than ALL is selected or search query active, expand this round
+          // If category other than ALL is selected or search query active, expand this round so questions are visible
           if (currentCategory !== 'ALL' || searchVal.length > 2) {
             const rContent = roundCard.querySelector('.round-content');
             if (rContent) rContent.classList.remove('hidden');
@@ -691,13 +693,17 @@
           }
         } else {
           roundCard.classList.add('hidden');
+          const rContent = roundCard.querySelector('.round-content');
+          if (rContent) rContent.classList.add('hidden');
+          const rChevron = roundCard.querySelector('[id^="chevron-round-"]');
+          if (rChevron) rChevron.classList.remove('rotate-180');
         }
       });
 
       if (companyHasMatchingQuestions) {
         card.classList.remove('hidden');
         visibleCompanies++;
-        // If actively searching or category other than ALL is selected, auto-expand the company
+        // If actively searching or category other than ALL is selected, auto-expand matching company
         if (searchVal.length > 2 || currentCategory !== 'ALL') {
           const content = card.querySelector('.company-content');
           if (content) content.classList.remove('hidden');
@@ -706,6 +712,10 @@
         }
       } else {
         card.classList.add('hidden');
+        const content = card.querySelector('.company-content');
+        if (content) content.classList.add('hidden');
+        const cChevron = card.querySelector('[id^="chevron-comp-"]');
+        if (cChevron) cChevron.classList.remove('rotate-180');
       }
     });
 
