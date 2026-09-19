@@ -506,6 +506,18 @@
       pointer-events: none !important;
       overflow: hidden !important;
     }
+    @media (max-width: 768px) {
+      #mainSidebar:not(.collapsed) {
+        position: fixed !important;
+        top: 53px !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 85vw !important;
+        max-width: 320px !important;
+        z-index: 45 !important;
+        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.3) !important;
+      }
+    }
 
     /* ==========================================================================
        Print Optimization Stylesheet (Full Multi-Page Document Print)
@@ -671,12 +683,14 @@
   <div class="fixed top-[35%] right-[25%] w-[450px] h-[450px] rounded-full bg-indigo-200/30 filter blur-[100px] pointer-events-none"></div>
 
   <!-- Top Navbar (White Bluish Glass) -->
-  <header class="glass-nav px-3 xl:px-5 py-2 flex items-center justify-between sticky top-0 z-50 gap-2">
+  <header class="glass-nav px-3 sm:px-4 xl:px-5 py-2 flex items-center justify-between sticky top-0 z-50 w-full max-w-full">
     <!-- Brand Logo & Sidebar Toggle -->
     <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
-      <button id="navSidebarToggle" onclick="toggleSidebar()" class="p-1.5 sm:p-2 rounded-xl bg-white/80 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-sky-100 transition-all flex items-center justify-center shadow-sm" title="Toggle Sidebar (Ctrl+B)">
-        <i class="fa-solid fa-bars-staggered text-xs sm:text-sm"></i>
+      {% if request.url.path == '/' %}
+      <button id="navSidebarToggle" onclick="toggleSidebar()" class="p-1.5 sm:p-2 rounded-xl bg-white/80 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-sky-100 transition-all flex items-center justify-center shadow-sm" title="Toggle File Explorer Sidebar (Ctrl+B)">
+        <i class="fa-solid fa-folder-tree text-xs sm:text-sm"></i>
       </button>
+      {% endif %}
 
       <a href="/" class="flex items-center space-x-2 group">
         <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-md bg-gradient-to-tr from-sky-500 to-indigo-600 group-hover:scale-105 transition-all duration-200 shadow-sky-500/20 shrink-0">
@@ -688,7 +702,7 @@
         </div>
       </a>
       
-      <!-- Live Sync Status Pill (Dot on smaller screens, Full pill on 2xl) -->
+      <!-- Live Sync Status Indicator -->
       <div class="hidden 2xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/80 border border-sky-100 text-xs shadow-sm whitespace-nowrap" title="Auto-Sync is actively monitoring repositories">
         <span class="relative flex h-2 w-2">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
@@ -696,7 +710,7 @@
         </span>
         <span class="font-semibold text-[11px] text-slate-700">Auto-Sync Active</span>
       </div>
-      <div class="hidden lg:flex 2xl:hidden items-center px-2 py-1 rounded-full bg-white/80 border border-sky-100 shadow-sm" title="Auto-Sync Active">
+      <div class="hidden md:flex 2xl:hidden items-center px-2 py-1 rounded-full bg-white/80 border border-sky-100 shadow-sm" title="Auto-Sync Active">
         <span class="relative flex h-2 w-2">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -704,14 +718,14 @@
       </div>
     </div>
     
-    <!-- Navigation Actions -->
-    <nav class="flex items-center gap-1 xl:gap-1.5 shrink-0 overflow-x-auto no-scrollbar py-0.5">
-      <button onclick="focusRepo('training-materials')" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm whitespace-nowrap shrink-0" title="ArtisanTek Training Materials">
+    <!-- Desktop Navigation Actions (Visible on XL screens >= 1280px) -->
+    <nav class="hidden xl:flex items-center gap-1.5 shrink-0 py-0.5">
+      <button onclick="focusRepo('training-materials')" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm whitespace-nowrap shrink-0 cursor-pointer" title="ArtisanTek Training Materials">
         <i class="fa-solid fa-graduation-cap text-sky-600 text-xs"></i>
         <span>Training Materials</span>
       </button>
 
-      <button onclick="focusRepo('devops-notes')" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-indigo-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm whitespace-nowrap shrink-0" title="DevOps Notes">
+      <button onclick="focusRepo('devops-notes')" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-indigo-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm whitespace-nowrap shrink-0 cursor-pointer" title="DevOps Notes">
         <i class="fa-solid fa-book-bookmark text-indigo-600 text-xs"></i>
         <span>Notes</span>
       </button>
@@ -741,12 +755,147 @@
         <span>CIDR Architect</span>
       </a>
 
-      <button onclick="triggerManualSync()" class="ml-0.5 px-3 xl:px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all shadow-md shadow-sky-500/20 hover:scale-[1.02] flex items-center space-x-1.5 active:scale-95 whitespace-nowrap shrink-0" title="Trigger Git Sync Now">
+      <button onclick="triggerManualSync()" class="ml-0.5 px-3 xl:px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all shadow-md shadow-sky-500/20 hover:scale-[1.02] flex items-center space-x-1.5 active:scale-95 whitespace-nowrap shrink-0 cursor-pointer" title="Trigger Git Sync Now">
         <i id="sync-icon" class="fa-solid fa-rotate text-xs"></i>
         <span>Sync All</span>
       </button>
     </nav>
+
+    <!-- Mobile / Tablet Right Controls (< 1280px) -->
+    <div class="flex xl:hidden items-center space-x-1.5 sm:space-x-2 shrink-0">
+      <!-- Quick Sync Button on Mobile -->
+      <button onclick="triggerManualSync()" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold text-sky-700 bg-white hover:bg-sky-50 border border-sky-200 shadow-2xs transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer" title="Trigger Git Sync Now">
+        <i id="mobile-sync-icon" class="fa-solid fa-rotate text-sky-600 text-xs"></i>
+        <span class="hidden sm:inline font-mono text-[11px]">Sync</span>
+      </button>
+
+      <!-- Mobile Hamburger Menu Button -->
+      <button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-sky-500/20 transition-all active:scale-95 cursor-pointer" aria-label="Toggle navigation menu" title="Open Navigation Menu">
+        <i id="mobileMenuIcon" class="fa-solid fa-bars text-sm"></i>
+        <span class="font-sans text-xs">Menu</span>
+      </button>
+    </div>
   </header>
+
+  <!-- Mobile Navigation Backdrop & Slide-Down Drawer (< 1280px) -->
+  <div id="mobileMenuBackdrop" onclick="closeMobileMenu()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 hidden transition-opacity duration-200"></div>
+
+  <div id="mobileNavDrawer" class="fixed top-[53px] inset-x-0 bg-white/98 backdrop-blur-xl border-b-2 border-sky-300 shadow-2xl z-40 hidden transition-all duration-200 max-h-[calc(100vh-53px)] overflow-y-auto">
+    <div class="p-3 sm:p-4 space-y-2 max-w-lg mx-auto">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100 text-xs text-slate-500 font-bold uppercase tracking-wider">
+        <span class="flex items-center gap-1.5"><i class="fa-solid fa-compass text-sky-600"></i> Navigation Menu</span>
+        <button onclick="closeMobileMenu()" class="text-slate-400 hover:text-slate-700 p-1">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Training Materials -->
+      <button onclick="closeMobileMenu(); focusRepo('training-materials')" class="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-slate-200 hover:border-sky-300 transition-all flex items-center justify-between group text-left cursor-pointer">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-900 group-hover:text-sky-700">Training Materials</div>
+            <div class="text-[10px] text-slate-500">ArtisanTek Training Repo</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-sky-600"></i>
+      </button>
+
+      <!-- Notes -->
+      <button onclick="closeMobileMenu(); focusRepo('devops-notes')" class="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-sky-50 text-slate-800 hover:text-indigo-700 border border-slate-200 hover:border-indigo-300 transition-all flex items-center justify-between group text-left cursor-pointer">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-900 group-hover:text-indigo-700">DevOps Notes</div>
+            <div class="text-[10px] text-slate-500">Curated Architecture & Tech Notes</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-indigo-600"></i>
+      </button>
+
+      <!-- My Interview -->
+      <a href="/my-interviews" onclick="closeMobileMenu()" class="w-full p-2.5 rounded-xl {% if request.url.path == '/my-interviews' %}bg-sky-100/80 border-sky-400 text-sky-900 font-extrabold ring-1 ring-sky-400{% else %}bg-slate-50 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-slate-200 hover:border-sky-300{% endif %} transition-all flex items-center justify-between group">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-user-pen"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-900 group-hover:text-sky-700">My Interview</div>
+            <div class="text-[10px] text-slate-500">Personal Tracker & GitHub Sync</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-sky-600"></i>
+      </a>
+
+      <!-- Nagaraj Interview -->
+      <a href="/interviews" onclick="closeMobileMenu()" class="w-full p-2.5 rounded-xl {% if request.url.path == '/interviews' %}bg-amber-100/80 border-amber-400 text-amber-900 font-extrabold ring-1 ring-amber-400{% else %}bg-slate-50 hover:bg-amber-50 text-slate-800 hover:text-amber-800 border border-slate-200 hover:border-amber-300{% endif %} transition-all flex items-center justify-between group">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-user-tie"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-900 group-hover:text-amber-800">Nagaraj Interview</div>
+            <div class="text-[10px] text-slate-500">Interview Tracker & Q&A Records</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-amber-600"></i>
+      </a>
+
+      <!-- Old Interview Questions -->
+      <a href="/old-iq-questions" onclick="closeMobileMenu()" class="w-full p-2.5 rounded-xl {% if request.url.path == '/old-iq-questions' %}bg-emerald-100/80 border-emerald-400 text-emerald-900 font-extrabold ring-1 ring-emerald-400{% else %}bg-slate-50 hover:bg-emerald-50 text-slate-800 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300{% endif %} transition-all flex items-center justify-between group">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-clipboard-question"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-900 group-hover:text-emerald-800">Old Interview Questions</div>
+            <div class="text-[10px] text-slate-500">Questions by Company & Rounds (Dates & Tech)</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-emerald-600"></i>
+      </a>
+
+      <!-- Commands Cheat Sheet -->
+      <a href="/cheatsheets" onclick="closeMobileMenu()" class="w-full p-2.5 rounded-xl {% if request.url.path in ['/cheatsheets', '/commands-cheatsheet', '/commands-cheatsheets'] %}bg-indigo-100/80 border-indigo-400 text-indigo-900 font-extrabold ring-1 ring-indigo-400{% else %}bg-slate-50 hover:bg-indigo-50 text-slate-800 hover:text-indigo-800 border border-slate-200 hover:border-indigo-300{% endif %} transition-all flex items-center justify-between group">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-file-invoice"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-900 group-hover:text-indigo-800">Commands Cheat Sheet</div>
+            <div class="text-[10px] text-slate-500">Linux, Docker, K8s CLI, Manifests & Flags</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-indigo-600"></i>
+      </a>
+
+      <!-- CIDR Architect -->
+      <a href="/cidr" onclick="closeMobileMenu()" class="w-full p-2.5 rounded-xl {% if request.url.path == '/cidr' %}bg-sky-100/80 border-sky-400 text-sky-900 font-extrabold ring-1 ring-sky-400{% else %}bg-slate-50 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border border-slate-200 hover:border-sky-300{% endif %} transition-all flex items-center justify-between group">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-network-wired"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-900 group-hover:text-sky-700">CIDR Architect</div>
+            <div class="text-[10px] text-slate-500">Cloud CIDR & Subnet Visual Planner</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-sky-600"></i>
+      </a>
+
+      <!-- Mobile Full-Width Sync Button -->
+      <div class="pt-2 border-t border-slate-100">
+        <button onclick="closeMobileMenu(); triggerManualSync()" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 via-indigo-600 to-sky-600 hover:opacity-95 transition-all shadow-md shadow-sky-500/25 flex items-center justify-center space-x-2 active:scale-98 cursor-pointer">
+          <i id="mobile-drawer-sync-icon" class="fa-solid fa-rotate"></i>
+          <span>Sync All Repositories Now</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
@@ -799,9 +948,59 @@
       }, 3500);
     }
 
+    // Mobile Navigation Drawer Toggle & Close
+    function toggleMobileMenu() {
+      const drawer = document.getElementById("mobileNavDrawer");
+      const backdrop = document.getElementById("mobileMenuBackdrop");
+      const icon = document.getElementById("mobileMenuIcon");
+      if (!drawer) return;
+      const isHidden = drawer.classList.contains("hidden");
+      if (isHidden) {
+        drawer.classList.remove("hidden");
+        if (backdrop) backdrop.classList.remove("hidden");
+        if (icon) {
+          icon.classList.remove("fa-bars");
+          icon.classList.add("fa-xmark");
+        }
+      } else {
+        closeMobileMenu();
+      }
+    }
+
+    function closeMobileMenu() {
+      const drawer = document.getElementById("mobileNavDrawer");
+      const backdrop = document.getElementById("mobileMenuBackdrop");
+      const icon = document.getElementById("mobileMenuIcon");
+      if (drawer) drawer.classList.add("hidden");
+      if (backdrop) backdrop.classList.add("hidden");
+      if (icon) {
+        icon.classList.remove("fa-xmark");
+        icon.classList.add("fa-bars");
+      }
+    }
+
+    // Close mobile menu on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeMobileMenu();
+      }
+    });
+
+    // Close mobile menu if window is resized to desktop width
+    window.addEventListener("resize", () => {
+      if (window.innerWidth >= 1280) {
+        closeMobileMenu();
+      }
+    });
+
     async function triggerManualSync() {
-      const icon = document.getElementById("sync-icon");
-      icon.classList.add("fa-spin");
+      const icons = [
+        document.getElementById("sync-icon"),
+        document.getElementById("mobile-sync-icon"),
+        document.getElementById("mobile-drawer-sync-icon")
+      ].filter(Boolean);
+      icons.forEach(i => i.classList.add("fa-spin"));
+
       try {
         const res = await fetch("/api/sync", { method: "POST" });
         const data = await res.json();
@@ -810,14 +1009,33 @@
       } catch (err) {
         showToast("Sync failed: " + err, "error");
       } finally {
-        icon.classList.remove("fa-spin");
+        icons.forEach(i => i.classList.remove("fa-spin"));
       }
     }
 
-    function toggleSidebar() {
+    function toggleSidebar(forceCollapse) {
       const sidebar = document.getElementById("mainSidebar");
+      const backdrop = document.getElementById("sidebarMobileBackdrop");
       if (!sidebar) return;
-      sidebar.classList.toggle("collapsed");
+      if (typeof forceCollapse === "boolean") {
+        if (forceCollapse) {
+          sidebar.classList.add("collapsed");
+          if (backdrop) backdrop.classList.add("hidden");
+        } else {
+          sidebar.classList.remove("collapsed");
+          if (backdrop && window.innerWidth < 768) backdrop.classList.remove("hidden");
+        }
+      } else {
+        sidebar.classList.toggle("collapsed");
+        const isCollapsed = sidebar.classList.contains("collapsed");
+        if (backdrop) {
+          if (!isCollapsed && window.innerWidth < 768) {
+            backdrop.classList.remove("hidden");
+          } else {
+            backdrop.classList.add("hidden");
+          }
+        }
+      }
       const isCollapsed = sidebar.classList.contains("collapsed");
       localStorage.setItem("devops_sidebar_collapsed", isCollapsed ? "true" : "false");
     }
@@ -832,7 +1050,9 @@
 
     // Restore sidebar state
     window.addEventListener("DOMContentLoaded", () => {
-      if (localStorage.getItem("devops_sidebar_collapsed") === "true") {
+      const isMobile = window.innerWidth < 768;
+      const savedCollapsed = localStorage.getItem("devops_sidebar_collapsed");
+      if (savedCollapsed === "true" || (isMobile && savedCollapsed === null)) {
         const sidebar = document.getElementById("mainSidebar");
         if (sidebar) sidebar.classList.add("collapsed");
       }

@@ -6,7 +6,7 @@
 <div class="w-full h-full flex flex-col overflow-hidden relative bg-slate-50/50">
 
   <!-- Top Action & Statistics Header Bar -->
-  <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-sky-100 bg-white/80 backdrop-blur-md flex-shrink-0 z-30 shadow-2xs">
+  <div class="px-3 sm:px-6 py-2.5 sm:py-4 flex flex-wrap items-center justify-between gap-3 sm:gap-4 border-b border-sky-100 bg-white/80 backdrop-blur-md flex-shrink-0 z-30 shadow-2xs">
     <!-- Left Title & Branding -->
     <div class="flex items-center space-x-3">
       <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-600 to-sky-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 flex-shrink-0">
@@ -22,34 +22,34 @@
     </div>
 
     <!-- Master Controls: Expand/Collapse All, Actions & Typography -->
-    <div class="flex items-center gap-2 flex-wrap">
-      <button onclick="toggleAllCompanies(true)" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-white border border-slate-200 hover:bg-sky-50 hover:text-sky-700 text-slate-700 transition-all flex items-center space-x-1.5 shadow-2xs">
-        <i class="fa-solid fa-angles-down text-sky-600"></i>
+    <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+      <button onclick="toggleAllCompanies(true)" class="px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded-xl bg-white border border-slate-200 hover:bg-sky-50 hover:text-sky-700 text-slate-700 transition-all flex items-center space-x-1.5 shadow-2xs">
+        <i class="fa-solid fa-angles-down text-sky-600 text-[10px] sm:text-xs"></i>
         <span>Expand All</span>
       </button>
-      <button onclick="toggleAllCompanies(false)" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-all flex items-center space-x-1.5 shadow-2xs">
-        <i class="fa-solid fa-angles-up text-slate-500"></i>
+      <button onclick="toggleAllCompanies(false)" class="px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-all flex items-center space-x-1.5 shadow-2xs">
+        <i class="fa-solid fa-angles-up text-slate-500 text-[10px] sm:text-xs"></i>
         <span>Collapse All</span>
       </button>
-      <button onclick="toggleAllAnswers(true)" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 transition-all flex items-center space-x-1.5 shadow-2xs">
-        <i class="fa-regular fa-eye text-emerald-600"></i>
+      <button onclick="toggleAllAnswers(true)" class="px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 transition-all flex items-center space-x-1.5 shadow-2xs">
+        <i class="fa-regular fa-eye text-emerald-600 text-[10px] sm:text-xs"></i>
         <span>Show Answers</span>
       </button>
-      <button onclick="toggleAllAnswers(false)" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-all flex items-center space-x-1.5 shadow-2xs">
-        <i class="fa-regular fa-eye-slash text-slate-400"></i>
+      <button onclick="toggleAllAnswers(false)" class="px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-all flex items-center space-x-1.5 shadow-2xs">
+        <i class="fa-regular fa-eye-slash text-slate-400 text-[10px] sm:text-xs"></i>
         <span>Hide Answers</span>
       </button>
 
       <!-- Typography & Font Controls Dropdown -->
       <div class="relative z-50">
-        <button id="btnOldIqTypography" onclick="toggleOldIqTypographyMenu(event)" class="px-3 py-1.5 text-xs bg-white hover:bg-sky-50 border border-slate-200 hover:border-sky-300 rounded-xl text-slate-700 hover:text-sky-700 transition-all flex items-center space-x-1.5 shadow-2xs font-bold" title="Customize Font Style & Size">
+        <button id="btnOldIqTypography" onclick="toggleOldIqTypographyMenu(event)" class="px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs bg-white hover:bg-sky-50 border border-slate-200 hover:border-sky-300 rounded-xl text-slate-700 hover:text-sky-700 transition-all flex items-center space-x-1.5 shadow-2xs font-bold" title="Customize Font Style & Size">
           <i class="fa-solid fa-font text-sky-600"></i>
           <span class="text-[11px] font-mono">Aa</span>
           <i class="fa-solid fa-chevron-down text-[9px] text-slate-400 ml-0.5"></i>
         </button>
 
         <!-- Typography Popup Menu -->
-        <div id="oldIqTypographyMenu" onclick="event.stopPropagation()" class="hidden absolute right-0 top-11 w-80 p-5 rounded-2xl border-2 border-sky-400 bg-white shadow-2xl shadow-slate-900/25 z-[100] space-y-4 select-none ring-4 ring-sky-100">
+        <div id="oldIqTypographyMenu" onclick="event.stopPropagation()" class="hidden absolute right-0 top-11 w-[calc(100vw-2rem)] sm:w-80 max-w-sm p-4 sm:p-5 rounded-2xl border-2 border-sky-400 bg-white shadow-2xl shadow-slate-900/25 z-[100] space-y-4 select-none ring-4 ring-sky-100">
           <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
             <span class="text-xs font-extrabold text-slate-900 flex items-center space-x-2">
               <span class="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs"><i class="fa-solid fa-text-height"></i></span>

@@ -2,6 +2,9 @@
 {% block title %}Notes Explorer - DevOps Knowledge Hub{% endblock %}
 
 {% block content %}
+<!-- Mobile Sidebar Overlay Backdrop -->
+<div id="sidebarMobileBackdrop" onclick="toggleSidebar(true)" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-35 hidden md:hidden"></div>
+
 <!-- Left Sidebar: Explorer & Search (Frosted Glass & Draggable Resizing) -->
 <aside id="mainSidebar" class="w-80 lg:w-96 flex-shrink-0 glass-panel flex flex-col h-full z-20 relative">
   <!-- Draggable Resize Handle -->
@@ -143,7 +146,7 @@
         </button>
 
         <!-- Typography Popup Menu (100% Solid & Opaque) -->
-        <div id="typographyMenu" onclick="event.stopPropagation()" class="hidden absolute right-0 top-12 w-80 p-5 rounded-2xl border-2 border-sky-400 bg-white shadow-2xl shadow-slate-900/25 z-[100] space-y-4 select-none ring-4 ring-sky-100">
+        <div id="typographyMenu" onclick="event.stopPropagation()" class="hidden absolute right-0 top-12 w-[calc(100vw-2rem)] sm:w-80 max-w-sm p-4 sm:p-5 rounded-2xl border-2 border-sky-400 bg-white shadow-2xl shadow-slate-900/25 z-[100] space-y-4 select-none ring-4 ring-sky-100">
           <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
             <span class="text-xs font-extrabold text-slate-900 flex items-center space-x-2">
               <span class="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs"><i class="fa-solid fa-text-height"></i></span>
@@ -523,6 +526,11 @@
   async function loadFile(path, searchQuery = "", targetAnchor = "", skipHistory = false) {
     if (!path) return;
     currentFilePath = path;
+
+    // On mobile devices, auto-collapse sidebar drawer once a note is selected
+    if (window.innerWidth < 768 && typeof toggleSidebar === "function") {
+      toggleSidebar(true);
+    }
 
     // 1. Sync Browser URL so refresh keeps the exact note & anchor
     if (!skipHistory) {
