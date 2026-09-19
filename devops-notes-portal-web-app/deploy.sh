@@ -531,6 +531,64 @@ setup_gcp_schedule() {
         return 1
     fi
 
+    # Check if running inside a GCP VM with default restricted service account scopes
+    local is_gcp_vm=false
+    if curl -s -m 1 -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/scopes 2>/dev/null | grep -vq "cloud-platform\|compute"; then
+        is_gcp_vm=true
+    fi
+
+    CURRENT_ACC=$(gcloud config get-value account 2>/dev/null || echo "")
+    if [ "$is_gcp_vm" = true ] && [[ "$CURRENT_ACC" =~ gserviceaccount\.com$ || -z "$CURRENT_ACC" ]]; then
+        echo -e "\n${YELLOW}------------------------------------------------------------${RESET}"
+        echo -e "${BOLD}${YELLOW}⚠️  GCP VM SCOPE NOTICE${RESET}"
+        echo -e "You are running this inside a GCP VM where the default VM service account"
+        echo -e "has ${RED}restricted API scopes${RESET} (missing Compute Engine API scope)."
+        echo -e "Because of this, 'gcloud compute' commands will fail with 'insufficient authentication scopes'."
+        echo -e "${YELLOW}------------------------------------------------------------${RESET}"
+        echo ""
+        echo "Choose how you want to proceed:"
+        echo "  1) Log in with your Google account via 'gcloud auth login --no-browser' (Run in this VM)"
+        echo "  2) Display ready-to-run commands for Google Cloud Shell (Run in your browser)"
+        echo "  3) Continue anyway"
+        read -p "Select [1, 2, or 3] (Default: 2): " scope_choice
+        scope_choice=${scope_choice:-2}
+
+        if [ "$scope_choice" == "1" ]; then
+            echo -e "\n${CYAN}Running 'gcloud auth login --no-browser'...${RESET}"
+            gcloud auth login --no-browser
+        elif [ "$scope_choice" == "2" ]; then
+            read -p "Enter GCP VM Instance Name (Default: $(hostname)): " VM_NAME
+            VM_NAME=${VM_NAME:-$(hostname)}
+            read -p "Enter GCP Zone (Default: us-central1-f): " VM_ZONE
+            VM_ZONE=${VM_ZONE:-us-central1-f}
+            read -p "Enter GCP Region (Default: us-central1): " VM_REGION
+            VM_REGION=${VM_REGION:-us-central1}
+
+            echo -e "\n${CYAN}========================================================================${RESET}"
+            echo -e "${BOLD}📋 COPY & PASTE THIS INTO GOOGLE CLOUD SHELL (in your browser):${RESET}"
+            echo -e "${CYAN}👉 Open: https://shell.cloud.google.com${RESET}"
+            echo -e "${CYAN}========================================================================${RESET}\n"
+            echo -e "${GREEN}gcloud compute resource-policies create instance-schedule devops-daily-schedule \\"
+            echo -e "    --region=$VM_REGION \\"
+            echo -e "    --vm-start-schedule=\"0 6 * * *\" \\"
+            echo -e "    --vm-stop-schedule=\"0 23 * * *\" \\"
+            echo -e "    --timezone=\"Asia/Kolkata\" \\"
+            echo -e "    --description=\"Daily auto-start 6 AM IST and shutdown 11 PM IST\""
+            echo ""
+            echo -e "PROJECT_ID=\$(gcloud config get-value project)"
+            echo -e "PROJECT_NUMBER=\$(gcloud projects describe \"\$PROJECT_ID\" --format=\"value(projectNumber)\")"
+            echo -e "gcloud projects add-iam-policy-binding \"\$PROJECT_ID\" \\"
+            echo -e "    --member=\"serviceAccount:service-\${PROJECT_NUMBER}@compute-system.iam.gserviceaccount.com\" \\"
+            echo -e "    --role=\"roles/compute.instanceAdmin.v1\""
+            echo ""
+            echo -e "gcloud compute instances add-resource-policies $VM_NAME \\"
+            echo -e "    --zone=$VM_ZONE \\"
+            echo -e "    --resource-policies=devops-daily-schedule${RESET}\n"
+            echo -e "${CYAN}========================================================================${RESET}"
+            return 0
+        fi
+    fi
+
     read -p "Enter GCP VM Instance Name: " VM_NAME
     if [ -z "$VM_NAME" ]; then
         echo -e "${RED}VM Name is required.${RESET}"
@@ -546,17 +604,17 @@ setup_gcp_schedule() {
     SCHEDULE_NAME="devops-daily-schedule"
 
     echo -e "\n${CYAN}==> 1. Creating Resource Policy '$SCHEDULE_NAME'...${RESET}"
-    gcloud compute resource-policies create instance-schedule "$SCHEDULE_NAME" \
+    if ! gcloud compute resource-policies create instance-schedule "$SCHEDULE_NAME" \
         --region="$VM_REGION" \
         --vm-start-schedule="0 6 * * *" \
         --vm-stop-schedule="0 23 * * *" \
         --timezone="Asia/Kolkata" \
-        --description="Daily auto-start at 6:00 AM IST and shutdown at 11:00 PM IST" || {
-            echo -e "${YELLOW}Notice: Policy may already exist. Proceeding to attach...${RESET}"
-        }
+        --description="Daily auto-start at 6:00 AM IST and shutdown at 11:00 PM IST"; then
+        echo -e "${YELLOW}Notice: If policy already exists, proceeding to attach...${RESET}"
+    fi
 
     echo -e "\n${CYAN}==> 2. Granting Compute Engine Service Account instanceAdmin role...${RESET}"
-    PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
+    PROJECT_ID=$(gcloud config get-value project 2>/dev/null || echo "")
     PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format="value(projectNumber)" 2>/dev/null || echo "")
 
     if [ -n "$PROJECT_NUMBER" ]; then
@@ -567,13 +625,16 @@ setup_gcp_schedule() {
     fi
 
     echo -e "\n${CYAN}==> 3. Attaching Schedule to VM '$VM_NAME'...${RESET}"
-    gcloud compute instances add-resource-policies "$VM_NAME" \
+    if gcloud compute instances add-resource-policies "$VM_NAME" \
         --zone="$VM_ZONE" \
-        --resource-policies="$SCHEDULE_NAME"
-
-    echo -e "\n${GREEN}✔ Successfully scheduled VM '$VM_NAME'!${RESET}"
-    echo "  • Automatically starts at: 6:00 AM IST daily"
-    echo "  • Automatically stops at : 11:00 PM IST daily"
+        --resource-policies="$SCHEDULE_NAME"; then
+        echo -e "\n${GREEN}✔ Successfully scheduled VM '$VM_NAME'!${RESET}"
+        echo "  • Automatically starts at: 6:00 AM IST daily"
+        echo "  • Automatically stops at : 11:00 PM IST daily"
+    else
+        echo -e "\n${RED}✘ Failed to attach schedule.${RESET}"
+        echo -e "If this failed due to 'insufficient authentication scopes', run the commands directly in ${BOLD}Google Cloud Shell${RESET} (https://shell.cloud.google.com)."
+    fi
 }
 
 # ------------------------------------------------------------------------------
