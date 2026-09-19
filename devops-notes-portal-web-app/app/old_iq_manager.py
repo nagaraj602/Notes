@@ -11,8 +11,8 @@ from typing import List, Dict, Any, Optional
 
 CATEGORIES_LIST = [
     "Linux", "Shell script", "CI/CD", "Jenkins", "Git / GitHub", "Docker",
-    "Kubernetes", "AWS / Cloud", "Terraform / IaC", "Ansible", "Networking",
-    "Security", "Monitoring", "System Design", "Behavioral", "General"
+    "Kubernetes", "AWS / Cloud", "Terraform / IaC", "Ansible", "Python", "Networking",
+    "Security", "Monitoring", "System Design", "Behavioral", "AI/ML", "General"
 ]
 
 CATEGORY_NORMALIZE_MAP = {
@@ -38,6 +38,9 @@ CATEGORY_NORMALIZE_MAP = {
     "git": "Git / GitHub",
     "github": "Git / GitHub",
     "ansible": "Ansible",
+    "python": "Python",
+    "boto3": "Python",
+    "ai/ml": "AI/ML",
     "build tools": "Build Tools",
     "other": "General"
 }
@@ -48,30 +51,134 @@ def normalize_category(cat: str) -> str:
     cleaned = cat.strip().lower()
     return CATEGORY_NORMALIZE_MAP.get(cleaned, cat.strip())
 
-def detect_category_from_text(text: str) -> str:
-    tl = text.lower()
-    if any(w in tl for w in ["k8s", "kubernetes", "pod", "pods", "ingress", "clusterip", "nodeport", "hpa", "daemonset", "statefulset", "kubelet", "kubectl"]):
-        return "Kubernetes"
-    if any(w in tl for w in ["jenkins", "jenkinsfile", "pipeline", "ci/cd", "ci pipeline", "sonarqube", "quality gate"]):
-        return "Jenkins"
-    if any(w in tl for w in ["docker", "dockerfile", "container", "containers", "image", "multistage", "entrypoint", "cmd"]):
-        return "Docker"
-    if any(w in tl for w in ["terraform", "tfstate", "iac", "hcl", "state lock"]):
-        return "Terraform / IaC"
-    if any(w in tl for w in ["aws", "ec2", "s3", "vpc", "nacl", "security group", "route 53", "route53", "dynamodb", "cloudwatch", "iam", "eks", "fargate", "ecs"]):
-        return "AWS / Cloud"
-    if any(w in tl for w in ["ansible", "playbook", "inventory"]):
-        return "Ansible"
-    if any(w in tl for w in ["linux", "bash", "shell", "script", "grep", "awk", "sed", "systemd", "cpu 100", "top", "htop"]):
-        return "Linux"
-    if any(w in tl for w in ["git", "github", "gitlab", "branch", "merge", "pull request", "rebase"]):
-        return "Git / GitHub"
-    if any(w in tl for w in ["database", "rds", "postgres", "mysql", "mongodb"]):
-        return "AWS / Cloud"
-    if any(w in tl for w in ["prometheus", "grafana", "monitoring", "alert", "datadog", "pagerduty"]):
-        return "Monitoring"
-    if any(w in tl for w in ["team size", "developer", "hire you", "mistake", "conflict", "behavioral", "candidate introduction", "introduce yourself"]):
+def detect_category_from_text(q_text: str, ans_text: str = "", section_cat: str = "") -> str:
+    ql = q_text.lower().strip()
+    tl = (q_text + " " + ans_text).lower()
+    
+    # 1. Behavioral (Introduction, HR, Soft skills, day-to-day, notice period, team structure, project overview)
+    if any(w in ql for w in [
+        "introduce yourself", "tell me about yourself", "brief introduction", "walk me through your resume",
+        "why change of company", "team size", "separate devops team", "onshore/offshore", "notice period",
+        "salary expectation", "relocate", "conflict", "mistake", "hire you", "strengths", "weaknesses",
+        "what is your project about", "explain your project", "about your current project", "roles and responsibilities",
+        "day to day", "day-to-day", "working model", "why do you want to join", "rate your communication",
+        "share your screen so we can go through"
+    ]):
         return "Behavioral"
+
+    # 2. Dockerfile / Docker priority when explicitly asked to write Dockerfile or containerize
+    if any(w in ql for w in ["write a complete dockerfile", "write a dockerfile", "dockerfile that:"]):
+        return "Docker"
+
+    # 3. Python (High Priority for Python coding, scripting, and automation questions)
+    if any(w in ql for w in [
+        "python", "boto3", "equilibrium index", "list and tuple", "difference between list and tuple",
+        "dictionary in python", "pip install", "pandas", "numpy", "python script", "python program",
+        "python code", "python skills", "exceptions in python", "package dependencies in python",
+        "read from a file in python"
+    ]) or re.search(r'\bpython\b', ql):
+        if not ("ocr application that needs to be deployed on aws" in ql or "deploying and managing this workload" in ql):
+            return "Python"
+
+    # 4. Terraform / IaC (Infrastructure as Code)
+    if any(w in ql for w in ["terraform", "tfstate", "iac", "hcl", "state lock", "terragrunt", "remote backend", "terraform plan", "terraform apply", "terraform code", "one terraform code"]):
+        return "Terraform / IaC"
+
+    # 5. Jenkins / Pipeline (All pipeline questions belong to Jenkins)
+    if any(w in ql for w in [
+        "jenkins", "jenkinsfile", "jnlp", "blue ocean", "jenkins agent", "jenkins master", "jenkins controller",
+        "shared library", "declarative", "scripted pipeline", "post-build actions", "pipeline", "pipelines",
+        "ci/cd pipeline", "ci pipeline", "cd pipeline", "deployment pipeline", "build pipeline",
+        "multibranch", "release pipeline"
+    ]) or re.search(r'\bjenkins\b', ql) or re.search(r'\bpipeline\b', ql):
+        return "Jenkins"
+
+    # 6. Kubernetes / Helm / ArgoCD (Container Orchestration & GitOps)
+    if any(w in ql for w in [
+        "k8s", "kubernetes", "pod", "pods", "ingress", "clusterip", "nodeport", "hpa", "helm",
+        "daemonset", "statefulset", "kubelet", "kubectl", "etcd", "coredns", "configmap", "calico",
+        "crashloopbackoff", "oomkilled", "karpenter", "argocd", "argo cd", "flux", "gitops"
+    ]):
+        return "Kubernetes"
+
+    # 7. Docker / Containers
+    if any(w in ql for w in ["docker", "dockerfile", "container", "containers", "multistage", "multi-stage", "entrypoint", "docker-compose", "distroless", "image build", "ecr"]):
+        return "Docker"
+
+    # 8. Ansible
+    if any(w in ql for w in ["ansible", "playbook", "inventory", "ad-hoc", "awx", "tower"]):
+        return "Ansible"
+
+    # 9. Git / GitHub
+    if any(w in ql for w in ["github", "gitlab", "bitbucket", "rebase", "cherry-pick", "merge conflict", "branching", "pull request", "git commit", "git stash"]) or re.search(r'\bgit\b', ql):
+        return "Git / GitHub"
+
+    # 10. Monitoring
+    if any(w in ql for w in ["prometheus", "grafana", "monitoring", "datadog", "pagerduty", "alertmanager", "splunk", "elk", "logstash", "observability", "metrics", "cadvisor"]):
+        return "Monitoring"
+
+    # 11. Security & Quality
+    if any(w in ql for w in ["trivy", "sonarqube", "vulnerability", "owasp", "cve", "snyk", "vault", "kms", "code spells", "code smells", "linting"]):
+        return "Security"
+
+    # 12. AWS / Cloud
+    if any(w in ql for w in ["aws", "ec2", "s3", "vpc", "nacl", "security group", "route 53", "route53", "dynamodb", "cloudwatch", "cloudtrail", "iam", "eks", "fargate", "ecs", "alb", "nlb", "load balancer", "load balancers", "ebs", "rds", "lambda", "cloudfront", "transit gateway", "databricks", "azure", "gcp"]):
+        return "AWS / Cloud"
+
+    # 13. Networking
+    if any(w in ql for w in ["subnet", "cidr", "osi model", "tcp/ip", "dns", "dhcp", "reverse proxy"]):
+        return "Networking"
+
+    # 14. System Design
+    if any(w in ql for w in ["system design", "high availability", "disaster recovery", "microservices architecture"]):
+        return "System Design"
+
+    # 15. Shell script
+    if any(w in ql for w in ["bash script", "shell script", "shell scripting", "crontab", "question to check shell script"]):
+        return "Shell script"
+
+    # 16. Linux
+    if any(w in ql for w in ["linux", "grep", "awk", "sed", "systemd", "systemctl", "chmod", "chown", "iostat", "top", "htop", "free -m", "vmstat", "uptime"]):
+        return "Linux"
+
+    # 17. CI/CD (Generic automation concepts without pipeline keyword)
+    if any(w in ql for w in ["ci/cd", "continuous integration", "continuous deployment"]):
+        return "Jenkins"
+
+    # 18. AI/ML
+    if any(w in ql for w in ["ai/ml", "artificial intelligence", "machine learning", "llm", "genai", "copilot", "chatgpt"]):
+        return "AI/ML"
+
+    # If section category exists and is specific, honor it
+    if section_cat and section_cat not in ["General", "Other"]:
+        norm_s = normalize_category(section_cat)
+        if norm_s != "General":
+            return norm_s
+
+    # 19. Answer text fallback
+    if any(w in tl for w in ["def ", "boto3", "python", "equilibrium index"]):
+        return "Python"
+    if any(w in tl for w in ["jenkins", "jenkinsfile", "pipeline"]):
+        return "Jenkins"
+    if any(w in tl for w in ["k8s", "kubernetes", "pod", "kubectl"]):
+        return "Kubernetes"
+    if any(w in tl for w in ["docker", "dockerfile", "container"]):
+        return "Docker"
+    if any(w in tl for w in ["terraform", "tfstate", "hcl"]):
+        return "Terraform / IaC"
+    if any(w in tl for w in ["aws", "ec2", "s3", "vpc"]):
+        return "AWS / Cloud"
+    if any(w in tl for w in ["ansible", "playbook"]):
+        return "Ansible"
+    if any(w in tl for w in ["git", "github", "rebase", "branch"]):
+        return "Git / GitHub"
+    if any(w in tl for w in ["prometheus", "grafana"]):
+        return "Monitoring"
+    if any(w in tl for w in ["trivy", "sonarqube", "vulnerability"]):
+        return "Security"
+    if any(w in tl for w in ["linux", "bash", "shell", "grep", "awk", "systemd"]):
+        return "Linux"
+
     return "General"
 
 def get_fallback_answer_for_question(q_text: str, c_name: str, r_name: str) -> str:
@@ -303,12 +410,7 @@ class OldIQManager:
             if not ans_clean or len(ans_clean) < 15:
                 ans_clean = get_fallback_answer_for_question(q_clean, c_name, r_name)
 
-            norm_cat = normalize_category(current_category)
-            if norm_cat == "General":
-                detected = detect_category_from_text(q_clean + " " + ans_clean)
-                if detected != "General":
-                    norm_cat = detected
-
+            norm_cat = detect_category_from_text(q_clean, ans_clean, current_category)
             category_counts[norm_cat] = category_counts.get(norm_cat, 0) + 1
             
             if c_name not in companies_map:
@@ -365,6 +467,7 @@ class OldIQManager:
                         current_round_name = parts[1].strip()
                 else:
                     current_company_name = raw_c
+                current_category = "General"
                 continue
 
             # Detect round header in details summary: <summary><h3>Round</h3></summary>
@@ -372,6 +475,7 @@ class OldIQManager:
             if m_round_details and not re.search(r'<summary>\s*<strong>', line_str) and not m_comp_details:
                 push_question()
                 current_round_name = m_round_details.group(1).strip()
+                current_category = "General"
                 continue
 
             # Detect markdown company header: * ![🏢]() **Azentio \- HackerRank Assessment**
@@ -384,6 +488,7 @@ class OldIQManager:
                 if parts:
                     current_company_name = parts[0]
                     current_round_name = " - ".join(parts[1:]) if len(parts) > 1 else "Level 1"
+                current_category = "General"
                 continue
 
             # Detect Category Header: #### 【 CI/CD 】 or * **【 CI/CD 】** or 【 CI/CD 】
@@ -452,7 +557,7 @@ class OldIQManager:
             if not ans_clean or len(ans_clean) < 15:
                 ans_clean = get_fallback_answer_for_question(q_clean, comp_name, current_round)
 
-            norm_cat = detect_category_from_text(q_clean + " " + ans_clean)
+            norm_cat = detect_category_from_text(q_clean, ans_clean, current_cat)
             category_counts[norm_cat] = category_counts.get(norm_cat, 0) + 1
             
             q_entry = {

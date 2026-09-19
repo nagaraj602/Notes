@@ -109,62 +109,83 @@
     </div>
 
     <!-- Search & Filter Console -->
-    <div class="glass-card p-4 sm:p-5 rounded-2xl border border-sky-100 bg-white/90 shadow-sm space-y-3.5">
-      <!-- Search Bar, Sort Selector, and Company Filter -->
-      <div class="flex flex-col sm:flex-row items-center gap-3">
-        <!-- Live Search Input -->
-        <div class="relative flex-1 w-full">
+    <div class="glass-card p-4 sm:p-5 rounded-2xl border border-sky-100 bg-white/95 shadow-sm space-y-3.5">
+      <!-- Search Bar, Sort Selector, Company Filter, and Round Filter -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+        <!-- Live Search Input (Col span 4) -->
+        <div class="md:col-span-4 relative w-full">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
           <input 
             type="text" 
             id="searchInput" 
-            placeholder="Search questions, answers, concepts (e.g., EKS upgrade, Helm, Trivy, VPC)..." 
+            placeholder="Search questions, answers (e.g. Helm, Trivy, VPC)..." 
             oninput="handleSearch()"
-            class="w-full pl-9 pr-9 py-2.5 rounded-xl text-xs sm:text-sm bg-slate-50/80 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-slate-800 placeholder-slate-400"
+            class="w-full pl-9 pr-9 py-2.5 rounded-xl text-xs sm:text-sm bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-slate-900 placeholder-slate-400 shadow-2xs font-medium"
           />
           <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
             <i class="fa-solid fa-circle-xmark"></i>
           </button>
         </div>
 
-        <!-- Sort Selector -->
-        <div class="w-full sm:w-56 flex-shrink-0">
-          <div class="relative">
-            <select id="sortSelect" onchange="handleSortChange()" class="w-full py-2.5 pl-8 pr-3 rounded-xl text-xs sm:text-sm bg-slate-50/80 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-800 transition-all font-semibold cursor-pointer">
-              <option value="default">Sort: Default Order</option>
-              <option value="favorites-first">Sort: Favorites First ★</option>
-              <option value="alpha-asc">Sort: Questions (A → Z)</option>
-              <option value="alpha-desc">Sort: Questions (Z → A)</option>
-              <option value="has-answer">Sort: Answers Available</option>
-            </select>
-            <i class="fa-solid fa-arrow-down-short-wide absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
-          </div>
+        <!-- Sort Selector (Col span 3) -->
+        <div class="md:col-span-3 relative w-full">
+          <select id="sortSelect" onchange="handleSortChange()" class="w-full py-2.5 pl-8 pr-8 rounded-xl text-xs sm:text-sm bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-900 transition-all font-semibold cursor-pointer shadow-2xs" title="Sort interview questions, rounds, or companies">
+            <option value="default">Sort: Default Order</option>
+            <option value="favorites-first">Sort: Favorites First ★</option>
+            <option value="round-asc">Sort: Round Stage (L1 → L2 → Manager)</option>
+            <option value="round-desc">Sort: Round Stage (Manager → L2 → L1)</option>
+            <option value="round-name">Sort: Round Name (A → Z)</option>
+            <option value="company-asc">Sort: Company Name (A → Z)</option>
+            <option value="company-desc">Sort: Company Name (Z → A)</option>
+            <option value="most-questions">Sort: Most Questions Banked</option>
+            <option value="alpha-asc">Sort: Questions (A → Z)</option>
+            <option value="alpha-desc">Sort: Questions (Z → A)</option>
+            <option value="has-answer">Sort: Answers Available First</option>
+          </select>
+          <i class="fa-solid fa-arrow-down-short-wide absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+          <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
         </div>
 
-        <!-- Company Dropdown Quick Selector -->
-        <div class="w-full sm:w-56 flex-shrink-0">
-          <select id="companySelect" onchange="handleCompanyFilter()" class="w-full py-2.5 px-3 rounded-xl text-xs sm:text-sm bg-slate-50/80 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-800 transition-all cursor-pointer">
+        <!-- Company Dropdown Selector (Col span 3) -->
+        <div class="md:col-span-3 relative w-full">
+          <select id="companySelect" onchange="handleCompanyFilter()" class="w-full py-2.5 pl-8 pr-8 rounded-xl text-xs sm:text-sm bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-900 transition-all font-semibold cursor-pointer shadow-2xs" title="Filter by company">
             <option value="ALL">All Companies ({{ companies|length }})</option>
             {% for comp in companies %}
             <option value="{{ comp.company_name }}">{{ comp.company_name }} ({{ comp.total_questions }} Qs)</option>
             {% endfor %}
           </select>
+          <i class="fa-solid fa-building absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+          <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
+        </div>
+
+        <!-- Round Dropdown Selector (Col span 2) -->
+        <div class="md:col-span-2 relative w-full">
+          <select id="roundSelect" onchange="handleRoundFilter()" class="w-full py-2.5 pl-7 pr-7 rounded-xl text-xs sm:text-sm bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-900 transition-all font-semibold cursor-pointer shadow-2xs" title="Filter by round (L1, L2, Manager, Assessment)">
+            <option value="ALL">All Rounds</option>
+          </select>
+          <i class="fa-solid fa-layer-group absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+          <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
         </div>
       </div>
 
-      <!-- Category Filter Pills & Favorites Toggle -->
-      <div class="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100">
-        <!-- Favorites Filter Toggle Pill -->
-        <button 
-          type="button"
-          id="favFilterBtn" 
-          onclick="toggleFavoritesOnlyFilter()" 
-          class="fav-pill px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-amber-50 hover:text-amber-800 border border-slate-200 cursor-pointer shadow-2xs mr-1"
-          title="Filter questions to show only your starred favorites"
+      <!-- Category Filter Pills & Favorites Checkbox Button -->
+      <div class="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-100">
+        <!-- Favorites Filter Checkbox Button -->
+        <label 
+          id="favFilterLabel" 
+          for="favFilterCheckbox"
+          class="fav-pill inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 border border-slate-300 hover:border-amber-400 hover:bg-amber-50/60 cursor-pointer shadow-2xs mr-1 select-none"
+          title="Click checkbox to filter and view only your starred favorite questions"
         >
-          <i id="favFilterIcon" class="fa-regular fa-star text-amber-500 text-[11px]"></i>
+          <input 
+            type="checkbox" 
+            id="favFilterCheckbox" 
+            onchange="toggleFavoritesOnlyFilter(this.checked)" 
+            class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-slate-300 cursor-pointer accent-amber-500"
+          />
+          <i id="favFilterIcon" class="fa-regular fa-star text-amber-500 text-xs"></i>
           <span>Favorites (<span id="favPillCount">0</span>)</span>
-        </button>
+        </label>
 
         <span class="text-[11px] font-bold text-slate-500 mr-1 flex items-center"><i class="fa-solid fa-filter text-sky-600 mr-1"></i>Filter Category:</span>
         <button onclick="selectCategory('ALL')" class="cat-pill active-cat px-2.5 py-1 rounded-lg text-xs font-semibold transition-all" data-cat="ALL">
@@ -189,7 +210,7 @@
     <!-- Main Companies List Container -->
     <div id="companiesContainer" class="space-y-4">
       {% for comp in companies %}
-      <div class="company-card glass-card rounded-2xl border border-sky-100 bg-white/95 shadow-sm overflow-hidden transition-all hover:border-sky-200" data-company="{{ comp.company_name }}">
+      <div class="company-card glass-card rounded-2xl border border-sky-100 bg-white/95 shadow-sm overflow-hidden transition-all hover:border-sky-200" data-company="{{ comp.company_name }}" data-original-comp-index="{{ loop.index0 }}" data-total-questions="{{ comp.total_questions }}">
         <!-- Company Header (Collapsible Accordion Trigger) -->
         <div onclick="toggleCompany('{{ comp.company_name|replace(' ', '_') }}')" class="p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-gradient-to-r from-slate-50/50 via-white to-sky-50/30 hover:bg-sky-50/50 transition-all group">
           <div class="flex items-center space-x-3.5">
@@ -227,7 +248,7 @@
         <!-- Company Rounds Container (Collapsed by Default) -->
         <div id="content-comp-{{ comp.company_name|replace(' ', '_') }}" class="company-content hidden p-4 sm:p-5 border-t border-slate-100 space-y-4 bg-slate-50/30">
           {% for round in comp.rounds %}
-          <div class="round-card bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden transition-all" data-round="{{ round.round_name }}">
+          <div class="round-card bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden transition-all" data-round="{{ round.round_name }}" data-original-round-index="{{ loop.index0 }}" data-round-questions="{{ round.questions|length }}">
             <!-- Round Header (Collapsible Trigger) -->
             <div onclick="toggleRound('{{ comp.company_name|replace(' ', '_') }}-{{ loop.index }}')" class="px-4 py-3 bg-gradient-to-r from-slate-100/70 to-white flex items-center justify-between cursor-pointer select-none hover:bg-sky-50/50 transition-all group">
               <div class="flex items-center space-x-2.5">
@@ -349,6 +370,24 @@
 </div>
 
 <style>
+  /* Ensure Native Select & Options Are Always Crisp White & High Contrast */
+  select {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-weight: 600 !important;
+    padding: 8px 12px !important;
+  }
+  select:focus {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+  }
   .cat-pill.active-cat {
     background-color: #0284c7 !important;
     color: white !important;
@@ -356,10 +395,10 @@
     box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
   }
   .fav-pill.active-fav-filter {
-    background-color: #f59e0b !important;
-    color: white !important;
-    border-color: #d97706 !important;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35) !important;
+    background-color: #fffbeb !important;
+    color: #92400e !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25) !important;
   }
   .fav-btn-active {
     background-color: #fffbeb !important;
@@ -448,543 +487,5 @@
   }
 </style>
 
-<script>
-  let currentCategory = 'ALL';
-  let currentCompany = 'ALL';
-
-  // Toggle company accordion
-  function toggleCompany(compSafeName) {
-    const content = document.getElementById(`content-comp-${compSafeName}`);
-    const chevron = document.getElementById(`chevron-comp-${compSafeName}`);
-    if (!content || !chevron) return;
-    
-    if (content.classList.contains('hidden')) {
-      content.classList.remove('hidden');
-      chevron.classList.add('rotate-180');
-    } else {
-      content.classList.add('hidden');
-      chevron.classList.remove('rotate-180');
-    }
-  }
-
-  // Toggle round accordion
-  function toggleRound(roundId) {
-    const content = document.getElementById(`content-round-${roundId}`);
-    const chevron = document.getElementById(`chevron-round-${roundId}`);
-    if (!content || !chevron) return;
-
-    if (content.classList.contains('hidden')) {
-      content.classList.remove('hidden');
-      chevron.classList.add('rotate-180');
-    } else {
-      content.classList.add('hidden');
-      chevron.classList.remove('rotate-180');
-    }
-  }
-
-  // Toggle individual question answer
-  function toggleQuestionAnswer(qId) {
-    if (window.getSelection && window.getSelection().toString().trim().length > 0) {
-      return; // User was highlighting or selecting text, do not toggle accordion
-    }
-    const ans = document.getElementById(`ans-${qId}`);
-    const icon = document.getElementById(`icon-q-${qId}`);
-    const badge = document.getElementById(`badge-q-${qId}`);
-    const badgeText = document.getElementById(`badge-text-${qId}`);
-    const card = document.getElementById(`card-q-${qId}`);
-    if (!ans) return;
-
-    if (ans.classList.contains('hidden')) {
-      ans.classList.remove('hidden');
-      if (icon) icon.classList.add('rotate-180');
-      if (badge) {
-        badge.className = "flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-sky-600 text-white border border-sky-600 text-xs font-bold transition-all flex-shrink-0 shadow-xs";
-      }
-      if (badgeText) badgeText.innerText = "Hide";
-      if (card) {
-        card.classList.add('border-sky-400', 'ring-2', 'ring-sky-100');
-      }
-      // Format markdown / highlight if needed
-      formatMarkdownAnswer(qId);
-    } else {
-      ans.classList.add('hidden');
-      if (icon) icon.classList.remove('rotate-180');
-      if (badge) {
-        badge.className = "flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-sky-100 text-slate-700 group-hover:text-sky-800 border border-slate-200/80 group-hover:border-sky-300 text-xs font-bold transition-all flex-shrink-0 shadow-2xs";
-      }
-      if (badgeText) badgeText.innerText = "Answer";
-      if (card) {
-        card.classList.remove('border-sky-400', 'ring-2', 'ring-sky-100');
-      }
-    }
-  }
-
-  // Format markdown inside answer on demand from uncollapsed raw template
-  function formatMarkdownAnswer(qId) {
-    const template = document.getElementById(`raw-ans-${qId}`);
-    const ansEl = document.getElementById(`ans-text-${qId}`);
-    if (!template || !ansEl || ansEl.dataset.formatted === 'true') return;
-    try {
-      let raw = template.innerHTML;
-      raw = raw.replace(/&lt;/g, '<')
-               .replace(/&gt;/g, '>')
-               .replace(/&amp;/g, '&')
-               .replace(/&quot;/g, '"')
-               .replace(/&#39;/g, "'")
-               .replace(/&#x27;/g, "'");
-
-      if (window.marked) {
-        marked.setOptions({
-          breaks: true,
-          gfm: true
-        });
-        ansEl.innerHTML = marked.parse(raw);
-        if (window.Prism) {
-          Prism.highlightAllUnder(ansEl);
-        }
-      } else {
-        ansEl.textContent = raw;
-      }
-      ansEl.dataset.formatted = 'true';
-    } catch(e) {
-      console.warn('Formatting error:', e);
-    }
-  }
-
-  // Expand / Collapse all companies & rounds
-  function toggleAllCompanies(expand) {
-    document.querySelectorAll('.company-content').forEach(el => {
-      if (expand) el.classList.remove('hidden');
-      else el.classList.add('hidden');
-    });
-    document.querySelectorAll('[id^="chevron-comp-"]').forEach(ch => {
-      if (expand) ch.classList.add('rotate-180');
-      else ch.classList.remove('rotate-180');
-    });
-    document.querySelectorAll('.round-content').forEach(el => {
-      if (expand) el.classList.remove('hidden');
-      else el.classList.add('hidden');
-    });
-    document.querySelectorAll('[id^="chevron-round-"]').forEach(ch => {
-      if (expand) ch.classList.add('rotate-180');
-      else ch.classList.remove('rotate-180');
-    });
-  }
-
-  // Show / Hide all answers
-  function toggleAllAnswers(show) {
-    document.querySelectorAll('.ans-content').forEach(el => {
-      const qId = el.id.replace('ans-', '');
-      const icon = document.getElementById(`icon-q-${qId}`);
-      const badge = document.getElementById(`badge-q-${qId}`);
-      const badgeText = document.getElementById(`badge-text-${qId}`);
-      const card = document.getElementById(`card-q-${qId}`);
-
-      if (show) {
-        el.classList.remove('hidden');
-        if (icon) icon.classList.add('rotate-180');
-        if (badge) badge.className = "flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-sky-600 text-white border border-sky-600 text-xs font-bold transition-all flex-shrink-0 shadow-xs";
-        if (badgeText) badgeText.innerText = "Hide";
-        if (card) card.classList.add('border-sky-400', 'ring-2', 'ring-sky-100');
-        formatMarkdownAnswer(qId);
-      } else {
-        el.classList.add('hidden');
-        if (icon) icon.classList.remove('rotate-180');
-        if (badge) badge.className = "flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-sky-100 text-slate-700 group-hover:text-sky-800 border border-slate-200/80 group-hover:border-sky-300 text-xs font-bold transition-all flex-shrink-0 shadow-2xs";
-        if (badgeText) badgeText.innerText = "Answer";
-        if (card) card.classList.remove('border-sky-400', 'ring-2', 'ring-sky-100');
-      }
-    });
-  }
-
-  // Copy Question Text Only
-  function copyQuestionOnly(qId, event) {
-    if (event) event.stopPropagation();
-    const qTextEl = document.getElementById(`q-text-${qId}`);
-    const copyIcon = document.getElementById(`copy-q-icon-${qId}`);
-    if (!qTextEl) return;
-    const text = qTextEl.innerText.trim();
-
-    navigator.clipboard.writeText(text).then(() => {
-      if (copyIcon) {
-        copyIcon.className = 'fa-solid fa-check text-emerald-600';
-        setTimeout(() => {
-          copyIcon.className = 'fa-regular fa-copy text-[11px]';
-        }, 2000);
-      }
-    }).catch(err => {
-      console.error('Failed to copy question:', err);
-    });
-  }
-
-  // Copy Answer Text
-  function copyAnswerText(qId, event) {
-    event.stopPropagation();
-    const template = document.getElementById(`raw-ans-${qId}`);
-    const copyIcon = document.getElementById(`copy-icon-${qId}`);
-    if (!template) return;
-    
-    let text = template.innerHTML
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&#x27;/g, "'");
-
-    navigator.clipboard.writeText(text).then(() => {
-      if (copyIcon) {
-        copyIcon.className = 'fa-solid fa-check text-emerald-400';
-        setTimeout(() => {
-          copyIcon.className = 'fa-regular fa-copy';
-        }, 2000);
-      }
-    });
-  }
-
-  let currentSort = 'default';
-  let favoritesOnly = false;
-  let favoriteQuestions = new Set();
-  try {
-    const savedFavs = JSON.parse(localStorage.getItem('devops_old_iq_favorites') || '[]');
-    if (Array.isArray(savedFavs)) {
-      favoriteQuestions = new Set(savedFavs);
-    }
-  } catch(e) {
-    favoriteQuestions = new Set();
-  }
-
-  // Toggle individual question favorite/bookmark
-  function toggleFavoriteQuestion(qId, event) {
-    if (event) event.stopPropagation();
-    const card = document.getElementById(`card-q-${qId}`);
-    
-    if (favoriteQuestions.has(qId)) {
-      favoriteQuestions.delete(qId);
-      if (card) card.dataset.isFav = 'false';
-      updateFavButtonUI(qId, false);
-    } else {
-      favoriteQuestions.add(qId);
-      if (card) card.dataset.isFav = 'true';
-      updateFavButtonUI(qId, true);
-    }
-
-    try {
-      localStorage.setItem('devops_old_iq_favorites', JSON.stringify(Array.from(favoriteQuestions)));
-    } catch(e) {
-      console.warn("Could not save favorites to localStorage", e);
-    }
-
-    updateFavoriteCounters();
-
-    // If currently sorting by favorites-first, re-sort
-    if (currentSort === 'favorites-first') {
-      applySorting();
-    }
-
-    // If favorites-only filter is active, re-apply filters immediately
-    if (favoritesOnly) {
-      applyFilters();
-    }
-  }
-
-  function updateFavButtonUI(qId, isFav) {
-    const btn = document.getElementById(`fav-btn-${qId}`);
-    const icon = document.getElementById(`fav-icon-${qId}`);
-    const text = document.getElementById(`fav-text-${qId}`);
-    if (!btn) return;
-
-    if (isFav) {
-      btn.className = "px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-300 ring-2 ring-amber-100/70 text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer group/fav";
-      btn.title = "Favorited! Click to remove from favorites";
-      if (icon) icon.className = "fa-solid fa-star text-[11px] text-amber-500 scale-110 transition-transform";
-      if (text) text.innerText = "Saved";
-    } else {
-      btn.className = "px-2.5 py-1.5 rounded-xl bg-white hover:bg-amber-50 text-slate-400 hover:text-amber-500 border border-slate-200/80 hover:border-amber-300 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer group/fav";
-      btn.title = "Bookmark / Mark as Favorite";
-      if (icon) icon.className = "fa-regular fa-star text-[11px] group-hover/fav:scale-110 transition-transform";
-      if (text) text.innerText = "Star";
-    }
-  }
-
-  function updateFavoriteCounters() {
-    const count = favoriteQuestions.size;
-    const statEl = document.getElementById('statTotalFavorites');
-    const pillEl = document.getElementById('favPillCount');
-    if (statEl) statEl.innerText = count;
-    if (pillEl) pillEl.innerText = count;
-  }
-
-  function toggleFavoritesOnlyFilter(forceState) {
-    if (forceState !== undefined) {
-      favoritesOnly = !!forceState;
-    } else {
-      favoritesOnly = !favoritesOnly;
-    }
-
-    updateFavFilterBtnUI();
-
-    // When enabling favorites filter, keep answers collapsed
-    toggleAllAnswers(false);
-
-    applyFilters();
-  }
-
-  function updateFavFilterBtnUI() {
-    const btn = document.getElementById('favFilterBtn');
-    const icon = document.getElementById('favFilterIcon');
-    if (!btn) return;
-
-    if (favoritesOnly) {
-      btn.className = "fav-pill active-fav-filter px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer shadow-sm mr-1";
-      if (icon) icon.className = "fa-solid fa-star text-white text-[11px]";
-    } else {
-      btn.className = "fav-pill px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-amber-50 hover:text-amber-800 border border-slate-200 cursor-pointer shadow-2xs mr-1";
-      if (icon) icon.className = "fa-regular fa-star text-amber-500 text-[11px]";
-    }
-  }
-
-  // Sorting
-  function handleSortChange() {
-    const select = document.getElementById('sortSelect');
-    currentSort = select ? select.value : 'default';
-    applySorting();
-  }
-
-  function applySorting() {
-    const sortMode = currentSort;
-    const roundContents = document.querySelectorAll('.round-content');
-
-    roundContents.forEach(roundContainer => {
-      const qCards = Array.from(roundContainer.querySelectorAll('.question-card'));
-      if (qCards.length <= 1) return;
-
-      qCards.sort((a, b) => {
-        if (sortMode === 'favorites-first') {
-          const aFav = a.dataset.isFav === 'true' ? 1 : 0;
-          const bFav = b.dataset.isFav === 'true' ? 1 : 0;
-          if (aFav !== bFav) return bFav - aFav;
-          return (parseInt(a.dataset.originalIndex || 0)) - (parseInt(b.dataset.originalIndex || 0));
-        } else if (sortMode === 'alpha-asc') {
-          const aText = a.querySelector('.q-text')?.innerText.trim() || '';
-          const bText = b.querySelector('.q-text')?.innerText.trim() || '';
-          return aText.localeCompare(bText, undefined, { sensitivity: 'base' });
-        } else if (sortMode === 'alpha-desc') {
-          const aText = a.querySelector('.q-text')?.innerText.trim() || '';
-          const bText = b.querySelector('.q-text')?.innerText.trim() || '';
-          return bText.localeCompare(aText, undefined, { sensitivity: 'base' });
-        } else if (sortMode === 'has-answer') {
-          const aAns = a.getAttribute('data-has-answer') === 'true' ? 1 : 0;
-          const bAns = b.getAttribute('data-has-answer') === 'true' ? 1 : 0;
-          if (aAns !== bAns) return bAns - aAns;
-          return (parseInt(a.dataset.originalIndex || 0)) - (parseInt(b.dataset.originalIndex || 0));
-        } else {
-          // Default original order
-          return (parseInt(a.dataset.originalIndex || 0)) - (parseInt(b.dataset.originalIndex || 0));
-        }
-      });
-
-      qCards.forEach(card => roundContainer.appendChild(card));
-    });
-  }
-
-  // Category Selection
-  function selectCategory(cat) {
-    currentCategory = cat;
-    document.querySelectorAll('.cat-pill').forEach(btn => {
-      if (btn.getAttribute('data-cat') === cat) {
-        btn.classList.add('active-cat');
-      } else {
-        btn.classList.remove('active-cat');
-      }
-    });
-
-    // Always keep answers in collapsed mode when selecting/switching categories
-    toggleAllAnswers(false);
-
-    if (cat === 'ALL' && !favoritesOnly) {
-      // When category ALL is selected and favorites-only is not active, collapse all companies and rounds
-      toggleAllCompanies(false);
-    }
-
-    applyFilters();
-  }
-
-  // Company Dropdown Selection
-  function handleCompanyFilter() {
-    const select = document.getElementById('companySelect');
-    currentCompany = select.value;
-    applyFilters();
-  }
-
-  // Live Search
-  function handleSearch() {
-    const input = document.getElementById('searchInput');
-    const clearBtn = document.getElementById('clearSearchBtn');
-    if (input.value.trim().length > 0) {
-      clearBtn.classList.remove('hidden');
-    } else {
-      clearBtn.classList.add('hidden');
-    }
-    applyFilters();
-  }
-
-  function clearSearch() {
-    const input = document.getElementById('searchInput');
-    input.value = '';
-    document.getElementById('clearSearchBtn').classList.add('hidden');
-    applyFilters();
-  }
-
-  function resetFilters() {
-    favoritesOnly = false;
-    updateFavFilterBtnUI();
-    document.getElementById('searchInput').value = '';
-    document.getElementById('clearSearchBtn').classList.add('hidden');
-    document.getElementById('companySelect').value = 'ALL';
-    const sortSel = document.getElementById('sortSelect');
-    if (sortSel) sortSel.value = 'default';
-    currentCompany = 'ALL';
-    currentSort = 'default';
-    applySorting();
-    selectCategory('ALL');
-  }
-
-  function escapeHtml(text) {
-    if (!text) return "";
-    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  }
-
-  // Core Filtering Logic
-  function applyFilters() {
-    const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
-    let visibleQuestions = 0;
-    let visibleCompanies = 0;
-
-    if (currentCategory === 'ALL' && !searchVal && currentCompany === 'ALL' && !favoritesOnly) {
-      // Strictly collapse all companies, rounds, and answers by default when ALL is active and not in favorites-only mode
-      toggleAllCompanies(false);
-      toggleAllAnswers(false);
-    }
-
-    const companyCards = document.querySelectorAll('.company-card');
-
-    companyCards.forEach(card => {
-      const compName = card.getAttribute('data-company');
-      let companyMatchesCompanyFilter = (currentCompany === 'ALL' || compName.toLowerCase() === currentCompany.toLowerCase());
-      
-      let companyHasMatchingQuestions = false;
-      const roundCards = card.querySelectorAll('.round-card');
-
-      roundCards.forEach(roundCard => {
-        let roundHasMatchingQuestions = false;
-        const qItems = roundCard.querySelectorAll('.question-card, .question-item');
-
-        qItems.forEach(qItem => {
-          const qCat = qItem.getAttribute('data-cat') || '';
-          const qId = qItem.getAttribute('data-q-id');
-          const qText = qItem.querySelector('.q-text')?.innerText.toLowerCase() || '';
-          const rawTpl = document.getElementById(`raw-ans-${qId}`);
-          const ansText = (rawTpl ? rawTpl.innerHTML : (qItem.querySelector('.answer-markdown')?.innerText || '')).toLowerCase();
-
-          const isFav = (qItem.dataset.isFav === 'true');
-          const matchesFav = (!favoritesOnly || isFav);
-          const matchesCat = (currentCategory === 'ALL' || qCat.toLowerCase() === currentCategory.toLowerCase());
-          const matchesSearch = (!searchVal || qText.includes(searchVal) || ansText.includes(searchVal) || compName.toLowerCase().includes(searchVal) || qCat.toLowerCase().includes(searchVal));
-
-          if (companyMatchesCompanyFilter && matchesCat && matchesSearch && matchesFav) {
-            qItem.classList.remove('hidden');
-            roundHasMatchingQuestions = true;
-            companyHasMatchingQuestions = true;
-            visibleQuestions++;
-          } else {
-            qItem.classList.add('hidden');
-          }
-        });
-
-        if (roundHasMatchingQuestions) {
-          roundCard.classList.remove('hidden');
-          // If category other than ALL is selected, search active, or favoritesOnly active, expand round so questions are visible
-          if (currentCategory !== 'ALL' || searchVal.length > 2 || favoritesOnly) {
-            const rContent = roundCard.querySelector('.round-content');
-            if (rContent) rContent.classList.remove('hidden');
-            const rChevron = roundCard.querySelector('[id^="chevron-round-"]');
-            if (rChevron) rChevron.classList.add('rotate-180');
-          }
-        } else {
-          roundCard.classList.add('hidden');
-          const rContent = roundCard.querySelector('.round-content');
-          if (rContent) rContent.classList.add('hidden');
-          const rChevron = roundCard.querySelector('[id^="chevron-round-"]');
-          if (rChevron) rChevron.classList.remove('rotate-180');
-        }
-      });
-
-      if (companyHasMatchingQuestions) {
-        card.classList.remove('hidden');
-        visibleCompanies++;
-        // If actively searching, category other than ALL, or favoritesOnly active, auto-expand matching company
-        if (searchVal.length > 2 || currentCategory !== 'ALL' || favoritesOnly) {
-          const content = card.querySelector('.company-content');
-          if (content) content.classList.remove('hidden');
-          const cChevron = card.querySelector('[id^="chevron-comp-"]');
-          if (cChevron) cChevron.classList.add('rotate-180');
-        }
-      } else {
-        card.classList.add('hidden');
-        const content = card.querySelector('.company-content');
-        if (content) content.classList.add('hidden');
-        const cChevron = card.querySelector('[id^="chevron-comp-"]');
-        if (cChevron) cChevron.classList.remove('rotate-180');
-      }
-    });
-
-    // Update Filter Notice & Empty State
-    const filterNotice = document.getElementById('filterNotice');
-    const resultsCount = document.getElementById('resultsCount');
-    const emptyState = document.getElementById('emptyState');
-
-    if (searchVal || currentCategory !== 'ALL' || currentCompany !== 'ALL' || favoritesOnly) {
-      filterNotice.classList.remove('hidden');
-      if (favoritesOnly) {
-        resultsCount.innerHTML = `<span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-star text-amber-500"></i> Showing <strong>${visibleQuestions}</strong> favorite questions across <strong>${visibleCompanies}</strong> companies ${currentCategory !== 'ALL' ? `(Category: <strong>${escapeHtml(currentCategory)}</strong>)` : ''}</span>`;
-      } else {
-        resultsCount.innerText = `Found ${visibleQuestions} questions across ${visibleCompanies} companies`;
-      }
-    } else {
-      filterNotice.classList.add('hidden');
-    }
-
-    if (visibleCompanies === 0) {
-      emptyState.classList.remove('hidden');
-      const emptyTitle = emptyState.querySelector('h3');
-      const emptyDesc = emptyState.querySelector('p');
-      if (favoritesOnly) {
-        if (emptyTitle) emptyTitle.innerText = "No Favorite Questions Found";
-        if (emptyDesc) emptyDesc.innerText = currentCategory !== 'ALL' 
-          ? `You have no favorite questions under category "${currentCategory}". Star any question in this category or switch categories.`
-          : "You haven't bookmarked any favorite questions yet. Click the 'Star' button on any question to add it to your favorites!";
-      } else {
-        if (emptyTitle) emptyTitle.innerText = "No Interview Questions Found";
-        if (emptyDesc) emptyDesc.innerText = "No questions match your current search and category filters. Try adjusting your query or resetting filters.";
-      }
-    } else {
-      emptyState.classList.add('hidden');
-    }
-  }
-
-  // Initialize: Tag original indices, load favorites from storage, and set initial filter
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.question-card').forEach((card, idx) => {
-      card.dataset.originalIndex = idx;
-      const qId = card.getAttribute('data-q-id');
-      const isFav = favoriteQuestions.has(qId);
-      card.dataset.isFav = isFav ? 'true' : 'false';
-      updateFavButtonUI(qId, isFav);
-    });
-
-    updateFavoriteCounters();
-    selectCategory('ALL');
-  });
-</script>
+<script src="{{ url_for('static', filename='js/old_iq.js') }}"></script>
 {% endblock %}
