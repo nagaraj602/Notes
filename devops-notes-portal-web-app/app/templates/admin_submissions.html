@@ -1136,10 +1136,11 @@ Type 'gemini set-model <model>' to switch models anytime.</div>
       if (btn) btn.disabled = true;
       if (statusBox) statusBox.classList.remove("hidden");
 
+      const tok = currentAdminToken || sessionStorage.getItem("devops_admin_token") || localStorage.getItem("devops_admin_token") || localStorage.getItem("admin_access_token") || "";
       const headers = {};
-      if (currentAdminToken) {
-        headers["x-admin-token"] = currentAdminToken;
-        headers["Authorization"] = `Bearer ${currentAdminToken}`;
+      if (tok) {
+        headers["x-admin-token"] = tok;
+        headers["Authorization"] = `Bearer ${tok}`;
       }
 
       const res = await fetch("/api/admin/old-iq/bulk-upload", {
@@ -1148,9 +1149,16 @@ Type 'gemini set-model <model>' to switch models anytime.</div>
         body: formData
       });
 
-      const data = await res.json();
+      const resText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(resText);
+      } catch (jsonErr) {
+        throw new Error(resText || `Server returned ${res.status} ${res.statusText}`);
+      }
+
       if (!res.ok) {
-        throw new Error(data.detail || data.message || "Failed to process and bank files.");
+        throw new Error(data.detail || data.message || `Failed to process and bank files (${res.status}).`);
       }
 
       // Success

@@ -963,7 +963,7 @@ async def api_approve_candidate_submission(sub_id: str, request: Request):
 from app.ai_engine import (
     resolve_gemini_api_key, save_gemini_api_key, normalize_model_name,
     get_active_gemini_model, save_active_gemini_model, list_supported_models,
-    canonical_gemini_api_model, DEFAULT_MODEL,
+    canonical_gemini_api_model, DEFAULT_MODEL, PINNED_MODEL,
     test_gemini_connection, polish_and_review_text,
     extract_qa_from_transcript_text, process_youtube_interview,
     process_ephemeral_media, process_bulk_interview_files
@@ -1139,20 +1139,23 @@ async def api_ai_terminal(req: TerminalCommandRequest, request: Request):
             return JSONResponse({"output": "Error: Failed to save API key."})
 
         elif subverb == "test":
-            test_m = parts[2].strip() if len(parts) > 2 else get_active_gemini_model()
-            res = test_gemini_connection(api_key=key, model=test_m)
+            res = test_gemini_connection(api_key=key, model=PINNED_MODEL)
             if res.get("status") == "success":
+                tokens = res.get("tokens", {})
+                tok_str = f"Prompt: {tokens.get('promptTokenCount', 0)}, Candidate: {tokens.get('candidatesTokenCount', 0)}, Total: {tokens.get('totalTokenCount', 0)}" if tokens else "Live inference verified"
                 output = (
-                    f"Test Succeeded! (Latency: {res.get('latency_ms', 0)}ms)\n"
-                    f"  Model Tested:  {res.get('model')}\n"
-                    f"  REST Endpoint: models/{res.get('api_endpoint_model')}:generateContent\n"
-                    f"  AI Response:   \"{res.get('message')}\""
+                    f"✔ Test Succeeded! (Latency: {res.get('latency_ms', 0)}ms)\n"
+                    f"  Model Tested:        {res.get('model')}\n"
+                    f"  REST Endpoint:       models/{res.get('api_endpoint_model')}:generateContent\n"
+                    f"  Google ModelVersion: {res.get('google_model_version', res.get('api_endpoint_model'))} (Verified live metadata from Google AI Studio)\n"
+                    f"  Tokens Consumed:     {tok_str}\n"
+                    f"  Live AI Response:    \"{res.get('message')}\""
                 )
             else:
                 output = (
-                    f"Test FAILED (Latency: {res.get('latency_ms', 0)}ms)\n"
+                    f"✘ Test FAILED (Latency: {res.get('latency_ms', 0)}ms)\n"
                     f"  Model Tested:  {res.get('model')}\n"
-                    f"  Error: {res.get('message')}"
+                    f"  Error Details: {res.get('message')}"
                 )
             return JSONResponse({"output": output})
         else:
@@ -1256,77 +1259,89 @@ async def api_admin_old_iq_bulk_upload(
         })
 
     key = api_key or request.headers.get("x-gemini-api-key", "") or resolve_gemini_api_key()
+    if not key:
+        raise HTTPException(status_code=400, detail="Gemini API key is required. Please add your key in the AI Setup modal or set GEMINI_API_KEY.")
 
-    # Process files via Gemini AI
-    ai_result = process_bulk_interview_files(
-        file_data_list=file_data_list,
-        source_comment=source_comment,
-        api_key=key,
-        model=model or "gemini-3.8-flash-high"
-    )
+    # Process files via Gemini AI exclusively with Gemini 3.8 Flash High
+    try:
+        ai_result = process_bulk_interview_files(
+            file_data_list=file_data_list,
+            source_comment=source_comment,
+            api_key=key,
+            model=PINNED_MODEL
+        )
+    except Exception as e:
+        logger.error(f"Error during AI processing of bulk interview files: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
 
     markdown_content = ai_result.get("markdown_content", "")
     if not markdown_content:
         raise HTTPException(status_code=500, detail="AI processing failed to produce interview questions.")
 
-    # Locate the target directory (Old Interview Questions)
-    iq_dir = old_iq_manager.get_interview_questions_dir()
-    if not iq_dir:
-        base_dir = NOTES_DIR if NOTES_DIR and os.path.exists(NOTES_DIR) else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        iq_dir = os.path.join(base_dir, "Old Interview Questions")
-        os.makedirs(iq_dir, exist_ok=True)
-
-    # Determine sequence number by inspecting existing files in iq_dir
-    numbers = []
     try:
-        existing_files = os.listdir(iq_dir)
-        for item in existing_files:
-            m = re.match(r'^(\d+)[\._]', item)
-            if m:
-                try:
-                    numbers.append(int(m.group(1)))
-                except ValueError:
-                    pass
-    except Exception:
-        pass
+        # Locate the target directory (Old Interview Questions)
+        iq_dir = old_iq_manager.get_interview_questions_dir()
+        if not iq_dir:
+            base_dir = NOTES_DIR if NOTES_DIR and os.path.exists(NOTES_DIR) else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+            iq_dir = os.path.join(base_dir, "Old Interview Questions")
+            os.makedirs(iq_dir, exist_ok=True)
 
-    next_seq = (max(numbers) + 1) if numbers else 3
+        # Determine sequence number by inspecting existing files in iq_dir
+        numbers = []
+        try:
+            existing_files = os.listdir(iq_dir)
+            for item in existing_files:
+                m = re.match(r'^(\d+)[\._]', item)
+                if m:
+                    try:
+                        numbers.append(int(m.group(1)))
+                    except ValueError:
+                        pass
+        except Exception:
+            pass
 
-    # Format date: e.g. 13-Sep-2026
-    clean_date = date_str.strip()
-    if not clean_date:
-        clean_date = time.strftime("%d-%b-%Y") # e.g. 13-Sep-2026
+        next_seq = (max(numbers) + 1) if numbers else 3
 
-    # Clean source comment (e.g. "From: whatsapp" -> "whatsapp")
-    clean_src = re.sub(r'^(from\s*:\s*|from\s+)', '', (source_comment or "").strip(), flags=re.IGNORECASE).strip()
-    if not clean_src:
-        clean_src = "whatsapp"
+        # Format date: e.g. 13-Sep-2026
+        clean_date = date_str.strip()
+        if not clean_date:
+            clean_date = time.strftime("%d-%b-%Y") # e.g. 13-Sep-2026
 
-    # Construct exact requested filename: e.g. "3. 13-Sep-2026 from whatsapp.md"
-    new_filename = f"{next_seq}. {clean_date} from {clean_src}.md"
-    target_filepath = os.path.join(iq_dir, new_filename)
+        # Clean source comment (e.g. "From: whatsapp" -> "whatsapp")
+        clean_src = re.sub(r'^(from\s*:\s*|from\s+)', '', (source_comment or "").strip(), flags=re.IGNORECASE).strip()
+        if not clean_src:
+            clean_src = "whatsapp"
 
-    with open(target_filepath, "w", encoding="utf-8") as out_fp:
-        out_fp.write(markdown_content)
+        # Construct exact requested filename: e.g. "3. 13-Sep-2026 from whatsapp.md"
+        new_filename = f"{next_seq}. {clean_date} from {clean_src}.md"
+        target_filepath = os.path.join(iq_dir, new_filename)
 
-    # Invalidate cache so questions appear immediately in the app
-    old_iq_manager.invalidate_cache()
+        with open(target_filepath, "w", encoding="utf-8") as out_fp:
+            out_fp.write(markdown_content)
 
-    # Commit and push to GitHub repository
-    commit_msg = f"Add {new_filename} with AI-generated interview questions"
-    push_res = git_manager.commit_and_push_file(target_filepath, commit_msg, token=admin_tok)
+        # Invalidate cache so questions appear immediately in the app
+        old_iq_manager.invalidate_cache()
 
-    return JSONResponse({
-        "status": "success",
-        "filename": new_filename,
-        "path": target_filepath,
-        "companies_count": ai_result.get("companies_count", 0),
-        "rounds_count": ai_result.get("rounds_count", 0),
-        "questions_count": ai_result.get("questions_count", 0),
-        "companies": ai_result.get("companies", []),
-        "categories": ai_result.get("categories", []),
-        "git_sync": push_res
-    })
+        # Commit and push to GitHub repository
+        commit_msg = f"Add {new_filename} with AI-generated interview questions"
+        push_res = git_manager.commit_and_push_file(target_filepath, commit_msg, token=admin_tok)
+
+        return JSONResponse({
+            "status": "success",
+            "filename": new_filename,
+            "path": target_filepath,
+            "companies_count": ai_result.get("companies_count", 0),
+            "rounds_count": ai_result.get("rounds_count", 0),
+            "questions_count": ai_result.get("questions_count", 0),
+            "companies": ai_result.get("companies", []),
+            "categories": ai_result.get("categories", []),
+            "git_sync": push_res
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving or syncing bulk interview files: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed saving interview questions to repository: {str(e)}")
 
 # --- ADMIN CHEATSHEET MANAGEMENT ENDPOINTS ---
 

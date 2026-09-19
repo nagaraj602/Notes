@@ -46,15 +46,15 @@
   <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full scroll-smooth">
 
     <!-- Metrics Cards Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3.5 sm:gap-4">
       <!-- Total Companies -->
       <div class="glass-card p-4 rounded-2xl border border-sky-100 flex items-center justify-between bg-white/90 shadow-xs hover:border-sky-300 transition-all">
         <div>
           <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Companies</div>
           <div id="statTotalCompanies" class="text-2xl font-black text-slate-900 mt-0.5">{{ stats.total_companies }}</div>
-          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-building text-sky-500 mr-1"></i>Curated Organizations</div>
+          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-building text-sky-500 mr-1"></i>Curated Orgs</div>
         </div>
-        <div class="w-11 h-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg border border-sky-100">
+        <div class="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-base border border-sky-100">
           <i class="fa-solid fa-city"></i>
         </div>
       </div>
@@ -64,9 +64,9 @@
         <div>
           <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Interview Rounds</div>
           <div id="statTotalRounds" class="text-2xl font-black text-slate-900 mt-0.5">{{ stats.total_rounds }}</div>
-          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-layer-group text-indigo-500 mr-1"></i>L1, L2, Manager, Coding</div>
+          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-layer-group text-indigo-500 mr-1"></i>L1, L2, Manager</div>
         </div>
-        <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg border border-indigo-100">
+        <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-base border border-indigo-100">
           <i class="fa-solid fa-sitemap"></i>
         </div>
       </div>
@@ -76,9 +76,9 @@
         <div>
           <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Questions</div>
           <div id="statTotalQuestions" class="text-2xl font-black text-slate-900 mt-0.5">{{ stats.total_questions }}</div>
-          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Main & Follow-ups</div>
+          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>All Questions</div>
         </div>
-        <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg border border-emerald-100">
+        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base border border-emerald-100">
           <i class="fa-solid fa-question"></i>
         </div>
       </div>
@@ -88,17 +88,29 @@
         <div>
           <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tech Categories</div>
           <div id="statTotalCategories" class="text-2xl font-black text-slate-900 mt-0.5">{{ categories|length }}</div>
-          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-tags text-amber-500 mr-1"></i>CI/CD, K8s, Cloud, etc.</div>
+          <div class="text-[10px] text-slate-500 mt-1 flex items-center"><i class="fa-solid fa-tags text-amber-500 mr-1"></i>CI/CD, K8s, etc.</div>
         </div>
-        <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg border border-amber-100">
+        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-base border border-amber-100">
           <i class="fa-solid fa-shapes"></i>
+        </div>
+      </div>
+
+      <!-- My Favorites Count Card -->
+      <div onclick="toggleFavoritesOnlyFilter(true)" class="glass-card p-4 rounded-2xl border border-amber-200 flex items-center justify-between bg-amber-50/40 shadow-xs hover:border-amber-400 cursor-pointer transition-all group hover:scale-[1.02]" title="Click to filter and view all starred favorite questions">
+        <div>
+          <div class="text-[11px] font-bold text-amber-700 uppercase tracking-wider group-hover:text-amber-800 transition-colors">My Favorites</div>
+          <div id="statTotalFavorites" class="text-2xl font-black text-amber-900 mt-0.5">0</div>
+          <div class="text-[10px] text-amber-700 mt-1 flex items-center"><i class="fa-solid fa-star text-amber-500 mr-1"></i>Bookmarked</div>
+        </div>
+        <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-base border border-amber-200 group-hover:bg-amber-500 group-hover:text-white transition-all">
+          <i class="fa-solid fa-star"></i>
         </div>
       </div>
     </div>
 
     <!-- Search & Filter Console -->
     <div class="glass-card p-4 sm:p-5 rounded-2xl border border-sky-100 bg-white/90 shadow-sm space-y-3.5">
-      <!-- Search Bar and Company Filter -->
+      <!-- Search Bar, Sort Selector, and Company Filter -->
       <div class="flex flex-col sm:flex-row items-center gap-3">
         <!-- Live Search Input -->
         <div class="relative flex-1 w-full">
@@ -115,9 +127,23 @@
           </button>
         </div>
 
+        <!-- Sort Selector -->
+        <div class="w-full sm:w-56 flex-shrink-0">
+          <div class="relative">
+            <select id="sortSelect" onchange="handleSortChange()" class="w-full py-2.5 pl-8 pr-3 rounded-xl text-xs sm:text-sm bg-slate-50/80 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-800 transition-all font-semibold cursor-pointer">
+              <option value="default">Sort: Default Order</option>
+              <option value="favorites-first">Sort: Favorites First ★</option>
+              <option value="alpha-asc">Sort: Questions (A → Z)</option>
+              <option value="alpha-desc">Sort: Questions (Z → A)</option>
+              <option value="has-answer">Sort: Answers Available</option>
+            </select>
+            <i class="fa-solid fa-arrow-down-short-wide absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+          </div>
+        </div>
+
         <!-- Company Dropdown Quick Selector -->
-        <div class="w-full sm:w-64 flex-shrink-0">
-          <select id="companySelect" onchange="handleCompanyFilter()" class="w-full py-2.5 px-3 rounded-xl text-xs sm:text-sm bg-slate-50/80 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-800 transition-all">
+        <div class="w-full sm:w-56 flex-shrink-0">
+          <select id="companySelect" onchange="handleCompanyFilter()" class="w-full py-2.5 px-3 rounded-xl text-xs sm:text-sm bg-slate-50/80 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-800 transition-all cursor-pointer">
             <option value="ALL">All Companies ({{ companies|length }})</option>
             {% for comp in companies %}
             <option value="{{ comp.company_name }}">{{ comp.company_name }} ({{ comp.total_questions }} Qs)</option>
@@ -126,8 +152,20 @@
         </div>
       </div>
 
-      <!-- Category Filter Pills -->
+      <!-- Category Filter Pills & Favorites Toggle -->
       <div class="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100">
+        <!-- Favorites Filter Toggle Pill -->
+        <button 
+          type="button"
+          id="favFilterBtn" 
+          onclick="toggleFavoritesOnlyFilter()" 
+          class="fav-pill px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-amber-50 hover:text-amber-800 border border-slate-200 cursor-pointer shadow-2xs mr-1"
+          title="Filter questions to show only your starred favorites"
+        >
+          <i id="favFilterIcon" class="fa-regular fa-star text-amber-500 text-[11px]"></i>
+          <span>Favorites (<span id="favPillCount">0</span>)</span>
+        </button>
+
         <span class="text-[11px] font-bold text-slate-500 mr-1 flex items-center"><i class="fa-solid fa-filter text-sky-600 mr-1"></i>Filter Category:</span>
         <button onclick="selectCategory('ALL')" class="cat-pill active-cat px-2.5 py-1 rounded-lg text-xs font-semibold transition-all" data-cat="ALL">
           All ({{ stats.total_questions }})
@@ -239,8 +277,19 @@
                     </div>
                   </div>
 
-                  <!-- Actions: Copy Question & Toggle Answer Badge -->
-                  <div class="flex items-center gap-2 flex-shrink-0">
+                  <!-- Actions: Favorite, Copy Question & Toggle Answer Badge -->
+                  <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                    <button 
+                      type="button" 
+                      id="fav-btn-{{ q.id }}" 
+                      onclick="toggleFavoriteQuestion('{{ q.id }}', event)" 
+                      class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-amber-50 text-slate-400 hover:text-amber-500 border border-slate-200/80 hover:border-amber-300 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer group/fav" 
+                      title="Bookmark / Mark as Favorite"
+                    >
+                      <i id="fav-icon-{{ q.id }}" class="fa-regular fa-star text-[11px] group-hover/fav:scale-110 transition-transform"></i>
+                      <span id="fav-text-{{ q.id }}" class="text-[11px] font-bold hidden sm:inline">Star</span>
+                    </button>
+
                     <button type="button" onclick="copyQuestionOnly('{{ q.id }}', event)" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-500 hover:text-sky-700 border border-slate-200/80 hover:border-sky-300 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs" title="Copy Question Text">
                       <i id="copy-q-icon-{{ q.id }}" class="fa-regular fa-copy text-[11px]"></i>
                       <span class="text-[11px] font-bold hidden sm:inline">Copy Q</span>
@@ -305,6 +354,18 @@
     color: white !important;
     border-color: #0284c7 !important;
     box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+  }
+  .fav-pill.active-fav-filter {
+    background-color: #f59e0b !important;
+    color: white !important;
+    border-color: #d97706 !important;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35) !important;
+  }
+  .fav-btn-active {
+    background-color: #fffbeb !important;
+    color: #d97706 !important;
+    border-color: #fcd34d !important;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.25) !important;
   }
   .answer-markdown {
     color: #e2e8f0;
@@ -581,6 +642,152 @@
     });
   }
 
+  let currentSort = 'default';
+  let favoritesOnly = false;
+  let favoriteQuestions = new Set();
+  try {
+    const savedFavs = JSON.parse(localStorage.getItem('devops_old_iq_favorites') || '[]');
+    if (Array.isArray(savedFavs)) {
+      favoriteQuestions = new Set(savedFavs);
+    }
+  } catch(e) {
+    favoriteQuestions = new Set();
+  }
+
+  // Toggle individual question favorite/bookmark
+  function toggleFavoriteQuestion(qId, event) {
+    if (event) event.stopPropagation();
+    const card = document.getElementById(`card-q-${qId}`);
+    
+    if (favoriteQuestions.has(qId)) {
+      favoriteQuestions.delete(qId);
+      if (card) card.dataset.isFav = 'false';
+      updateFavButtonUI(qId, false);
+    } else {
+      favoriteQuestions.add(qId);
+      if (card) card.dataset.isFav = 'true';
+      updateFavButtonUI(qId, true);
+    }
+
+    try {
+      localStorage.setItem('devops_old_iq_favorites', JSON.stringify(Array.from(favoriteQuestions)));
+    } catch(e) {
+      console.warn("Could not save favorites to localStorage", e);
+    }
+
+    updateFavoriteCounters();
+
+    // If currently sorting by favorites-first, re-sort
+    if (currentSort === 'favorites-first') {
+      applySorting();
+    }
+
+    // If favorites-only filter is active, re-apply filters immediately
+    if (favoritesOnly) {
+      applyFilters();
+    }
+  }
+
+  function updateFavButtonUI(qId, isFav) {
+    const btn = document.getElementById(`fav-btn-${qId}`);
+    const icon = document.getElementById(`fav-icon-${qId}`);
+    const text = document.getElementById(`fav-text-${qId}`);
+    if (!btn) return;
+
+    if (isFav) {
+      btn.className = "px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-300 ring-2 ring-amber-100/70 text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer group/fav";
+      btn.title = "Favorited! Click to remove from favorites";
+      if (icon) icon.className = "fa-solid fa-star text-[11px] text-amber-500 scale-110 transition-transform";
+      if (text) text.innerText = "Saved";
+    } else {
+      btn.className = "px-2.5 py-1.5 rounded-xl bg-white hover:bg-amber-50 text-slate-400 hover:text-amber-500 border border-slate-200/80 hover:border-amber-300 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer group/fav";
+      btn.title = "Bookmark / Mark as Favorite";
+      if (icon) icon.className = "fa-regular fa-star text-[11px] group-hover/fav:scale-110 transition-transform";
+      if (text) text.innerText = "Star";
+    }
+  }
+
+  function updateFavoriteCounters() {
+    const count = favoriteQuestions.size;
+    const statEl = document.getElementById('statTotalFavorites');
+    const pillEl = document.getElementById('favPillCount');
+    if (statEl) statEl.innerText = count;
+    if (pillEl) pillEl.innerText = count;
+  }
+
+  function toggleFavoritesOnlyFilter(forceState) {
+    if (forceState !== undefined) {
+      favoritesOnly = !!forceState;
+    } else {
+      favoritesOnly = !favoritesOnly;
+    }
+
+    updateFavFilterBtnUI();
+
+    // When enabling favorites filter, keep answers collapsed
+    toggleAllAnswers(false);
+
+    applyFilters();
+  }
+
+  function updateFavFilterBtnUI() {
+    const btn = document.getElementById('favFilterBtn');
+    const icon = document.getElementById('favFilterIcon');
+    if (!btn) return;
+
+    if (favoritesOnly) {
+      btn.className = "fav-pill active-fav-filter px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer shadow-sm mr-1";
+      if (icon) icon.className = "fa-solid fa-star text-white text-[11px]";
+    } else {
+      btn.className = "fav-pill px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-amber-50 hover:text-amber-800 border border-slate-200 cursor-pointer shadow-2xs mr-1";
+      if (icon) icon.className = "fa-regular fa-star text-amber-500 text-[11px]";
+    }
+  }
+
+  // Sorting
+  function handleSortChange() {
+    const select = document.getElementById('sortSelect');
+    currentSort = select ? select.value : 'default';
+    applySorting();
+  }
+
+  function applySorting() {
+    const sortMode = currentSort;
+    const roundContents = document.querySelectorAll('.round-content');
+
+    roundContents.forEach(roundContainer => {
+      const qCards = Array.from(roundContainer.querySelectorAll('.question-card'));
+      if (qCards.length <= 1) return;
+
+      qCards.sort((a, b) => {
+        if (sortMode === 'favorites-first') {
+          const aFav = a.dataset.isFav === 'true' ? 1 : 0;
+          const bFav = b.dataset.isFav === 'true' ? 1 : 0;
+          if (aFav !== bFav) return bFav - aFav;
+          return (parseInt(a.dataset.originalIndex || 0)) - (parseInt(b.dataset.originalIndex || 0));
+        } else if (sortMode === 'alpha-asc') {
+          const aText = a.querySelector('.q-text')?.innerText.trim() || '';
+          const bText = b.querySelector('.q-text')?.innerText.trim() || '';
+          return aText.localeCompare(bText, undefined, { sensitivity: 'base' });
+        } else if (sortMode === 'alpha-desc') {
+          const aText = a.querySelector('.q-text')?.innerText.trim() || '';
+          const bText = b.querySelector('.q-text')?.innerText.trim() || '';
+          return bText.localeCompare(aText, undefined, { sensitivity: 'base' });
+        } else if (sortMode === 'has-answer') {
+          const aAns = a.getAttribute('data-has-answer') === 'true' ? 1 : 0;
+          const bAns = b.getAttribute('data-has-answer') === 'true' ? 1 : 0;
+          if (aAns !== bAns) return bAns - aAns;
+          return (parseInt(a.dataset.originalIndex || 0)) - (parseInt(b.dataset.originalIndex || 0));
+        } else {
+          // Default original order
+          return (parseInt(a.dataset.originalIndex || 0)) - (parseInt(b.dataset.originalIndex || 0));
+        }
+      });
+
+      qCards.forEach(card => roundContainer.appendChild(card));
+    });
+  }
+
   // Category Selection
   function selectCategory(cat) {
     currentCategory = cat;
@@ -595,8 +802,8 @@
     // Always keep answers in collapsed mode when selecting/switching categories
     toggleAllAnswers(false);
 
-    if (cat === 'ALL') {
-      // When category ALL is selected, collapse all companies and rounds completely
+    if (cat === 'ALL' && !favoritesOnly) {
+      // When category ALL is selected and favorites-only is not active, collapse all companies and rounds
       toggleAllCompanies(false);
     }
 
@@ -630,11 +837,22 @@
   }
 
   function resetFilters() {
+    favoritesOnly = false;
+    updateFavFilterBtnUI();
     document.getElementById('searchInput').value = '';
     document.getElementById('clearSearchBtn').classList.add('hidden');
     document.getElementById('companySelect').value = 'ALL';
+    const sortSel = document.getElementById('sortSelect');
+    if (sortSel) sortSel.value = 'default';
     currentCompany = 'ALL';
+    currentSort = 'default';
+    applySorting();
     selectCategory('ALL');
+  }
+
+  function escapeHtml(text) {
+    if (!text) return "";
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
   // Core Filtering Logic
@@ -643,8 +861,8 @@
     let visibleQuestions = 0;
     let visibleCompanies = 0;
 
-    if (currentCategory === 'ALL' && !searchVal && currentCompany === 'ALL') {
-      // Strictly collapse all companies, rounds, and answers by default when ALL is active
+    if (currentCategory === 'ALL' && !searchVal && currentCompany === 'ALL' && !favoritesOnly) {
+      // Strictly collapse all companies, rounds, and answers by default when ALL is active and not in favorites-only mode
       toggleAllCompanies(false);
       toggleAllAnswers(false);
     }
@@ -669,10 +887,12 @@
           const rawTpl = document.getElementById(`raw-ans-${qId}`);
           const ansText = (rawTpl ? rawTpl.innerHTML : (qItem.querySelector('.answer-markdown')?.innerText || '')).toLowerCase();
 
+          const isFav = (qItem.dataset.isFav === 'true');
+          const matchesFav = (!favoritesOnly || isFav);
           const matchesCat = (currentCategory === 'ALL' || qCat.toLowerCase() === currentCategory.toLowerCase());
           const matchesSearch = (!searchVal || qText.includes(searchVal) || ansText.includes(searchVal) || compName.toLowerCase().includes(searchVal) || qCat.toLowerCase().includes(searchVal));
 
-          if (companyMatchesCompanyFilter && matchesCat && matchesSearch) {
+          if (companyMatchesCompanyFilter && matchesCat && matchesSearch && matchesFav) {
             qItem.classList.remove('hidden');
             roundHasMatchingQuestions = true;
             companyHasMatchingQuestions = true;
@@ -684,8 +904,8 @@
 
         if (roundHasMatchingQuestions) {
           roundCard.classList.remove('hidden');
-          // If category other than ALL is selected or search query active, expand this round so questions are visible
-          if (currentCategory !== 'ALL' || searchVal.length > 2) {
+          // If category other than ALL is selected, search active, or favoritesOnly active, expand round so questions are visible
+          if (currentCategory !== 'ALL' || searchVal.length > 2 || favoritesOnly) {
             const rContent = roundCard.querySelector('.round-content');
             if (rContent) rContent.classList.remove('hidden');
             const rChevron = roundCard.querySelector('[id^="chevron-round-"]');
@@ -703,8 +923,8 @@
       if (companyHasMatchingQuestions) {
         card.classList.remove('hidden');
         visibleCompanies++;
-        // If actively searching or category other than ALL is selected, auto-expand matching company
-        if (searchVal.length > 2 || currentCategory !== 'ALL') {
+        // If actively searching, category other than ALL, or favoritesOnly active, auto-expand matching company
+        if (searchVal.length > 2 || currentCategory !== 'ALL' || favoritesOnly) {
           const content = card.querySelector('.company-content');
           if (content) content.classList.remove('hidden');
           const cChevron = card.querySelector('[id^="chevron-comp-"]');
@@ -724,22 +944,46 @@
     const resultsCount = document.getElementById('resultsCount');
     const emptyState = document.getElementById('emptyState');
 
-    if (searchVal || currentCategory !== 'ALL' || currentCompany !== 'ALL') {
+    if (searchVal || currentCategory !== 'ALL' || currentCompany !== 'ALL' || favoritesOnly) {
       filterNotice.classList.remove('hidden');
-      resultsCount.innerText = `Found ${visibleQuestions} questions across ${visibleCompanies} companies`;
+      if (favoritesOnly) {
+        resultsCount.innerHTML = `<span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-star text-amber-500"></i> Showing <strong>${visibleQuestions}</strong> favorite questions across <strong>${visibleCompanies}</strong> companies ${currentCategory !== 'ALL' ? `(Category: <strong>${escapeHtml(currentCategory)}</strong>)` : ''}</span>`;
+      } else {
+        resultsCount.innerText = `Found ${visibleQuestions} questions across ${visibleCompanies} companies`;
+      }
     } else {
       filterNotice.classList.add('hidden');
     }
 
     if (visibleCompanies === 0) {
       emptyState.classList.remove('hidden');
+      const emptyTitle = emptyState.querySelector('h3');
+      const emptyDesc = emptyState.querySelector('p');
+      if (favoritesOnly) {
+        if (emptyTitle) emptyTitle.innerText = "No Favorite Questions Found";
+        if (emptyDesc) emptyDesc.innerText = currentCategory !== 'ALL' 
+          ? `You have no favorite questions under category "${currentCategory}". Star any question in this category or switch categories.`
+          : "You haven't bookmarked any favorite questions yet. Click the 'Star' button on any question to add it to your favorites!";
+      } else {
+        if (emptyTitle) emptyTitle.innerText = "No Interview Questions Found";
+        if (emptyDesc) emptyDesc.innerText = "No questions match your current search and category filters. Try adjusting your query or resetting filters.";
+      }
     } else {
       emptyState.classList.add('hidden');
     }
   }
 
-  // Initialize: By default category ALL is opened and completely collapsed
+  // Initialize: Tag original indices, load favorites from storage, and set initial filter
   document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.question-card').forEach((card, idx) => {
+      card.dataset.originalIndex = idx;
+      const qId = card.getAttribute('data-q-id');
+      const isFav = favoriteQuestions.has(qId);
+      card.dataset.isFav = isFav ? 'true' : 'false';
+      updateFavButtonUI(qId, isFav);
+    });
+
+    updateFavoriteCounters();
     selectCategory('ALL');
   });
 </script>

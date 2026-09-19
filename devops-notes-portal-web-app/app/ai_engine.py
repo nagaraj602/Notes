@@ -83,38 +83,11 @@ def save_gemini_api_key(api_key: str) -> bool:
     return False
 
 def get_active_gemini_model() -> str:
-    """Retrieves current server-wide configured Gemini model or falls back to DEFAULT_MODEL."""
-    env_m = os.getenv("GEMINI_MODEL", "").strip()
-    if env_m:
-        return env_m
-
-    candidate_paths = [
-        "/app/data/notes/.gemini_model",
-        os.path.join(os.path.dirname(__file__), "..", "..", ".gemini_model")
-    ]
-    try:
-        from app.config import NOTES_DIR
-        if NOTES_DIR:
-            candidate_paths.insert(0, os.path.join(NOTES_DIR, ".gemini_model"))
-    except Exception:
-        pass
-
-    for cp in candidate_paths:
-        if os.path.exists(cp):
-            try:
-                with open(cp, "r", encoding="utf-8") as f:
-                    m = f.read().strip()
-                    if m:
-                        return m
-            except Exception:
-                pass
-    return DEFAULT_MODEL
+    """Returns Gemini 3.8 Flash High exclusively."""
+    return PINNED_MODEL
 
 def save_active_gemini_model(model_name: str) -> bool:
-    """Persists chosen Gemini model to server storage."""
-    clean = model_name.strip()
-    if not clean:
-        return False
+    """Persists model configuration (pinned to gemini-3.8-flash-high)."""
     target_paths = ["/app/data/notes/.gemini_model"]
     try:
         from app.config import NOTES_DIR
@@ -127,63 +100,26 @@ def save_active_gemini_model(model_name: str) -> bool:
         try:
             os.makedirs(os.path.dirname(tp), exist_ok=True)
             with open(tp, "w", encoding="utf-8") as f:
-                f.write(clean)
+                f.write(PINNED_MODEL)
             return True
         except Exception as e:
             logger.warning(f"Could not save Gemini model to {tp}: {e}")
     return False
 
 def list_supported_models(api_key: str = "") -> List[str]:
-    """Queries Google AI Studio ListModels API to discover available models that support generateContent."""
-    key = resolve_gemini_api_key(api_key)
-    fallback_list = [
-        "gemini-3.8-flash-high",
-        "gemini-3.8-flash",
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
-    ]
-    if not key:
-        return fallback_list
-
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models?key={key}"
-        resp = requests.get(url, timeout=7)
-        if resp.status_code == 200:
-            data = resp.json()
-            models_raw = data.get("models", [])
-            valid_models = []
-            for m in models_raw:
-                methods = m.get("supportedGenerationMethods", [])
-                if "generateContent" in methods:
-                    name = m.get("name", "").replace("models/", "").strip()
-                    if name:
-                        valid_models.append(name)
-            if valid_models:
-                if "gemini-3.8-flash-high" not in valid_models:
-                    valid_models.insert(0, "gemini-3.8-flash-high")
-                return valid_models
-    except Exception as e:
-        logger.warning(f"Could not query models from Gemini API: {e}")
-    return fallback_list
+    """Exclusively lists Gemini 3.8 Flash High."""
+    return [PINNED_MODEL]
 
 def canonical_gemini_api_model(model_name: Optional[str] = None) -> str:
     """
-    Translates the model name into Google AI Studio's canonical REST API identifier.
-    'gemini-3.8-flash-high' or 'gemini-3.8-high' -> 'gemini-3.8-flash'.
-    Other models (e.g. 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash') pass through directly.
+    Translates model name to Google AI Studio's canonical REST API identifier.
+    Exclusively returns 'gemini-3.8-flash' for Gemini 3.8 Flash High.
     """
-    raw = (model_name or get_active_gemini_model() or DEFAULT_MODEL).strip()
-    clean = raw.lower()
-    if clean in ["gemini-3.8-flash-high", "gemini-3.8-high"]:
-        return "gemini-3.8-flash"
-    if clean.startswith("models/"):
-        return clean.replace("models/", "")
-    return raw
+    return "gemini-3.8-flash"
 
 def normalize_model_name(model_name: Optional[str] = None, api_key: Optional[str] = None) -> str:
-    """Resolves active server-wide Gemini model."""
-    return get_active_gemini_model()
+    """Exclusively returns Gemini 3.8 Flash High."""
+    return PINNED_MODEL
 
 def call_gemini_api(
     contents: List[Dict[str, Any]],
@@ -193,14 +129,15 @@ def call_gemini_api(
     response_json: bool = False
 ) -> str:
     """
-    Direct HTTPS REST call to Google Gemini API with automatic 503 exponential backoff retry.
+    Direct HTTPS REST call exclusively to Google Gemini 3.8 Flash High (models/gemini-3.8-flash)
+    with automatic exponential backoff retry.
     """
     import time
     key = resolve_gemini_api_key(api_key)
     if not key:
         raise ValueError("Gemini API key is required. Please add your key in the AI Setup modal or set GEMINI_API_KEY.")
 
-    target_model = model or get_active_gemini_model() or DEFAULT_MODEL
+    target_model = PINNED_MODEL
     api_endpoint_model = canonical_gemini_api_model(target_model)
 
     payload: Dict[str, Any] = {
@@ -229,62 +166,107 @@ def call_gemini_api(
                 data = resp.json()
                 candidates = data.get("candidates", [])
                 if not candidates:
-                    raise ValueError(f"No response generated by Gemini model ({target_model}).")
+                    raise ValueError(f"No response generated by Gemini 3.8 Flash High.")
                 parts = candidates[0].get("content", {}).get("parts", [])
                 full_text = "".join([p.get("text", "") for p in parts])
                 return full_text
             elif resp.status_code in [503, 429]:
-                last_error = f"Gemini API request failed ({resp.status_code}): {resp.text}"
+                last_error = f"Gemini 3.8 Flash High ({api_endpoint_model}) returned {resp.status_code}: {resp.text}"
                 if attempt < max_retries - 1:
-                    wait_time = 2 * (attempt + 1)
-                    logger.info(f"Gemini API returned {resp.status_code} for {api_endpoint_model}. Retrying in {wait_time}s (attempt {attempt + 1}/{max_retries})...")
+                    wait_time = 3 * (attempt + 1)
+                    logger.info(f"Gemini 3.8 Flash High returned {resp.status_code}. Retrying in {wait_time}s (attempt {attempt + 1}/{max_retries})...")
                     time.sleep(wait_time)
                     continue
                 else:
                     raise ValueError(
-                        f"Model '{target_model}' (endpoint: '{api_endpoint_model}') is currently experiencing high demand on Google AI Studio (503).\n"
-                        f"Spikes are temporary. You can retry, or use the Admin Terminal / Model settings below to switch to another model (e.g. 'gemini-2.5-flash' or 'gemini-2.0-flash').\n"
+                        f"Gemini 3.8 Flash High (endpoint: '{api_endpoint_model}') request failed ({resp.status_code}).\n"
                         f"Google Response: {resp.text}"
                     )
             elif resp.status_code == 404:
-                raise ValueError(f"Model '{target_model}' (endpoint: '{api_endpoint_model}') request failed (404): {resp.text}")
+                raise ValueError(f"Gemini 3.8 Flash High endpoint '{api_endpoint_model}' request failed (404): {resp.text}")
             elif resp.status_code == 403:
                 raise ValueError("Gemini API key is invalid or unauthorized (403). Please verify your Google AI Studio key.")
             else:
-                raise ValueError(f"Gemini API request failed ({resp.status_code}): {resp.text}")
+                raise ValueError(f"Gemini 3.8 Flash High request failed ({resp.status_code}): {resp.text}")
         except requests.exceptions.Timeout:
             if attempt < max_retries - 1:
-                time.sleep(2)
+                time.sleep(3)
                 continue
-            raise ValueError(f"Gemini API request timed out ({target_model}). Please try again.")
+            raise ValueError(f"Gemini 3.8 Flash High request timed out. Please try again.")
         except requests.exceptions.RequestException as e:
             if attempt < max_retries - 1:
-                time.sleep(2)
+                time.sleep(3)
                 continue
-            raise ValueError(f"Gemini API network error: {str(e)}")
+            raise ValueError(f"Gemini 3.8 Flash High network error: {str(e)}")
 
-    raise ValueError(last_error or "Gemini API request failed after retries.")
+    raise ValueError(last_error or "Gemini 3.8 Flash High request failed after retries.")
 
 def test_gemini_connection(api_key: str, model: Optional[str] = None) -> Dict[str, Any]:
-    """Tests Gemini connection with latency measurement and verified REST endpoint info."""
+    """
+    Tests Gemini connection with latency measurement, live dynamic reply, and verified Google API metadata.
+    Instead of a canned phrase, requests the model to state its exact identity and origin.
+    """
     import time
     start_t = time.time()
     try:
         key = resolve_gemini_api_key(api_key)
-        target_model = model or get_active_gemini_model()
+        target_model = (model or "").strip()
+        if not target_model or target_model.lower() == "auto":
+            target_model = get_active_gemini_model() or DEFAULT_MODEL
+
         if not key:
             return {"status": "error", "message": "No API key provided or found on server.", "model": target_model}
 
-        contents = [{"parts": [{"text": "Reply with 'DevOps Hub AI is connected successfully!'"}]}]
-        reply = call_gemini_api(contents, api_key=key, model=target_model)
-        elapsed_ms = int((time.time() - start_t) * 1000)
-        return {
-            "status": "success",
-            "message": reply.strip(),
-            "model": target_model,
-            "api_endpoint_model": canonical_gemini_api_model(target_model),
-            "latency_ms": elapsed_ms
+        canon = canonical_gemini_api_model(target_model)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{canon}:generateContent?key={key}"
+        payload = {
+            "contents": [{"parts": [{"text": "State your AI model name and version, who developed you, and confirm you are responding live in 1-2 concise sentences."}]}],
+            "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1024}
         }
+        resp = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=30)
+        elapsed_ms = int((time.time() - start_t) * 1000)
+
+        if resp.status_code == 200:
+            data = resp.json()
+            candidates = data.get("candidates", [])
+            reply = ""
+            if candidates:
+                parts = candidates[0].get("content", {}).get("parts", [])
+                reply = "".join([p.get("text", "") for p in parts]).strip()
+            
+            google_version = data.get("modelVersion", canon)
+            usage = data.get("usageMetadata", {})
+
+            return {
+                "status": "success",
+                "message": reply or "Live connection confirmed from Google AI Studio.",
+                "model": target_model,
+                "api_endpoint_model": canon,
+                "google_model_version": google_version,
+                "tokens": usage,
+                "latency_ms": elapsed_ms
+            }
+        elif resp.status_code in [503, 429]:
+            err_msg = ""
+            try:
+                err_msg = resp.json().get("error", {}).get("message", "")
+            except Exception:
+                pass
+            return {
+                "status": "error",
+                "message": err_msg or f"Gemini 3.8 Flash High ({canon}) returned HTTP {resp.status_code}. Google AI Studio rate limit or high demand.",
+                "model": target_model,
+                "api_endpoint_model": canon,
+                "latency_ms": elapsed_ms
+            }
+        else:
+            return {
+                "status": "error",
+                "message": f"Google AI Studio returned {resp.status_code}: {resp.text}",
+                "model": target_model,
+                "api_endpoint_model": canon,
+                "latency_ms": elapsed_ms
+            }
     except Exception as e:
         elapsed_ms = int((time.time() - start_t) * 1000)
         return {
