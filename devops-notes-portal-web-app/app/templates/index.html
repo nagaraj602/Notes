@@ -179,7 +179,7 @@
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <label class="text-xs font-extrabold text-slate-800">Font Size</label>
-              <span id="currentSizeLabel" class="text-xs font-mono font-extrabold text-sky-800 bg-sky-100 px-2.5 py-0.5 rounded-lg border border-sky-300">16px</span>
+              <span id="currentSizeLabel" class="text-xs font-mono font-extrabold text-sky-800 bg-sky-100 px-2.5 py-0.5 rounded-lg border border-sky-300">12px</span>
             </div>
             <div class="flex items-center space-x-2">
               <button onclick="changeFontSize(-1, event)" class="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-sky-100 border border-slate-300 text-xs font-bold text-slate-900 shadow-xs active:scale-95 transition-all">
@@ -191,11 +191,12 @@
             </div>
             <!-- Preset Size Chips -->
             <div class="flex items-center justify-between space-x-1 pt-1 text-xs font-mono">
-              <button onclick="setFontSize(14, event)" class="font-size-chip px-2.5 py-1.5 rounded-lg border transition-all" data-size="14">14px</button>
-              <button onclick="setFontSize(16, event)" class="font-size-chip px-2.5 py-1.5 rounded-lg border transition-all" data-size="16">16px</button>
-              <button onclick="setFontSize(18, event)" class="font-size-chip px-2.5 py-1.5 rounded-lg border transition-all" data-size="18">18px</button>
-              <button onclick="setFontSize(20, event)" class="font-size-chip px-2.5 py-1.5 rounded-lg border transition-all" data-size="20">20px</button>
-              <button onclick="setFontSize(22, event)" class="font-size-chip px-2.5 py-1.5 rounded-lg border transition-all" data-size="22">22px</button>
+              <button onclick="setFontSize(10, event)" class="font-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="10">10px</button>
+              <button onclick="setFontSize(11, event)" class="font-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="11">11px</button>
+              <button onclick="setFontSize(12, event)" class="font-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="12">12px</button>
+              <button onclick="setFontSize(14, event)" class="font-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="14">14px</button>
+              <button onclick="setFontSize(16, event)" class="font-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="16">16px</button>
+              <button onclick="setFontSize(18, event)" class="font-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="18">18px</button>
             </div>
           </div>
 
@@ -1224,7 +1225,20 @@
   };
 
   let currentFontFamily = localStorage.getItem("devops_font_family") || "sans";
-  let currentFontSize = parseInt(localStorage.getItem("devops_font_size")) || 16;
+  
+  // Font size migration: migrate old default 16px to new default 12px
+  let savedSize = localStorage.getItem("devops_font_size");
+  let currentFontSize = 12;
+  if (savedSize && savedSize !== "16") {
+    currentFontSize = parseInt(savedSize) || 12;
+  } else if (localStorage.getItem("devops_font_size_v2_migrated") === "true" && savedSize) {
+    currentFontSize = parseInt(savedSize) || 12;
+  } else {
+    currentFontSize = 12;
+    localStorage.setItem("devops_font_size", "12");
+    localStorage.setItem("devops_font_size_v2_migrated", "true");
+  }
+
   let currentFontWeight = parseInt(localStorage.getItem("devops_font_weight")) || 500;
 
   function toggleTypographyMenu(e) {
@@ -1251,7 +1265,7 @@
 
   function setFontSize(size, e) {
     if (e) e.stopPropagation();
-    currentFontSize = Math.min(Math.max(parseInt(size), 13), 26);
+    currentFontSize = Math.min(Math.max(parseInt(size), 10), 24);
     localStorage.setItem("devops_font_size", currentFontSize);
     applyTypography();
   }
@@ -1271,10 +1285,10 @@
   function resetTypography(e) {
     if (e) e.stopPropagation();
     currentFontFamily = "sans";
-    currentFontSize = 16;
+    currentFontSize = 12;
     currentFontWeight = 500;
     localStorage.removeItem("devops_font_family");
-    localStorage.removeItem("devops_font_size");
+    localStorage.setItem("devops_font_size", "12");
     localStorage.removeItem("devops_font_weight");
     applyTypography();
   }

@@ -7,7 +7,29 @@ Zero interference with 'Nagaraj_interviews'.
 
 import os
 import re
+import datetime
 from typing import List, Dict, Any, Optional
+
+def parse_date_to_timestamp(date_str: str) -> float:
+    """Parses various date formats into epoch timestamp for chronological sorting."""
+    if not date_str:
+        return 0.0
+    cleaned = date_str.replace("*", "").strip()
+    for fmt in [
+        "%d-%m-%Y %I:%M %p", "%d-%m-%Y %H:%M", "%d-%m-%Y",
+        "%d-%b-%Y %I:%M %p", "%d-%b-%Y", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"
+    ]:
+        try:
+            return datetime.datetime.strptime(cleaned, fmt).timestamp()
+        except ValueError:
+            pass
+    m = re.search(r'(\d{1,2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{4})', cleaned, re.IGNORECASE)
+    if m:
+        try:
+            return datetime.datetime.strptime(f"{int(m.group(1)):02d}-{m.group(2).capitalize()}-{m.group(3)}", "%d-%b-%Y").timestamp()
+        except Exception:
+            pass
+    return 0.0
 
 CATEGORIES_LIST = [
     "Linux", "Shell script", "CI/CD", "Jenkins", "Git / GitHub", "Docker",
@@ -360,7 +382,8 @@ class OldIQManager:
                 c["rounds"] = r_list
 
         companies_list = list(companies_map.values())
-        companies_list.sort(key=lambda c: c["company_name"].lower())
+        # Sort by recently added question banks (newest file_order first), then interview timestamp descending
+        companies_list.sort(key=lambda c: (c.get("file_order", 0.0), c.get("timestamp", 0.0), c["company_name"].lower()), reverse=True)
 
         total_rounds = sum(len(c["rounds"]) for c in companies_list)
         total_questions = sum(c["total_questions"] for c in companies_list)
@@ -379,8 +402,14 @@ class OldIQManager:
     def _parse_company_interview_file(self, fname: str, content: str, companies_map: Dict[str, Any], category_counts: Dict[str, int]):
         lines = content.splitlines()
         
+        om = re.search(r'^(\d+(?:_\d+)?)\.', fname)
+        file_order = float(om.group(1).replace('_', '.')) if om else 0.0
+        dm = re.search(r'(\d{1,2}-[A-Za-z]{3}-\d{4})', fname)
+        file_date = dm.group(1) if dm else ""
+
         current_company_name = ""
         current_round_name = "Round 1"
+        current_round_date = ""
         current_category = "General"
         current_q_text = ""
         current_answer_lines = []
@@ -388,7 +417,7 @@ class OldIQManager:
         is_sub_q = False
         
         def push_question():
-            nonlocal current_q_text, current_answer_lines, in_answer, is_sub_q, current_category
+            nonlocal current_q_text, current_answer_lines, in_answer, is_sub_q, current_category, current_round_date
             if not current_q_text:
                 return
             
@@ -413,20 +442,38 @@ class OldIQManager:
             norm_cat = detect_category_from_text(q_clean, ans_clean, current_category)
             category_counts[norm_cat] = category_counts.get(norm_cat, 0) + 1
             
+            round_date_val = current_round_date or file_date or "Recent"
+            round_ts = parse_date_to_timestamp(round_date_val)
+
             if c_name not in companies_map:
                 companies_map[c_name] = {
                     "company_name": c_name,
                     "rounds": {},
                     "total_questions": 0,
-                    "categories": set()
+                    "categories": set(),
+                    "latest_date": round_date_val,
+                    "timestamp": round_ts,
+                    "file_order": file_order,
+                    "source_file": fname
                 }
+            else:
+                companies_map[c_name]["file_order"] = max(companies_map[c_name].get("file_order", 0.0), file_order)
+                if round_ts > companies_map[c_name].get("timestamp", 0.0) or not companies_map[c_name].get("latest_date"):
+                    companies_map[c_name]["timestamp"] = round_ts
+                    companies_map[c_name]["latest_date"] = round_date_val
             
             if r_name not in companies_map[c_name]["rounds"]:
                 companies_map[c_name]["rounds"][r_name] = {
                     "round_name": r_name,
+                    "date": round_date_val,
+                    "timestamp": round_ts,
                     "questions": [],
                     "categories": set()
                 }
+            else:
+                if round_date_val and (not companies_map[c_name]["rounds"][r_name].get("date") or round_ts > companies_map[c_name]["rounds"][r_name].get("timestamp", 0.0)):
+                    companies_map[c_name]["rounds"][r_name]["date"] = round_date_val
+                    companies_map[c_name]["rounds"][r_name]["timestamp"] = round_ts
                 
             q_entry = {
                 "id": f"q_{len(category_counts)}_{total_q_count_helper(companies_map)}",
@@ -455,6 +502,12 @@ class OldIQManager:
                     current_answer_lines.append(line)
                 continue
 
+            # Detect Date header: *Date: 17-09-2026 03:37 PM* or Date: 17-09-2026
+            m_date = re.search(r'\*?Date:\s*([^*]+?)\*?$', line_str, re.IGNORECASE)
+            if m_date:
+                current_round_date = m_date.group(1).strip()
+                continue
+
             # Detect company header in details summary: <summary><h2>🏢 Company</h2></summary>
             m_comp_details = re.search(r'<summary>\s*(?:<h2>)?\s*(?:!\[.*?\]\(.*?\))?\s*(?:🏢)?\s*([A-Za-z0-9\s\.\-_/&]+?)(?:</h2>)?\s*</summary>', line_str, re.IGNORECASE)
             if m_comp_details and not re.search(r'<summary>\s*<strong>', line_str):
@@ -467,6 +520,7 @@ class OldIQManager:
                         current_round_name = parts[1].strip()
                 else:
                     current_company_name = raw_c
+                current_round_date = ""
                 current_category = "General"
                 continue
 
@@ -475,6 +529,7 @@ class OldIQManager:
             if m_round_details and not re.search(r'<summary>\s*<strong>', line_str) and not m_comp_details:
                 push_question()
                 current_round_name = m_round_details.group(1).strip()
+                current_round_date = ""
                 current_category = "General"
                 continue
 
@@ -488,6 +543,7 @@ class OldIQManager:
                 if parts:
                     current_company_name = parts[0]
                     current_round_name = " - ".join(parts[1:]) if len(parts) > 1 else "Level 1"
+                current_round_date = ""
                 current_category = "General"
                 continue
 
@@ -570,16 +626,23 @@ class OldIQManager:
                 "source_file": fname
             }
             
+            file_order = 0.1 if "0_1" in fname else 0.0
             if comp_name not in companies_map:
                 companies_map[comp_name] = {
                     "company_name": comp_name,
                     "rounds": {},
                     "total_questions": 0,
-                    "categories": set()
+                    "categories": set(),
+                    "latest_date": "Core Reference",
+                    "timestamp": 0.0,
+                    "file_order": file_order,
+                    "source_file": fname
                 }
             if current_round not in companies_map[comp_name]["rounds"]:
                 companies_map[comp_name]["rounds"][current_round] = {
                     "round_name": current_round,
+                    "date": "Core Reference",
+                    "timestamp": 0.0,
                     "questions": [],
                     "categories": set()
                 }

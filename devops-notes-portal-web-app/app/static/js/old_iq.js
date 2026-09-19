@@ -681,6 +681,90 @@ function applyFilters() {
   }
 }
 
+// Typography State & Controls for Old IQ
+const oldIqFontFamilies = {
+  sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  mono: '"JetBrains Mono", "Fira Code", monospace',
+  serif: '"Merriweather", Georgia, Cambria, serif'
+};
+
+let oldIqFontFamily = localStorage.getItem('old_iq_font_family') || 'sans';
+let rawOldIqSize = localStorage.getItem('old_iq_font_size');
+let oldIqFontSize = rawOldIqSize ? parseInt(rawOldIqSize, 10) : 12;
+if (isNaN(oldIqFontSize) || oldIqFontSize < 10 || oldIqFontSize > 24) {
+  oldIqFontSize = 12;
+}
+
+function toggleOldIqTypographyMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('oldIqTypographyMenu');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('oldIqTypographyMenu');
+  const btn = document.getElementById('btnOldIqTypography');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.add('hidden');
+  }
+});
+
+function setOldIqFontFamily(fam, e) {
+  if (e) e.stopPropagation();
+  oldIqFontFamily = fam;
+  localStorage.setItem('old_iq_font_family', fam);
+  applyOldIqTypography();
+}
+
+function setOldIqFontSize(size, e) {
+  if (e) e.stopPropagation();
+  oldIqFontSize = Math.min(Math.max(parseInt(size, 10), 10), 24);
+  localStorage.setItem('old_iq_font_size', oldIqFontSize);
+  applyOldIqTypography();
+}
+
+function changeOldIqFontSize(delta, e) {
+  if (e) e.stopPropagation();
+  setOldIqFontSize(oldIqFontSize + delta, e);
+}
+
+function resetOldIqTypography(e) {
+  if (e) e.stopPropagation();
+  oldIqFontFamily = 'sans';
+  oldIqFontSize = 12;
+  localStorage.setItem('old_iq_font_family', 'sans');
+  localStorage.setItem('old_iq_font_size', '12');
+  applyOldIqTypography();
+}
+
+function applyOldIqTypography() {
+  const fontStr = oldIqFontFamilies[oldIqFontFamily] || oldIqFontFamilies.sans;
+  document.documentElement.style.setProperty('--old-iq-font-family', fontStr);
+  document.documentElement.style.setProperty('--old-iq-font-size', oldIqFontSize + 'px');
+
+  const sizeLabel = document.getElementById('oldIqCurrentSizeLabel');
+  if (sizeLabel) sizeLabel.innerText = oldIqFontSize + 'px';
+
+  document.querySelectorAll('.old-iq-font-fam-btn').forEach(btn => {
+    const isSelected = btn.dataset.fam === oldIqFontFamily;
+    btn.className = `old-iq-font-fam-btn p-2.5 rounded-xl text-left transition-all ${
+      isSelected 
+        ? 'border-2 border-sky-600 bg-sky-600 text-white font-extrabold shadow-md scale-[1.02]' 
+        : 'border border-slate-300 bg-slate-50 hover:bg-sky-50 text-slate-900'
+    }`;
+  });
+
+  document.querySelectorAll('.old-iq-size-chip').forEach(chip => {
+    const isSelected = parseInt(chip.dataset.size, 10) === oldIqFontSize;
+    chip.className = `old-iq-size-chip px-2.5 py-1.5 rounded-lg transition-all ${
+      isSelected 
+        ? 'border-2 border-sky-600 bg-sky-600 text-white font-black shadow-md scale-105' 
+        : 'border border-slate-300 bg-slate-50 hover:bg-sky-50 text-slate-800 font-bold'
+    }`;
+  });
+}
+
 // Initialize: Tag original indices, load favorites from storage, and set initial filter
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.question-card').forEach((card, idx) => {
@@ -691,6 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateFavButtonUI(qId, isFav);
   });
 
+  applyOldIqTypography();
   updateFavoriteCounters();
   populateRoundOptions();
   selectCategory('ALL');

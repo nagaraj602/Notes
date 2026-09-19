@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <!-- Master Controls: Expand/Collapse All & Actions -->
+    <!-- Master Controls: Expand/Collapse All, Actions & Typography -->
     <div class="flex items-center gap-2 flex-wrap">
       <button onclick="toggleAllCompanies(true)" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-white border border-slate-200 hover:bg-sky-50 hover:text-sky-700 text-slate-700 transition-all flex items-center space-x-1.5 shadow-2xs">
         <i class="fa-solid fa-angles-down text-sky-600"></i>
@@ -39,6 +39,74 @@
         <i class="fa-regular fa-eye-slash text-slate-400"></i>
         <span>Hide Answers</span>
       </button>
+
+      <!-- Typography & Font Controls Dropdown -->
+      <div class="relative z-50">
+        <button id="btnOldIqTypography" onclick="toggleOldIqTypographyMenu(event)" class="px-3 py-1.5 text-xs bg-white hover:bg-sky-50 border border-slate-200 hover:border-sky-300 rounded-xl text-slate-700 hover:text-sky-700 transition-all flex items-center space-x-1.5 shadow-2xs font-bold" title="Customize Font Style & Size">
+          <i class="fa-solid fa-font text-sky-600"></i>
+          <span class="text-[11px] font-mono">Aa</span>
+          <i class="fa-solid fa-chevron-down text-[9px] text-slate-400 ml-0.5"></i>
+        </button>
+
+        <!-- Typography Popup Menu -->
+        <div id="oldIqTypographyMenu" onclick="event.stopPropagation()" class="hidden absolute right-0 top-11 w-80 p-5 rounded-2xl border-2 border-sky-400 bg-white shadow-2xl shadow-slate-900/25 z-[100] space-y-4 select-none ring-4 ring-sky-100">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+            <span class="text-xs font-extrabold text-slate-900 flex items-center space-x-2">
+              <span class="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs"><i class="fa-solid fa-text-height"></i></span>
+              <span>Font & Text Settings</span>
+            </span>
+            <button onclick="resetOldIqTypography(event)" class="text-xs font-mono font-bold text-sky-600 hover:text-sky-800 underline">Reset</button>
+          </div>
+
+          <!-- Font Family Options -->
+          <div class="space-y-2">
+            <label class="text-xs font-extrabold text-slate-800 block">Font Family</label>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <button onclick="setOldIqFontFamily('sans', event)" class="old-iq-font-fam-btn p-2.5 rounded-xl border text-left transition-all" data-fam="sans">
+                <div class="font-extrabold">Modern Sans</div>
+                <div class="text-[10px] opacity-80">Jakarta Sans</div>
+              </button>
+              <button onclick="setOldIqFontFamily('inter', event)" class="old-iq-font-fam-btn p-2.5 rounded-xl border text-left transition-all" data-fam="inter" style="font-family: 'Inter', sans-serif;">
+                <div class="font-extrabold">Inter Clean</div>
+                <div class="text-[10px] opacity-80">Solid UI</div>
+              </button>
+              <button onclick="setOldIqFontFamily('mono', event)" class="old-iq-font-fam-btn p-2.5 rounded-xl border text-left transition-all" data-fam="mono" style="font-family: 'JetBrains Mono', monospace;">
+                <div class="font-extrabold">JetBrains</div>
+                <div class="text-[10px] opacity-80">DevOps Mono</div>
+              </button>
+              <button onclick="setOldIqFontFamily('serif', event)" class="old-iq-font-fam-btn p-2.5 rounded-xl border text-left transition-all" data-fam="serif" style="font-family: 'Merriweather', serif;">
+                <div class="font-extrabold">Book Serif</div>
+                <div class="text-[10px] opacity-80">Merriweather</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Font Size Options -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-extrabold text-slate-800">Font Size</label>
+              <span id="oldIqCurrentSizeLabel" class="text-xs font-mono font-extrabold text-sky-800 bg-sky-100 px-2.5 py-0.5 rounded-lg border border-sky-300">12px</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="changeOldIqFontSize(-1, event)" class="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-sky-100 border border-slate-300 text-xs font-bold text-slate-900 shadow-xs active:scale-95 transition-all">
+                <i class="fa-solid fa-minus text-[10px] mr-1 text-sky-600"></i> Smaller (A-)
+              </button>
+              <button onclick="changeOldIqFontSize(1, event)" class="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-sky-100 border border-slate-300 text-xs font-bold text-slate-900 shadow-xs active:scale-95 transition-all">
+                <i class="fa-solid fa-plus text-[10px] mr-1 text-sky-600"></i> Larger (A+)
+              </button>
+            </div>
+            <!-- Preset Size Chips -->
+            <div class="flex items-center justify-between space-x-1 pt-1 text-xs font-mono">
+              <button onclick="setOldIqFontSize(10, event)" class="old-iq-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="10">10px</button>
+              <button onclick="setOldIqFontSize(11, event)" class="old-iq-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="11">11px</button>
+              <button onclick="setOldIqFontSize(12, event)" class="old-iq-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="12">12px</button>
+              <button onclick="setOldIqFontSize(14, event)" class="old-iq-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="14">14px</button>
+              <button onclick="setOldIqFontSize(16, event)" class="old-iq-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="16">16px</button>
+              <button onclick="setOldIqFontSize(18, event)" class="old-iq-size-chip px-2 py-1.5 rounded-lg border transition-all" data-size="18">18px</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -130,7 +198,7 @@
         <!-- Sort Selector (Col span 3) -->
         <div class="md:col-span-3 relative w-full">
           <select id="sortSelect" onchange="handleSortChange()" class="w-full py-2.5 pl-8 pr-8 rounded-xl text-xs sm:text-sm bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-900 transition-all font-semibold cursor-pointer shadow-2xs" title="Sort interview questions, rounds, or companies">
-            <option value="default">Sort: Default Order</option>
+            <option value="default">Sort: Recently Added Question Banks (Newest First)</option>
             <option value="favorites-first">Sort: Favorites First ★</option>
             <option value="round-asc">Sort: Round Stage (L1 → L2 → Manager)</option>
             <option value="round-desc">Sort: Round Stage (Manager → L2 → L1)</option>
@@ -228,6 +296,11 @@
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                   {{ comp.total_questions }} Questions
                 </span>
+                {% if comp.latest_date %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1" title="Interview Question Bank Date">
+                  <i class="fa-regular fa-calendar-days text-[9px] text-purple-600"></i> {{ comp.latest_date }}
+                </span>
+                {% endif %}
               </div>
               <div class="flex items-center gap-1.5 flex-wrap mt-1">
                 {% for cat in comp.categories %}
@@ -251,7 +324,7 @@
           <div class="round-card bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden transition-all" data-round="{{ round.round_name }}" data-original-round-index="{{ loop.index0 }}" data-round-questions="{{ round.questions|length }}">
             <!-- Round Header (Collapsible Trigger) -->
             <div onclick="toggleRound('{{ comp.company_name|replace(' ', '_') }}-{{ loop.index }}')" class="px-4 py-3 bg-gradient-to-r from-slate-100/70 to-white flex items-center justify-between cursor-pointer select-none hover:bg-sky-50/50 transition-all group">
-              <div class="flex items-center space-x-2.5">
+              <div class="flex items-center space-x-2.5 flex-wrap gap-y-1">
                 <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
                   <i class="fa-solid fa-layer-group text-[10px]"></i>
                 </span>
@@ -261,6 +334,11 @@
                 <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200">
                   {{ round.questions|length }} Qs
                 </span>
+                {% if round.date %}
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 font-semibold border border-amber-200 flex items-center gap-1" title="Interview Round Date">
+                  <i class="fa-regular fa-calendar text-[9px] text-amber-600"></i> {{ round.date }}
+                </span>
+                {% endif %}
               </div>
               <div class="w-6 h-6 rounded-md text-slate-400 group-hover:text-indigo-600 flex items-center justify-center text-xs transition-transform">
                 <i id="chevron-round-{{ comp.company_name|replace(' ', '_') }}-{{ loop.index }}" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300 transform"></i>
@@ -370,6 +448,29 @@
 </div>
 
 <style>
+  :root {
+    --old-iq-font-size: 12px;
+    --old-iq-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .old-iq-font-fam-btn.active {
+    border-color: #0284c7 !important;
+    background-color: #f0f9ff !important;
+    color: #0369a1 !important;
+    font-weight: 700 !important;
+  }
+  .old-iq-size-chip.active {
+    border-color: #0284c7 !important;
+    background-color: #0284c7 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+  }
+
+  .q-text {
+    font-size: var(--old-iq-font-size) !important;
+    font-family: var(--old-iq-font-family) !important;
+  }
+
   /* Ensure Native Select & Options Are Always Crisp White & High Contrast */
   select {
     background-color: #ffffff !important;
@@ -408,12 +509,13 @@
   }
   .answer-markdown {
     color: #e2e8f0;
-    font-size: 0.875rem;
+    font-size: var(--old-iq-font-size) !important;
+    font-family: var(--old-iq-font-family) !important;
     line-height: 1.65;
   }
-  .answer-markdown p {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+  .answer-markdown p, .answer-markdown li, .answer-markdown table {
+    font-size: var(--old-iq-font-size) !important;
+    font-family: var(--old-iq-font-family) !important;
   }
   .answer-markdown h1, .answer-markdown h2, .answer-markdown h3, .answer-markdown h4 {
     color: #f8fafc;
