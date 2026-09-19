@@ -98,6 +98,8 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.5); border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
     /* Glass Panels */
     .glass-nav {
@@ -669,72 +671,77 @@
   <div class="fixed top-[35%] right-[25%] w-[450px] h-[450px] rounded-full bg-indigo-200/30 filter blur-[100px] pointer-events-none"></div>
 
   <!-- Top Navbar (White Bluish Glass) -->
-  <header class="glass-nav px-5 py-3 flex items-center justify-between sticky top-0 z-50">
+  <header class="glass-nav px-3 xl:px-5 py-2 flex items-center justify-between sticky top-0 z-50 gap-2">
     <!-- Brand Logo & Sidebar Toggle -->
-    <div class="flex items-center space-x-3 sm:space-x-4">
-      <button id="navSidebarToggle" onclick="toggleSidebar()" class="p-2 rounded-xl bg-white/80 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-sky-100 transition-all flex items-center justify-center shadow-sm" title="Toggle Sidebar (Ctrl+B)">
-        <i class="fa-solid fa-bars-staggered text-sm"></i>
+    <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
+      <button id="navSidebarToggle" onclick="toggleSidebar()" class="p-1.5 sm:p-2 rounded-xl bg-white/80 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-sky-100 transition-all flex items-center justify-center shadow-sm" title="Toggle Sidebar (Ctrl+B)">
+        <i class="fa-solid fa-bars-staggered text-xs sm:text-sm"></i>
       </button>
 
-      <a href="/" class="flex items-center space-x-2.5 group">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-md bg-gradient-to-tr from-sky-500 to-indigo-600 group-hover:scale-105 transition-all duration-200 shadow-sky-500/20">
-          <i class="fa-solid fa-cube text-white text-sm font-bold"></i>
+      <a href="/" class="flex items-center space-x-2 group">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-md bg-gradient-to-tr from-sky-500 to-indigo-600 group-hover:scale-105 transition-all duration-200 shadow-sky-500/20 shrink-0">
+          <i class="fa-solid fa-cube text-white text-xs sm:text-sm font-bold"></i>
         </div>
         <div class="leading-tight">
-          <span class="font-extrabold text-base tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors">DevOps Hub</span>
-          <span class="block text-[10px] uppercase font-mono tracking-wider font-semibold text-sky-600">Knowledge Portal</span>
+          <span class="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors whitespace-nowrap">DevOps Hub</span>
+          <span class="block text-[9px] sm:text-[10px] uppercase font-mono tracking-wider font-semibold text-sky-600 whitespace-nowrap">Knowledge Portal</span>
         </div>
       </a>
       
-      <!-- Live Sync Status Pill -->
-      <div class="hidden md:flex items-center space-x-2 px-3 py-1 rounded-full bg-white/80 border border-sky-100 text-xs shadow-sm">
+      <!-- Live Sync Status Pill (Dot on smaller screens, Full pill on 2xl) -->
+      <div class="hidden 2xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/80 border border-sky-100 text-xs shadow-sm whitespace-nowrap" title="Auto-Sync is actively monitoring repositories">
         <span class="relative flex h-2 w-2">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
         <span class="font-semibold text-[11px] text-slate-700">Auto-Sync Active</span>
       </div>
+      <div class="hidden lg:flex 2xl:hidden items-center px-2 py-1 rounded-full bg-white/80 border border-sky-100 shadow-sm" title="Auto-Sync Active">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+      </div>
     </div>
     
     <!-- Navigation Actions -->
-    <nav class="flex items-center space-x-2">
-      <button onclick="focusRepo('training-materials')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="ArtisanTek Training Materials">
-        <i class="fa-solid fa-graduation-cap text-sky-600"></i>
-        <span class="hidden sm:inline">Training Materials</span>
+    <nav class="flex items-center gap-1 xl:gap-1.5 shrink-0 overflow-x-auto no-scrollbar py-0.5">
+      <button onclick="focusRepo('training-materials')" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm whitespace-nowrap shrink-0" title="ArtisanTek Training Materials">
+        <i class="fa-solid fa-graduation-cap text-sky-600 text-xs"></i>
+        <span>Training Materials</span>
       </button>
 
-      <button onclick="focusRepo('devops-notes')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-indigo-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm" title="DevOps Notes">
-        <i class="fa-solid fa-book-bookmark text-indigo-600"></i>
+      <button onclick="focusRepo('devops-notes')" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-indigo-600 transition-all flex items-center space-x-1.5 border border-sky-100 shadow-sm whitespace-nowrap shrink-0" title="DevOps Notes">
+        <i class="fa-solid fa-book-bookmark text-indigo-600 text-xs"></i>
         <span>Notes</span>
       </button>
 
-      <a href="/my-interviews" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm {% if request.url.path == '/my-interviews' %}bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-400/20 shadow-sky-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border-sky-100{% endif %}" title="My Personal Interview Tracker & GitHub Sync">
-        <i class="fa-solid fa-user-pen text-sky-600"></i>
+      <a href="/my-interviews" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm whitespace-nowrap shrink-0 {% if request.url.path == '/my-interviews' %}bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-400/20 shadow-sky-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border-sky-100{% endif %}" title="My Personal Interview Tracker & GitHub Sync">
+        <i class="fa-solid fa-user-pen text-sky-600 text-xs"></i>
         <span>My Interview</span>
       </a>
 
-      <a href="/interviews" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm {% if request.url.path == '/interviews' %}bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-400/20 shadow-amber-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border-sky-100{% endif %}" title="Nagaraj Interview Tracker & Q&A">
-        <i class="fa-solid fa-user-tie text-amber-500"></i>
+      <a href="/interviews" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm whitespace-nowrap shrink-0 {% if request.url.path == '/interviews' %}bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-400/20 shadow-amber-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-700 border-sky-100{% endif %}" title="Nagaraj Interview Tracker & Q&A">
+        <i class="fa-solid fa-user-tie text-amber-500 text-xs"></i>
         <span>Nagaraj Interview</span>
       </a>
 
-      <a href="/old-iq-questions" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm {% if request.url.path == '/old-iq-questions' %}bg-emerald-50 text-emerald-900 border-emerald-300 ring-2 ring-emerald-400/20 shadow-emerald-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-emerald-700 border-sky-100{% endif %}" title="Old Interview Questions by Company & Rounds">
-        <i class="fa-solid fa-clipboard-question text-emerald-600"></i>
-        <span>Old Interview Questions</span>
+      <a href="/old-iq-questions" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm whitespace-nowrap shrink-0 {% if request.url.path == '/old-iq-questions' %}bg-emerald-50 text-emerald-900 border-emerald-300 ring-2 ring-emerald-400/20 shadow-emerald-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-emerald-700 border-sky-100{% endif %}" title="Old Interview Questions by Company & Rounds">
+        <i class="fa-solid fa-clipboard-question text-emerald-600 text-xs"></i>
+        <span><span class="hidden 2xl:inline">Old </span>Interview Questions</span>
       </a>
 
-      <a href="/cheatsheets" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm {% if request.url.path in ['/cheatsheets', '/commands-cheatsheet', '/commands-cheatsheets'] %}bg-indigo-50 text-indigo-900 border-indigo-300 ring-2 ring-indigo-400/20 shadow-indigo-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-indigo-700 border-sky-100{% endif %}" title="Commands & Manifests Cheat Sheets">
-        <i class="fa-solid fa-file-invoice text-indigo-600"></i>
+      <a href="/cheatsheets" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm whitespace-nowrap shrink-0 {% if request.url.path in ['/cheatsheets', '/commands-cheatsheet', '/commands-cheatsheets'] %}bg-indigo-50 text-indigo-900 border-indigo-300 ring-2 ring-indigo-400/20 shadow-indigo-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-indigo-700 border-sky-100{% endif %}" title="Commands & Manifests Cheat Sheets">
+        <i class="fa-solid fa-file-invoice text-indigo-600 text-xs"></i>
         <span>Commands Cheat Sheet</span>
       </a>
 
-      <a href="/cidr" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm {% if request.url.path == '/cidr' %}bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-400/20 shadow-sky-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 border-sky-100{% endif %}" title="Cloud CIDR & Subnet Visual Planner">
-        <i class="fa-solid fa-network-wired text-sky-600"></i>
-        <span class="hidden md:inline">CIDR Architect</span>
+      <a href="/cidr" class="px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 border shadow-sm whitespace-nowrap shrink-0 {% if request.url.path == '/cidr' %}bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-400/20 shadow-sky-500/10{% else %}bg-white/80 hover:bg-sky-50 text-slate-800 hover:text-sky-600 border-sky-100{% endif %}" title="Cloud CIDR & Subnet Visual Planner">
+        <i class="fa-solid fa-network-wired text-sky-600 text-xs"></i>
+        <span>CIDR<span class="hidden xl:inline"> Architect</span></span>
       </a>
 
-
-      <button onclick="triggerManualSync()" class="ml-1 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all shadow-md shadow-sky-500/20 hover:scale-[1.02] flex items-center space-x-1.5 active:scale-95">
+      <button onclick="triggerManualSync()" class="ml-0.5 px-3 xl:px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 transition-all shadow-md shadow-sky-500/20 hover:scale-[1.02] flex items-center space-x-1.5 active:scale-95 whitespace-nowrap shrink-0" title="Trigger Git Sync Now">
         <i id="sync-icon" class="fa-solid fa-rotate text-xs"></i>
         <span>Sync All</span>
       </button>
