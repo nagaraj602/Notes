@@ -1,4 +1,4 @@
-# 📚 DevOps Master Notes & Knowledge Hub
+# 📚 DevOps Master Notes & Knowledge Hub App
 
 Welcome to the comprehensive DevOps & Cloud Engineering repository maintained by **Nagaraj Kamath**. This repository serves as a centralized knowledge base for real-world DevOps workflows, cloud architecture, automation scripts, and technical interview preparation.
 
