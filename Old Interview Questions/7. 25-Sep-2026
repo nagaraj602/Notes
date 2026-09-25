@@ -1,0 +1,146 @@
+25-Sep-2026 8:00 PM
+🏢 Photon - Level 1
+#1
+Primary
+Behavioral
+Can you explain your roles and responsibilities in your current project?
+
+#2
+Primary
+Kubernetes
+What is your relevant experience in DevOps and Kubernetes?
+
+#3
+Follow-up
+Cloud
+Do you also have experience working with cloud platforms?
+
+#4
+Follow-up
+Kubernetes
+Which Kubernetes version are you currently using in your environment?
+
+#5
+Follow-up
+Kubernetes
+How do you upgrade the Kubernetes version in your environment?
+
+#6
+Primary
+Kubernetes
+What is etcd in Kubernetes?
+
+#7
+Primary
+Kubernetes
+Can you explain the architecture of Kubernetes?
+
+#8
+Primary
+Kubernetes
+How do you troubleshoot deployment failures/issues in Kubernetes? Can you explain the step-by-step process along with the commands used?
+
+#9
+Primary
+Kubernetes
+Can you explain Kubernetes services and the different types of services available?
+
+#10
+Primary
+Kubernetes
+Can you write a sample Kubernetes deployment YAML file for an nginx application?
+
+#11
+Primary
+IaC
+Do you have experience working with Terraform?
+
+#12
+Follow-up
+IaC
+What would you do if the Terraform state file was mistakenly deleted?
+
+#13
+Primary
+Git
+Do you have experience working with Git and Jenkins?
+
+#14
+Follow-up
+Git
+Can you explain the Git branching strategy you follow in your current project?
+
+#15
+Follow-up
+Git
+What is a hotfix branch in Git?
+
+#16
+Primary
+CI/CD
+How do you ensure successful deployment through the Jenkins CI/CD pipeline stages onto Kubernetes?
+
+#17
+Primary
+Linux
+Do you have experience working with Linux?
+
+#18
+Follow-up
+Linux
+What is the difference between the 'awk' and 'sed' commands in Linux?
+
+#19
+Primary
+Other
+Do you have experience working with Apache Tomcat?
+
+#20
+Follow-up
+Other
+What is the main configuration file used in Apache Tomcat?
+
+#21
+Follow-up
+Other
+What is the default port number used by Apache Tomcat?
+
+#22
+Primary
+Cloud
+Can you explain the difference between EKS and ECS, and which one would you choose for a high-availability deployment scenario?
+
+#23
+Primary
+Git
+If 100 developers are working on different release versions (e.g., 0.0.1, 0.0.2), what approach would you follow as a DevOps engineer to manage this?
+
+#24
+Primary
+Cloud
+If an AWS EC2 instance is running but you are unable to SSH into it, what would you check to troubleshoot the issue?
+
+#25
+Primary
+Networking
+What is a VPC (Virtual Private Cloud)?
+
+#26
+Follow-up
+Networking
+Can you explain the various networking concepts and components within a VPC?
+
+#27
+Primary
+Other
+Do you have experience working with databases?
+
+#28
+Primary
+Git
+How do you troubleshoot and resolve merge conflicts in Git?
+
+#29
+Primary
+AI/ML
+Do you have experience with any AI technologies or tools?
