@@ -935,3 +935,44 @@ Here is the complete extraction of all questions and sub-questions asked by the 
     * **`set -x` (xtrace / trace mode):** Used to debug scripts line by line. It expands and displays each command and its arguments to standard error before executing it, allowing you to trace the exact execution flow.  
     * **`set -e` (errexit / exit on error):** Causes the shell script to terminate immediately if any command returns a non-zero exit status (indicating failure), preventing the script from proceeding with subsequent commands when an error occurs.
 
+# 8\. QA by Krishna 24-Feb-2026 19\_01\_52
+**Part 1: Scripting, Commands, and Linux Basics**
+
+* Can you explain the passwordless connection process? How can we establish a passwordless connection between servers?  
+* What is the difference between a for loop and a while loop?  
+* Can you share your screen of the notepad?  
+* Can you please open a notepad and write a script to print all even numbers up to the given number? (Suppose if I give input as 100, so it should print from 0 to 100 at all even numbers.)  
+* Do you understand my question?  
+* Can you print all the numbers from one to a given n number? (You don't have to print an even number, just print all the numbers. Suppose if I give 10 as an input, it should print from 1 to 10\. Can you do that?)  
+* What is this? I didn't ask something which is not difficult. I'm asking to print 1 to 10 numbers while that is also not \[working\]?  
+* Can you write the while loop syntax?  
+* Can you explain what it is? Write some condition at least. What will it print here? Run this.  
+* Do you understand the logic of how the while loop is working? Do you understand now?  
+* In a similar way, why can't we print 1 to n numbers?  
+* What command do we use to print? What command do we use to print any number or anything?  
+* Why do we use the `echo` command?  
+* Here you are using the `echo` command \[for the sum\], so why can't we use `echo` to print the number?  
+* Can you please print numbers from one to a given n number, only odd numbers? I don't want all the numbers.  
+* Run it. Show me the output.  
+* Can you write a syntax for a for loop?  
+* Can you explain the differences between a soft link and a hard link?  
+* Can you explain special variables?  
+* Can you please share your screen and open a note?  
+* Can you please write a script where there is a file which has some content, and I need to pick each line and find out the number of characters in that particular line? Did you understand my question?  
+* Execute it and show me the output.  
+* Can you write all the file operators in a notepad and explain what each does?  
+* How can we find and replace a word in a file? How can we do that?  
+* Write a script to add all even numbers up to the given n. (For example, if I give 10 as an input, it should add 2, 4, 6, 8, and 10 and give the addition of all these values.)
+
+**Part 2: AWS / Server Operations & Process**
+
+* What/where are you getting confused?  
+* So then how do we do it?  
+* Have you done the assignment which I asked you to do and share in the group?  
+* Can you tell me the steps, how can we do that \[increase the disk space\]?  
+* Why do we need to stop the instance?  
+* If we stop the instance, then there is no point, right?  
+* Have you done it? Can you explain it to them?  
+* First of all, explain the disadvantages of stopping and then increasing the volume, and then come to the point of why we need to do this.  
+* How did you do that? In which process did you do it? Did you stop the server?
+
